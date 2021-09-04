@@ -1,18 +1,17 @@
 {
-  "name": "my-webpack-project",
+  "name": "imgui-ts",
   "version": "1.0.0",
-  "description": "My webpack project",
+  "description": "JavaScript bindings for Dear ImGui using Emscripten and TypeScript, modulized with webpack from imgui-js",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "webpack": "webpack --mode=production --node-env=production",
     "webpack:dev": "webpack --mode=development",
     "webpack:dev-watch": "webpack --mode=development --watch",
     "webpack:prod": "webpack --mode=production --node-env=production",
     "webpack-watch": "webpack --watch"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "zhobo63",
+  "license": "MIT",
   "devDependencies": {
     "@webpack-cli/generators": "^2.3.0",
     "ts-loader": "^9.2.5",
