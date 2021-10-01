@@ -254,9 +254,9 @@ export function Init(value: HTMLCanvasElement | WebGL2RenderingContext | WebGLRe
         window_on_resize();
         canvas.style.touchAction = "none"; // Disable browser handling of all panning and zooming gestures.
         canvas.addEventListener("blur", canvas_on_blur);
-        canvas.addEventListener("keydown", canvas_on_keydown);
-        canvas.addEventListener("keyup", canvas_on_keyup);
-        canvas.addEventListener("keypress", canvas_on_keypress);
+        window.addEventListener("keydown", canvas_on_keydown);
+        window.addEventListener("keyup", canvas_on_keyup);
+        window.addEventListener("keypress", canvas_on_keypress);
         canvas.addEventListener("pointermove", canvas_on_pointermove);
         canvas.addEventListener("pointerdown", canvas_on_pointerdown);
         canvas.addEventListener("contextmenu", canvas_on_contextmenu);
@@ -833,4 +833,69 @@ export function DestroyDeviceObjects(): void {
     gl && gl.deleteProgram(g_ShaderHandle); g_ShaderHandle = null;
     gl && gl.deleteShader(g_VertHandle); g_VertHandle = null;
     gl && gl.deleteShader(g_FragHandle); g_FragHandle = null;
+}
+
+export interface ITextureParam
+{
+    _internalFormat:number;
+    _srcFormat:number;
+    _srcType:number;
+}
+
+export class ImGuiTexture
+{
+    public _texture:WebGLTexture;
+    public _internalFormat:number=gl.RGBA;
+    public _srcFormat:number=gl.RGBA;
+    public _srcType:number=gl.UNSIGNED_BYTE;
+    public _wrapS:number=gl.CLAMP_TO_EDGE;
+    public _wrapT:number=gl.CLAMP_TO_EDGE;
+    public _minFilter:number=gl.LINEAR;
+    public _magFilter:number=gl.LINEAR;
+    public _width:number=1;
+    public _height:number=1;
+
+    constructor(param?: ITextureParam)
+    {
+
+    }
+    public Destroy():void {
+        if(this._texture)   {
+            gl && gl.deleteTexture(this._texture); 
+            this._texture = null;
+        }
+    }
+
+    public Update(src:TexImageSource, _level?:number):void {
+        if(!this._texture)  {
+            this._Create();
+        }
+        const level = _level?_level: 0;
+        gl.bindTexture(gl.TEXTURE_2D, this._texture);
+        gl && gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._minFilter);
+        gl && gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this._magFilter);    
+        gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat,
+                      this._srcFormat, this._srcType, src);    
+        this._width=src.width;
+        this._height=src.height;
+        let srcVideo=src as HTMLVideoElement;
+        if(srcVideo)    {
+            this._width=srcVideo.videoWidth;
+            this._height=srcVideo.videoHeight;
+        }
+    }
+    private _Create()
+    {
+        const level=0;
+        const border=0;
+        this._texture=gl.createTexture();
+        const pixel = new Uint8Array([0, 0, 0, 255]);  // opaque blue
+        gl.bindTexture(gl.TEXTURE_2D, this._texture);
+        gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat,
+            this._width, this._height, border, this._srcFormat, this._srcType,
+            pixel);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this._wrapS);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this._wrapT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);                    
+    }
 }
