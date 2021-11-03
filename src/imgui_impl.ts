@@ -837,12 +837,15 @@ export function DestroyDeviceObjects(): void {
 
 export interface ITextureParam
 {
-    _internalFormat:number;
-    _srcFormat:number;
-    _srcType:number;
+    internalFormat?:number;
+    srcFormat?:number;
+    srcType?:number;
+    width?:number;
+    height?:number;
+    level?:number;
 }
 
-export class ImGuiTexture
+export class Texture
 {
     public _texture:WebGLTexture;
     public _internalFormat:number=gl.RGBA;
@@ -865,37 +868,176 @@ export class ImGuiTexture
             this._texture = null;
         }
     }
+    public Bind(index:number=gl.TEXTURE0):void {
+        gl.activeTexture(index);
+        gl.bindTexture(gl.TEXTURE_2D, this._texture);
+    }
 
-    public Update(src:TexImageSource, _level?:number):void {
-        if(!this._texture)  {
-            this._Create();
+    public Update(src:TexImageSource|Uint8Array|null, param?:any):void {
+        let w, h;
+        if(src==null)   {
+            w=param.width;
+            h=param.height;
         }
-        const level = _level?_level: 0;
+        else if(src instanceof HTMLVideoElement) {
+            let srcVideo=src as HTMLVideoElement;
+            if(srcVideo)    {
+                w=srcVideo.videoWidth;
+                h=srcVideo.videoHeight;
+            }
+        }
+        else if(src instanceof Uint8Array) 
+        {
+            w=param.width;
+            h=param.height;
+        }else {
+            w=src.width;
+            h=src.height;    
+        }
+        if(!this._texture)  {
+            this._texture=gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, this._texture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this._wrapS);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this._wrapT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);                        
+        }
+        const level = param? param.level ? param.level : 0 : 0;
         gl.bindTexture(gl.TEXTURE_2D, this._texture);
         gl && gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._minFilter);
         gl && gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this._magFilter);    
-        gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat,
-                      this._srcFormat, this._srcType, src);    
-        this._width=src.width;
-        this._height=src.height;
-        let srcVideo=src as HTMLVideoElement;
-        if(srcVideo)    {
-            this._width=srcVideo.videoWidth;
-            this._height=srcVideo.videoHeight;
+        if(w!=this._width||h!=this._height) {
+            if(src==null) {
+                const data:ArrayBufferView=null;
+                gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat, 
+                    w,h,0,this._srcFormat, this._srcType, data);
+            }
+            else if(src instanceof Uint8Array) {
+                gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat, 
+                    w,h,0,this._srcFormat, this._srcType, src);
+            }else {
+                gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat,
+                    this._srcFormat, this._srcType, src);    
+            }
+            this._width=w;
+            this._height=h;
+        }else {
+            if(src instanceof Uint8Array) {
+                gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, w, h, this._srcFormat, this._srcType, src);
+            }else {
+                gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, this._srcFormat, this._srcType, src);
+            }
         }
     }
-    private _Create()
+
+}
+
+export class FrameBufferObject
+{
+    public constructor() 
     {
-        const level=0;
-        const border=0;
-        this._texture=gl.createTexture();
-        const pixel = new Uint8Array([0, 0, 0, 255]);  // opaque blue
-        gl.bindTexture(gl.TEXTURE_2D, this._texture);
-        gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat,
-            this._width, this._height, border, this._srcFormat, this._srcType,
-            pixel);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this._wrapS);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this._wrapT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);                    
     }
+
+    public Destroy():void 
+    {
+        if(this._target)    {
+            this._target.Destroy();
+            this._target=null;
+        }
+        if(this._fbo)   {
+            gl.deleteFramebuffer(this._fbo);
+            this._fbo=null;
+        }
+    }
+
+    public Create(width:number, height:number):void {
+        let target=new Texture();
+        target._srcFormat=target._internalFormat=gl.RGB;
+        target.Update(null, {width:width, height:height});
+
+        let fbo=gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+            gl.TEXTURE_2D, target._texture, 0);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        this._target=target;
+        this._fbo=fbo;
+    }
+
+    public Bind(use:boolean=true):void {
+        if(use) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this._fbo);
+        }else {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        }
+    }
+    public get_texture():WebGLTexture {
+        return this._target?this._target._texture:null;
+    }
+
+    private _fbo: WebGLFramebuffer;
+    private _target:Texture;
+}
+
+export class Shader
+{
+    constructor()
+    {
+
+    }
+    public Destroy():void {
+        if(this._program)   {
+            gl && gl.deleteProgram(this._program);
+            this._program = null;
+        }
+        if(this._vs)   {
+            gl && gl.deleteShader(this._vs);
+            this._vs = null;
+        }
+        if(this._ps) {
+            gl && gl.deleteShader(this._ps);
+            this._ps = null;        
+        }
+    }
+    public Create(vsCode:string[], psCode:string[]):void {
+        let vs;
+        if(vsCode)  {
+            vs=gl && gl.createShader(gl.VERTEX_SHADER);
+            gl && gl.shaderSource(vs as WebGLShader, vsCode.join("\n"));
+            gl && gl.compileShader(vs as WebGLShader);
+            if(!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
+                console.log('VertexShader compile failed: ' + gl.getShaderInfoLog(vs));
+            }
+            this._vs=vs;
+        }else {
+            vs=g_VertHandle;
+        }
+    
+        let ps;
+        if(psCode)  {
+            ps = gl && gl.createShader(gl.FRAGMENT_SHADER);
+            gl && gl.shaderSource(ps as WebGLShader, psCode.join("\n"));
+            gl && gl.compileShader(ps as WebGLShader);
+            if(!gl.getShaderParameter(ps, gl.COMPILE_STATUS)) {
+                console.log('FragmentShader compile failed: ' + gl.getShaderInfoLog(ps));
+            }
+            this._ps=ps;
+        }else {
+            ps=g_FragHandle;
+        }
+
+        let program = gl && gl.createProgram();
+        gl && gl.attachShader(program, vs as WebGLShader);
+        gl && gl.attachShader(program, ps as WebGLShader);
+        gl && gl.linkProgram(program);
+    
+        if(!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            console.log('linkProgram failed: ' + gl.getProgramInfoLog(program));
+        }
+        this._program=program;
+    }
+
+    private _program:WebGLProgram;
+    private _vs:WebGLShader;
+    private _ps:WebGLShader;
 }
