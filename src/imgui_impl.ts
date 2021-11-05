@@ -254,9 +254,15 @@ export function Init(value: HTMLCanvasElement | WebGL2RenderingContext | WebGLRe
         window_on_resize();
         canvas.style.touchAction = "none"; // Disable browser handling of all panning and zooming gestures.
         canvas.addEventListener("blur", canvas_on_blur);
-        window.addEventListener("keydown", canvas_on_keydown);
-        window.addEventListener("keyup", canvas_on_keyup);
-        window.addEventListener("keypress", canvas_on_keypress);
+        if(ImGui.isMobile.any())    {
+            canvas.addEventListener("keydown", canvas_on_keydown);
+            canvas.addEventListener("keyup", canvas_on_keyup);
+            canvas.addEventListener("keypress", canvas_on_keypress);
+        }else {
+            window.addEventListener("keydown", canvas_on_keydown);
+            window.addEventListener("keyup", canvas_on_keyup);
+            window.addEventListener("keypress", canvas_on_keypress);
+        }
         canvas.addEventListener("pointermove", canvas_on_pointermove);
         canvas.addEventListener("pointerdown", canvas_on_pointerdown);
         canvas.addEventListener("contextmenu", canvas_on_contextmenu);

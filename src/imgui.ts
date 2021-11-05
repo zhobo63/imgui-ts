@@ -6,10 +6,12 @@ export interface RGB { r: number; g: number; b: number; }
 export interface RGBA extends RGB { a: number; }
 
 import * as Bind from "./bind-imgui";
+import { Input } from "./input";
 export { Bind };
 
 let bind: Bind.Module;
-
+let input:Input;
+let inputMultiline:Input;
 
 export default async function(value?: Partial<Bind.Module>): Promise<void> {
     return new Promise<void>((resolve: () => void) => {
@@ -87,6 +89,30 @@ function export_Color4(tuple: Bind.ImTuple4<number>, col: RGBA | Bind.ImTuple4<n
     if ("r" in col) { col.r = tuple[0]; col.g = tuple[1]; col.b = tuple[2]; col.a = tuple[3]; return; }
     col.x = tuple[0]; col.y = tuple[1]; col.z = tuple[2]; col.w = tuple[3];
 }
+
+export var isMobile = {
+    Android: function() {
+        return navigator.userAgent.match(/Android/i);
+    },
+    BlackBerry: function() {
+        return navigator.userAgent.match(/BlackBerry/i);
+    },
+    iOS: function() {
+        return navigator.userAgent.match(/iPhone|iPad|iPod/i);
+    },
+    Opera: function() {
+        return navigator.userAgent.match(/Opera Mini/i);
+    },
+    Windows: function() {
+        return navigator.userAgent.match(/IEMobile/i) || navigator.userAgent.match(/WPDesktop/i);
+    },
+    any: function() {
+        return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows());
+    },
+    isPortrait: function() {
+        return window.innerHeight > window.innerWidth;
+    },
+};
 
 //import * as config from "./imconfig";
 
@@ -3568,55 +3594,136 @@ export function VSliderScalar(label: string, size: Readonly<Bind.interface_ImVec
 // IMGUI_API bool          InputScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 // IMGUI_API bool          InputScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 export function InputText<T>(label: string, buf: ImStringBuffer | Bind.ImAccess<string> | Bind.ImScalar<string>, buf_size: number = buf instanceof ImStringBuffer ? buf.size : ImGuiInputTextDefaultSize, flags: ImGuiInputTextFlags = 0, callback: ImGuiInputTextCallback<T> | null = null, user_data: T | null = null): boolean {
+    let ret:boolean=false;
+    let screenPos=GetCursorScreenPos();
+    let text:string;
     const _callback = callback && ((data: Bind.reference_ImGuiInputTextCallbackData): number => callback(new ImGuiInputTextCallbackData<T>(data, user_data))) || null;
     if (Array.isArray(buf)) {
         return bind.InputText(label, buf, buf_size, flags, _callback, null);
     } else if (buf instanceof ImStringBuffer) {
         const ref_buf: Bind.ImScalar<string> = [ buf.buffer ];
         const _buf_size: number = Math.min(buf_size, buf.size);
-        const ret: boolean = bind.InputText(label, ref_buf, _buf_size, flags, _callback, null);
+        text=buf.buffer;
+        ret = bind.InputText(label, ref_buf, _buf_size, flags, _callback, null);
         buf.buffer = ref_buf[0];
-        return ret;
     } else {
         const ref_buf: Bind.ImScalar<string> = [ buf() ];
-        const ret: boolean = bind.InputText(label, ref_buf, buf_size + 1, flags, _callback, null);
+        text=buf();
+        ret = bind.InputText(label, ref_buf, buf_size + 1, flags, _callback, null);
         buf(ref_buf[0]);
-        return ret;
     }
+    if(isMobile.any())   {
+        if(IsItemClicked()) {
+            if(!input)  {
+                input=new Input(false);            
+            }
+            input.setText(text);
+            input.setVisible(true);
+            input.on_input=(e)=>{
+                if (Array.isArray(buf)) {
+                }else if (buf instanceof ImStringBuffer) {
+                    buf.buffer = e;
+                }else {
+                    buf(e);
+                }
+            };
+        }
+        if(input && input.isVisible) {
+            let size=GetItemRectSize();
+            size.x=CalcItemWidth();        
+            input.setRect(screenPos.x, screenPos.y, size.x, size.y);
+        }
+    }
+
+    return ret;
 }
 export function InputTextMultiline<T>(label: string, buf: ImStringBuffer | Bind.ImAccess<string> | Bind.ImScalar<string>, buf_size: number = buf instanceof ImStringBuffer ? buf.size : ImGuiInputTextDefaultSize, size: Readonly<Bind.interface_ImVec2> = ImVec2.ZERO, flags: ImGuiInputTextFlags = 0, callback: ImGuiInputTextCallback<T> | null = null, user_data: T | null = null): boolean {
+    let ret:boolean=false;
+    let screenPos=GetCursorScreenPos();
+    let text:string;
+
     const _callback = callback && ((data: Bind.reference_ImGuiInputTextCallbackData): number => callback(new ImGuiInputTextCallbackData<T>(data, user_data))) || null;
     if (Array.isArray(buf)) {
         return bind.InputTextMultiline(label, buf, buf_size, size, flags, _callback, null);
     } else if (buf instanceof ImStringBuffer) {
         const ref_buf: Bind.ImScalar<string> = [ buf.buffer ];
         const _buf_size: number = Math.min(buf_size, buf.size);
-        const ret: boolean = bind.InputTextMultiline(label, ref_buf, _buf_size, size, flags, _callback, null);
+        text=buf.buffer;
+        ret = bind.InputTextMultiline(label, ref_buf, _buf_size, size, flags, _callback, null);
         buf.buffer = ref_buf[0];
-        return ret;
     } else {
         const ref_buf: Bind.ImScalar<string> = [ buf() ];
-        const ret: boolean = bind.InputTextMultiline(label, ref_buf, buf_size, size, flags, _callback, null);
-        buf(ref_buf[0]);
-        return ret;
+        text=buf();
+        ret = bind.InputTextMultiline(label, ref_buf, buf_size, size, flags, _callback, null);
+        buf(ref_buf[0]);        
     }
+    if(isMobile.any())   {
+        if(IsItemClicked()) {
+            if(!inputMultiline)  {
+                inputMultiline=new Input(true);            
+            }
+            inputMultiline.setText(text);
+            inputMultiline.setVisible(true);
+            inputMultiline.on_input=(e)=>{
+                if (Array.isArray(buf)) {
+                }else if (buf instanceof ImStringBuffer) {
+                    buf.buffer = e;
+                }else {
+                    buf(e);
+                }
+            };
+        }
+        if(inputMultiline && inputMultiline.isVisible) {
+            let size=GetItemRectSize();
+            size.x=CalcItemWidth();        
+            inputMultiline.setRect(screenPos.x, screenPos.y, size.x, size.y);
+        }
+    }
+    return ret;
 }
 export function InputTextWithHint<T>(label: string, hint: string, buf: ImStringBuffer | Bind.ImAccess<string> | Bind.ImScalar<string>, buf_size: number = buf instanceof ImStringBuffer ? buf.size : ImGuiInputTextDefaultSize, flags: ImGuiInputTextFlags = 0, callback: ImGuiInputTextCallback<T> | null = null, user_data: T | null = null): boolean {
+    let ret:boolean=false;
+    let screenPos=GetCursorScreenPos();
+    let text:string;
+
     const _callback = callback && ((data: Bind.reference_ImGuiInputTextCallbackData): number => callback(new ImGuiInputTextCallbackData<T>(data, user_data))) || null;
     if (Array.isArray(buf)) {
         return bind.InputTextWithHint(label, hint, buf, buf_size, flags, _callback, null);
     } else if (buf instanceof ImStringBuffer) {
         const ref_buf: Bind.ImScalar<string> = [ buf.buffer ];
         const _buf_size: number = Math.min(buf_size, buf.size);
-        const ret: boolean = bind.InputTextWithHint(label, hint, ref_buf, _buf_size, flags, _callback, null);
+        text=buf.buffer;
+        ret = bind.InputTextWithHint(label, hint, ref_buf, _buf_size, flags, _callback, null);
         buf.buffer = ref_buf[0];
-        return ret;
     } else {
         const ref_buf: Bind.ImScalar<string> = [ buf() ];
-        const ret: boolean = bind.InputTextWithHint(label, hint, ref_buf, buf_size, flags, _callback, null);
+        text=buf();
+        ret = bind.InputTextWithHint(label, hint, ref_buf, buf_size, flags, _callback, null);
         buf(ref_buf[0]);
-        return ret;
     }
+    if(isMobile.any())   {
+        if(IsItemClicked()) {
+            if(!input)  {
+                input=new Input(false);            
+            }
+            input.setText(text);
+            input.setVisible(true);
+            input.on_input=(e)=>{
+                if (Array.isArray(buf)) {
+                }else if (buf instanceof ImStringBuffer) {
+                    buf.buffer = e;
+                }else {
+                    buf(e);
+                }
+            };
+        }
+        if(input && input.isVisible) {
+            let size=GetItemRectSize();
+            size.x=CalcItemWidth();        
+            input.setRect(screenPos.x, screenPos.y, size.x, size.y);
+        }
+    }
+    return ret;
 }
 export function InputFloat(label: string, v: Bind.ImAccess<number> | Bind.ImScalar<number> | XY | XYZ | XYZW | Bind.ImTuple2<number> | Bind.ImTuple3<number> | Bind.ImTuple4<number>, step: number = 0.0, step_fast: number = 0.0, format: string = "%.3f", flags: ImGuiInputTextFlags = 0): boolean {
     const _v = import_Scalar(v);
