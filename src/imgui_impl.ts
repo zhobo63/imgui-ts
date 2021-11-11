@@ -949,30 +949,50 @@ export class FrameBufferObject
             this._target.Destroy();
             this._target=null;
         }
+        if(this._depth) {
+            gl.deleteRenderbuffer(this._depth);
+            this._depth=null;
+        }
         if(this._fbo)   {
             gl.deleteFramebuffer(this._fbo);
             this._fbo=null;
         }
     }
 
-    public Create(width:number, height:number):void {
-        let target=new Texture();
-        target._srcFormat=target._internalFormat=gl.RGB;
-        target.Update(null, {width:width, height:height});
-
-        let fbo=gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-            gl.TEXTURE_2D, target._texture, 0);
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        this._target=target;
-        this._fbo=fbo;
+    public Create(width:number, height:number, format:number=gl.RGB, depth:number=gl.DEPTH_COMPONENT16):void {
+        this.width=width;
+        this.height=height;
+        this.format=format;
+        this.depth_format=depth;
     }
 
     public Bind(use:boolean=true):void {
         if(use) {
+            if(!this._target)   {
+                let target=new Texture();
+                target._srcFormat=target._internalFormat=this.format;
+                target.Update(null, {width:this.width, height:this.height});
+                this._target=target;
+            }
+            if(this.depth_format && !this._depth)   {
+                let depth=gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depth);
+                gl.renderbufferStorage(gl.RENDERBUFFER, this.depth_format, this.width, this.height);                
+                this._depth=depth;
+            }
+            if(!this._fbo)  {
+                let fbo=gl.createFramebuffer();
+                gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+                    gl.TEXTURE_2D, this._target._texture, 0);
+                if(this._depth) {
+                    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
+                        gl.RENDERBUFFER, this._depth);
+                }
+                this._fbo=fbo;
+            }
             gl.bindFramebuffer(gl.FRAMEBUFFER, this._fbo);
+            gl.viewport(0,0,this.width, this.height);
         }else {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         }
@@ -983,6 +1003,11 @@ export class FrameBufferObject
 
     private _fbo: WebGLFramebuffer;
     private _target:Texture;
+    private _depth:WebGLRenderbuffer;
+    public width:number;
+    public height:number;
+    public format:number;
+    public depth_format:number;
 }
 
 export class Shader
