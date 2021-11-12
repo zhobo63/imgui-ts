@@ -1,6 +1,10 @@
 import * as ImGui from "./imgui"
 import * as ImGui_Impl from "./imgui_impl"
 
+export {ImGui, ImGui_Impl}
+
+/*
+
 let text:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,'whats up');
 let text_area:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,'whats up multiline');
 
@@ -38,4 +42,5 @@ window.addEventListener('DOMContentLoaded', async () => {
     window.requestAnimationFrame(_loop);
 });
 
+*/
 
