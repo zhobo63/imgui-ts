@@ -3,7 +3,7 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
-class Main
+export class Main
 {
     constructor()
     {
@@ -46,6 +46,7 @@ class Main
 
         ImGui_Impl.ClearBuffer(new ImGui.ImVec4(0.25,0.25,0.25,1));
         ImGui_Impl.RenderDrawData(ImGui.GetDrawData());
+        let main=this;
         window.requestAnimationFrame((t)=>main._loop(t));
     }
 
@@ -69,8 +70,9 @@ class Main
         ImGui_Impl.Init(canvas);
         console.log(io.BackendRendererName);
         console.log(io.BackendPlatformName);
+        let main=this;
         window.requestAnimationFrame((t)=>main._loop(t));
     }
 }
 
-let main:Main=new Main;
+//let main:Main=new Main;
