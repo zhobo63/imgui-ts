@@ -10,8 +10,7 @@ export class TexturePage
     {
         let font_size=font.FontSize;
         this.FontName= font_size + "px " + font.FontName;
-        this.Scale=window.devicePixelRatio;
-        //this.Scale=1;
+        this.Scale=ImGui_Impl.GetCanvasScale();
         this.TextureSize=tex_size;
         this.FontSize=font_size;
         this.SpaceX=font.SpaceX;
@@ -26,8 +25,10 @@ export class TexturePage
         let gl=ImGui_Impl.gl;
         this.Texure=new Texture();
         this.Texure._srcType=gl.UNSIGNED_SHORT_4_4_4_4;
-        this.Texure._minFilter=gl.NEAREST;
-        this.Texure._magFilter=gl.NEAREST;
+        if(this.Scale==window.devicePixelRatio) {
+            this.Texure._minFilter=gl.NEAREST;
+            this.Texure._magFilter=gl.NEAREST;
+        }
         this.Texure.Update(this.PixelData, {width:tex_size, height:tex_size});
     }
 
@@ -85,9 +86,9 @@ export class TexturePage
     }
 
     UpdateTexture() {
+        this.Dirty=false;
         console.log(this.FontName + " UpdateTexture");
         this.Texure.Update(this.PixelData);
-        this.Dirty=false;
     }
 
     get IsAvailable():boolean {return this.Current<this.MaxCharCount;}    
