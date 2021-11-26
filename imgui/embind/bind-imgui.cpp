@@ -1,5 +1,6 @@
 #include "imgui.h"
 
+
 #ifndef __FLT_MAX__
 #define __FLT_MAX__ 3.40282346638528859812e+38F
 #endif
@@ -51,6 +52,7 @@ void ImGui::ShowFontSelector(const char*) {}
     .function(#METHOD, &CLASS::METHOD)
 
 #include <malloc.h>
+
 
 emscripten::val get_mallinfo() {
     const auto& i = mallinfo();
@@ -180,6 +182,8 @@ public:
 };
 
 WrapImGuiContext* WrapImGuiContext::_current_wrap = NULL;
+
+ImFont* GetCurrentFont();
 
 EMSCRIPTEN_BINDINGS(WrapImGuiContext) {
     emscripten::class_<WrapImGuiContext>("WrapImGuiContext")
@@ -543,6 +547,7 @@ EMSCRIPTEN_BINDINGS(ImGuiTableSortSpecs) {
     ;
 }
 
+
 EMSCRIPTEN_BINDINGS(ImDrawCmd) {
     emscripten::class_<ImDrawCmd>("ImDrawCmd")
         CLASS_MEMBER(ImDrawCmd, ElemCount)
@@ -567,10 +572,14 @@ EMSCRIPTEN_BINDINGS(ImDrawList) {
         // ImVector<ImDrawCmd>     CmdBuffer;          // Draw commands. Typically 1 command = 1 GPU draw call, unless the command is a callback.
         // ImVector<ImDrawIdx>     IdxBuffer;          // Index buffer. Each command consume ImDrawCmd::ElemCount of those
         CLASS_MEMBER_GET(ImDrawList, IdxBuffer, {
-            return emscripten::val(emscripten::typed_memory_view((size_t)(that.IdxBuffer.size() * sizeof(ImDrawIdx)), (char *) &that.IdxBuffer.front()));
+            return that.IdxBuffer.size()?
+                emscripten::val(emscripten::typed_memory_view((size_t)(that.IdxBuffer.size() * sizeof(ImDrawIdx)), (char *) &that.IdxBuffer.front())):
+                emscripten::val::null();
         })
         CLASS_MEMBER_GET(ImDrawList, VtxBuffer, {
-            return emscripten::val(emscripten::typed_memory_view((size_t)(that.VtxBuffer.size() * sizeof(ImDrawVert)), (char *) &that.VtxBuffer.front()));
+            return that.VtxBuffer.size()?
+                emscripten::val(emscripten::typed_memory_view((size_t)(that.VtxBuffer.size() * sizeof(ImDrawVert)), (char *) &that.VtxBuffer.front())):
+                emscripten::val::null();
         })
         // ImDrawListFlags         Flags;              // Flags, you may poke into these to adjust anti-aliasing settings per-primitive.
         CLASS_MEMBER(ImDrawList, Flags)
@@ -855,9 +864,16 @@ EMSCRIPTEN_BINDINGS(ImFontGlyph) {
         CLASS_MEMBER(ImFontGlyph, V0)
         CLASS_MEMBER(ImFontGlyph, U1)
         CLASS_MEMBER(ImFontGlyph, V1)
+#ifdef USE_EXTERNAL_FONT
+        CLASS_MEMBER_GET_SET(ImFontGlyph, TexID, 
+            { return emscripten::val((int) that.TexID); }, 
+            { that.TexID = (ImTextureID) value.as<int>(); }
+        )
+
+        CLASS_MEMBER(ImFontGlyph, Char)
+#endif        
     ;
 }
-
 EMSCRIPTEN_BINDINGS(ImFontConfig) {
     emscripten::class_<ImFontConfig>("ImFontConfig")
         // void*           FontData;                   //          // TTF/OTF data
@@ -910,114 +926,6 @@ EMSCRIPTEN_BINDINGS(ImFontConfig) {
     ;
 }
 
-EMSCRIPTEN_BINDINGS(ImFont) {
-    emscripten::class_<ImFont>("ImFont")
-        // Members: Hot ~62/78 bytes
-        // float                       FontSize;           // <user set>   // Height of characters, set during loading (don't change after loading)
-        CLASS_MEMBER(ImFont, FontSize)
-        // float                       Scale;              // = 1.f        // Base font scale, multiplied by the per-window font scale which you can adjust with SetFontScale()
-        CLASS_MEMBER(ImFont, Scale)
-        // ImVector<ImFontGlyph>       Glyphs;             //              // All glyphs.
-        // CLASS_MEMBER(ImFont, Glyphs)
-        .function("IterateGlyphs", FUNCTION(void, (ImFont* that, emscripten::val callback), {
-            for (int n = 0; n < that->Glyphs.Size; n++) {
-                auto glyph = &that->Glyphs[n];
-                callback(emscripten::val(glyph));
-            }
-        }), emscripten::allow_raw_pointers())
-        // ImVector<float>             IndexAdvanceX;      //              // Sparse. Glyphs->AdvanceX in a directly indexable way (more cache-friendly, for CalcTextSize functions which are often bottleneck in large UI).
-        // CLASS_MEMBER(ImFont, IndexAdvanceX)
-        // ImVector<unsigned short>    IndexLookup;        //              // Sparse. Index glyphs by Unicode code-point.
-        // CLASS_MEMBER(ImFont, IndexLookup)
-        // const ImFontGlyph*          FallbackGlyph;      // == FindGlyph(FontFallbackChar)
-        // CLASS_MEMBER(ImFont, FallbackGlyph)
-        CLASS_MEMBER_GET_SET_RAW_POINTER(ImFont, FallbackGlyph)
-        // float                       FallbackAdvanceX;   // == FallbackGlyph->AdvanceX
-        CLASS_MEMBER(ImFont, FallbackAdvanceX)
-        // ImWchar                     FallbackChar;       // = '?'        // Replacement glyph if one isn't found. Only set via SetFallbackChar()
-        CLASS_MEMBER(ImFont, FallbackChar)
-        // ImWchar                     EllipsisChar;       // 2     // out // = -1       // Character used for ellipsis rendering.
-        CLASS_MEMBER(ImFont, EllipsisChar)
-
-        // Members: Cold ~18/26 bytes
-        // short                       ConfigDataCount;    // ~ 1          // Number of ImFontConfig involved in creating this font. Bigger than 1 when merging multiple font sources into one ImFont.
-        CLASS_MEMBER(ImFont, ConfigDataCount)
-        // ImFontConfig*               ConfigData;         //              // Pointer within ContainerAtlas->ConfigData
-        // CLASS_MEMBER(ImFont, ConfigData)
-        .function("IterateConfigData", FUNCTION(void, (ImFont* that, emscripten::val callback), {
-            for (int n = 0; n < that->ConfigDataCount; n++) {
-                auto cfg = &that->ConfigData[n];
-                callback(emscripten::val(cfg));
-            }
-        }), emscripten::allow_raw_pointers())
-        // ImFontAtlas*                ContainerAtlas;     //              // What we has been loaded into
-        // CLASS_MEMBER(ImFont, ContainerAtlas)
-        // float                       Ascent, Descent;    //              // Ascent: distance from top to bottom of e.g. 'A' [0..FontSize]
-        CLASS_MEMBER(ImFont, Ascent)
-        CLASS_MEMBER(ImFont, Descent)
-        // int                         MetricsTotalSurface;//              // Total surface in pixels to get an idea of the font rasterization/texture cost (not exact, we approximate the cost of padding between glyphs)
-        CLASS_MEMBER(ImFont, MetricsTotalSurface)
-
-        // Methods
-        // IMGUI_API ImFont();
-        // IMGUI_API ~ImFont();
-        // IMGUI_API void              ClearOutputData();
-        CLASS_METHOD(ImFont, ClearOutputData)
-        // IMGUI_API void              BuildLookupTable();
-        CLASS_METHOD(ImFont, BuildLookupTable)
-        // IMGUI_API const ImFontGlyph*FindGlyph(ImWchar c) const;
-        .function("FindGlyph", FUNCTION(emscripten::val, (const ImFont& that, ImWchar c), {
-            const ImFontGlyph* glyph = that.FindGlyph(c);
-            return glyph == NULL ? emscripten::val::null() : emscripten::val(glyph);
-        }), emscripten::allow_raw_pointers())
-        // IMGUI_API const ImFontGlyph*FindGlyphNoFallback(ImWchar c) const;
-        .function("FindGlyphNoFallback", FUNCTION(emscripten::val, (const ImFont& that, ImWchar c), {
-            const ImFontGlyph* glyph = that.FindGlyphNoFallback(c);
-            return glyph == NULL ? emscripten::val::null() : emscripten::val(glyph);
-        }), emscripten::allow_raw_pointers())
-        // IMGUI_API void              SetFallbackChar(ImWchar c);
-        CLASS_METHOD(ImFont, SetFallbackChar)
-        // float                       GetCharAdvance(ImWchar c) const     { return ((int)c < IndexAdvanceX.Size) ? IndexAdvanceX[(int)c] : FallbackAdvanceX; }
-        CLASS_METHOD(ImFont, GetCharAdvance)
-        // bool                        IsLoaded() const                    { return ContainerAtlas != NULL; }
-        CLASS_METHOD(ImFont, IsLoaded)
-        // const char*                 GetDebugName() const                { return ConfigData ? ConfigData->Name : "<unknown>"; }
-        .function("GetDebugName", FUNCTION(std::string, (const ImFont& that), { return that.GetDebugName(); }))
-
-        // 'max_width' stops rendering after a certain width (could be turned into a 2d size). FLT_MAX to disable.
-        // 'wrap_width' enable automatic word-wrapping across multiple lines to fit into given width. 0.0f to disable.
-        // IMGUI_API ImVec2            CalcTextSizeA(float size, float max_width, float wrap_width, const char* text_begin, const char* text_end = NULL, const char** remaining = NULL) const; // utf8
-        .function("CalcTextSizeA", FUNCTION(emscripten::val, (const ImFont& that, float size, float max_width, float wrap_width, std::string text_begin, emscripten::val remaining, emscripten::val out), {
-            const char* _text_begin = text_begin.c_str();
-            const char* _remaining = NULL;
-            const ImVec2 text_size = that.CalcTextSizeA(size, max_width, wrap_width, _text_begin, NULL, &_remaining);
-            if (!remaining.isNull()) {
-                remaining.set(0, (int)(_remaining - _text_begin));
-            }
-            return export_ImVec2(text_size, out);
-        }))
-        // IMGUI_API const char*       CalcWordWrapPositionA(float scale, const char* text, const char* text_end, float wrap_width) const;
-        .function("CalcWordWrapPositionA", FUNCTION(int, (const ImFont& that, float scale, std::string text, float wrap_width), {
-            const char* _text = text.c_str();
-            const char* pos = that.CalcWordWrapPositionA(scale, _text, NULL, wrap_width);
-            return (int)(pos - _text);
-        }))
-        // IMGUI_API void              RenderChar(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col, unsigned short c) const;
-        .function("RenderChar", FUNCTION(void, (const ImFont& that, emscripten::val draw_list, float size, emscripten::val pos, ImU32 col, unsigned short c), {
-            that.RenderChar(draw_list.as<ImDrawList*>(emscripten::allow_raw_pointers()), size, import_ImVec2(pos), col, c);
-        }))
-        // IMGUI_API void              RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col, const ImVec4& clip_rect, const char* text_begin, const char* text_end, float wrap_width = 0.0f, bool cpu_fine_clip = false) const;
-
-        // [Internal]
-        // IMGUI_API void              GrowIndex(int new_size);
-        // IMGUI_API void              AddGlyph(ImWchar c, float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, float advance_x);
-        // IMGUI_API void              AddRemapChar(ImWchar dst, ImWchar src, bool overwrite_dst = true); // Makes 'dst' character/glyph points to 'src' character/glyph. Currently needs to be called AFTER fonts have been built.
-
-        // #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
-        // typedef ImFontGlyph Glyph; // OBSOLETE 1.52+
-        // #endif
-    ;
-}
 
 ImFontConfig import_ImFontConfig(emscripten::val value) {
     ImFontConfig font_cfg;
@@ -1070,6 +978,147 @@ ImFontConfig import_ImFontConfig(emscripten::val value) {
     // ImFont*         DstFont;
     return font_cfg;
 }
+
+#ifdef USE_EXTERNAL_FONT
+
+EMSCRIPTEN_BINDINGS(ImFontAtlas) {
+    emscripten::class_<ImFontAtlas>("ImFontAtlas")
+
+        .function("AddFontDefault", FUNCTION(emscripten::val, (ImFontAtlas& that, emscripten::val font_cfg), {
+            ImFontConfig _font_cfg = font_cfg.isNull() ? ImFontConfig() : import_ImFontConfig(font_cfg);
+            ImFont* font = that.AddFontDefault(font_cfg.isNull() ? NULL : &_font_cfg);
+            return emscripten::val(font);
+        }), emscripten::allow_raw_pointers())
+        // IMGUI_API bool              IsBuilt()                   { return Fonts.Size > 0 && (TexPixelsAlpha8 != NULL || TexPixelsRGBA32 != NULL); }
+        CLASS_METHOD(ImFontAtlas, IsBuilt)
+
+        .function("GetTexDataAsAlpha8", FUNCTION(emscripten::val, (ImFontAtlas& that), {
+            unsigned char* pixels = NULL;
+            int width = -1;
+            int height = -1;
+            int bytes_per_pixel = -1;
+            that.GetTexDataAsAlpha8(&pixels, &width, &height, &bytes_per_pixel);
+            emscripten::val tex_data = emscripten::val::object();
+            tex_data.set(emscripten::val("pixels"), emscripten::val(emscripten::typed_memory_view(width * height * bytes_per_pixel, pixels)));
+            tex_data.set(emscripten::val("width"), emscripten::val(width));
+            tex_data.set(emscripten::val("height"), emscripten::val(height));
+            tex_data.set(emscripten::val("bytes_per_pixel"), emscripten::val(bytes_per_pixel));
+            return tex_data;
+        }))
+
+        // ImTextureID                 TexID;              // User data to refer to the texture once it has been uploaded to user's graphic systems. It is passed back to you during rendering via the ImDrawCmd structure.
+        CLASS_MEMBER_GET_SET(ImFontAtlas, TexID, 
+            { return emscripten::val((int) that.TexID); }, 
+            { that.TexID = (ImTextureID) value.as<int>(); }
+        )
+
+        // [Internal]
+        // NB: Access texture data via GetTexData*() calls! Which will setup a default font for you.
+        // unsigned char*              TexPixelsAlpha8;    // 1 component per pixel, each component is unsigned 8-bit. Total size = TexWidth * TexHeight
+        // unsigned int*               TexPixelsRGBA32;    // 4 component per pixel, each component is unsigned 8-bit. Total size = TexWidth * TexHeight * 4
+        // int                         TexWidth;           // Texture width calculated during Build().
+        CLASS_MEMBER(ImFontAtlas, TexWidth)
+        // int                         TexHeight;          // Texture height calculated during Build().
+        CLASS_MEMBER(ImFontAtlas, TexHeight)
+        // ImVec2                      TexUvScale;         // = (1.0f/TexWidth, 1.0f/TexHeight)
+        //CLASS_MEMBER_GET_RAW_REFERENCE(ImFontAtlas, TexUvScale)
+        // ImVec2                      TexUvWhitePixel;    // Texture coordinates to a white pixel
+        CLASS_MEMBER_GET_RAW_REFERENCE(ImFontAtlas, TexUvWhitePixel)
+        // ImVector<ImFont*>           Fonts;              // Hold all the fonts returned by AddFont*. Fonts[0] is the default font upon calling ImGui::NewFrame(), use ImGui::PushFont()/PopFont() to change the current font.
+        .function("IterateFonts", FUNCTION(void, (ImFontAtlas* that, emscripten::val callback), {
+            for (int n = 0; n < that->Fonts.Size; n++) {
+                ImFont* font = that->Fonts.Data[n];
+                callback(emscripten::val(font));
+            }
+        }), emscripten::allow_raw_pointers())
+
+        .function("CurrentFont", FUNCTION(emscripten::val, (ImFontAtlas &that), {
+            ImFont* font=GetCurrentFont();
+            return emscripten::val(font);
+        }), emscripten::allow_raw_pointers())
+    ;
+}
+
+EMSCRIPTEN_BINDINGS(ImFont) {
+    emscripten::class_<ImFont>("ImFont")
+
+        CLASS_MEMBER(ImFont, FontName)
+        CLASS_MEMBER(ImFont, FontSize)
+        CLASS_MEMBER(ImFont, Scale)
+
+        CLASS_MEMBER_GET_SET(ImFont, SpaceX0, 
+            { return emscripten::val(that.SpaceX[0]); }, 
+            { that.SpaceX[0] = value.as<float>(); }
+        )
+        CLASS_MEMBER_GET_SET(ImFont, SpaceX1, 
+            { return emscripten::val(that.SpaceX[1]); }, 
+            { that.SpaceX[1] = value.as<float>(); }
+        )
+        .function("IterateGlyphs", FUNCTION(void, (ImFont* that, emscripten::val callback), {
+            for (int n = 0; n < that->Glyphs.Size; n++) {
+                auto glyph = &that->Glyphs[n];
+                callback(emscripten::val(glyph));
+            }
+        }), emscripten::allow_raw_pointers())
+
+        CLASS_MEMBER(ImFont, EllipsisChar)
+        CLASS_MEMBER(ImFont, ConfigDataCount)
+
+        .function("ConfigData", FUNCTION(emscripten::val, (ImFont* that), {
+            auto cfg = &that->ConfigData;
+            return (emscripten::val(cfg));            
+        }), emscripten::allow_raw_pointers())
+
+
+        .function("FindGlyph", FUNCTION(emscripten::val, (const ImFont& that, ImWchar c), {
+            const ImFontGlyph* glyph = that.FindGlyph(c);
+            return glyph == NULL ? emscripten::val::null() : emscripten::val(glyph);
+        }), emscripten::allow_raw_pointers())
+        .function("FindGlyphNoFallback", FUNCTION(emscripten::val, (const ImFont& that, ImWchar c), {
+            const ImFontGlyph* glyph = that.FindGlyphNoFallback(c);
+            return glyph == NULL ? emscripten::val::null() : emscripten::val(glyph);
+        }), emscripten::allow_raw_pointers())
+        .function("CalcTextSizeA", FUNCTION(emscripten::val, (const ImFont& that, float size, float max_width, float wrap_width, std::string text_begin, emscripten::val remaining, emscripten::val out), {
+            const char* _text_begin = text_begin.c_str();
+            const char* _remaining = NULL;
+            const ImVec2 text_size = that.CalcTextSizeA(size, max_width, wrap_width, _text_begin, NULL, &_remaining);
+            if (!remaining.isNull()) {
+                remaining.set(0, (int)(_remaining - _text_begin));
+            }
+            return export_ImVec2(text_size, out);
+        }))
+        .function("CalcWordWrapPositionA", FUNCTION(int, (const ImFont& that, float scale, std::string text, float wrap_width), {
+            const char* _text = text.c_str();
+            const char* pos = that.CalcWordWrapPositionA(scale, _text, NULL, wrap_width);
+            return (int)(pos - _text);
+        }))
+        .function("RenderChar", FUNCTION(void, (const ImFont& that, emscripten::val draw_list, float size, emscripten::val pos, ImU32 col, unsigned short c), {
+            that.RenderChar(draw_list.as<ImDrawList*>(emscripten::allow_raw_pointers()), size, import_ImVec2(pos), col, c);
+        }))
+
+        .function("GlyphToCreate", FUNCTION(emscripten::val, (const ImFont& that), {
+            const ImFontGlyph* glyph = (that.GlyphsToCreate.empty())?NULL:&that.GlyphsToCreate.back();
+            return glyph == NULL ? emscripten::val::null() : emscripten::val(glyph);
+        }))
+
+        .function("IterateGlyphToCreate", FUNCTION(void, (const ImFont& that, emscripten::val callback), {
+            for (int n = 0; n < that.GlyphsToCreate.Size; n++) {
+                const ImFontGlyph* glyph = &that.GlyphsToCreate.Data[n];
+                callback(emscripten::val(glyph));
+            }
+        }), emscripten::allow_raw_pointers())
+        
+        .function("GlyphCreated", FUNCTION(void, (ImFont& that, emscripten::val _glyph), {
+            const ImFontGlyph *glyph=_glyph.as<const ImFontGlyph*>(emscripten::allow_raw_pointers());
+            that.GlyphCreated(*glyph);
+        }))
+        .function("ClearGlyphCreated", FUNCTION(void, (ImFont& that), {
+            that.ClearGlyphCreated();
+        }))
+    ;
+}
+
+#else
 
 EMSCRIPTEN_BINDINGS(ImFontAtlas) {
     emscripten::class_<ImFontAtlas>("ImFontAtlas")
@@ -1262,6 +1311,117 @@ EMSCRIPTEN_BINDINGS(ImFontAtlas) {
         // int                         CustomRectIds[1];   // Identifiers of custom texture rectangle used by ImFontAtlas/ImDrawList
     ;
 }
+
+EMSCRIPTEN_BINDINGS(ImFont) {
+    emscripten::class_<ImFont>("ImFont")
+        // Members: Hot ~62/78 bytes
+        // float                       FontSize;           // <user set>   // Height of characters, set during loading (don't change after loading)
+        CLASS_MEMBER(ImFont, FontSize)
+        // float                       Scale;              // = 1.f        // Base font scale, multiplied by the per-window font scale which you can adjust with SetFontScale()
+        CLASS_MEMBER(ImFont, Scale)
+        // ImVector<ImFontGlyph>       Glyphs;             //              // All glyphs.
+        // CLASS_MEMBER(ImFont, Glyphs)
+        .function("IterateGlyphs", FUNCTION(void, (ImFont* that, emscripten::val callback), {
+            for (int n = 0; n < that->Glyphs.Size; n++) {
+                auto glyph = &that->Glyphs[n];
+                callback(emscripten::val(glyph));
+            }
+        }), emscripten::allow_raw_pointers())
+        // ImVector<float>             IndexAdvanceX;      //              // Sparse. Glyphs->AdvanceX in a directly indexable way (more cache-friendly, for CalcTextSize functions which are often bottleneck in large UI).
+        // CLASS_MEMBER(ImFont, IndexAdvanceX)
+        // ImVector<unsigned short>    IndexLookup;        //              // Sparse. Index glyphs by Unicode code-point.
+        // CLASS_MEMBER(ImFont, IndexLookup)
+        // const ImFontGlyph*          FallbackGlyph;      // == FindGlyph(FontFallbackChar)
+        // CLASS_MEMBER(ImFont, FallbackGlyph)
+        CLASS_MEMBER_GET_SET_RAW_POINTER(ImFont, FallbackGlyph)
+        // float                       FallbackAdvanceX;   // == FallbackGlyph->AdvanceX
+        CLASS_MEMBER(ImFont, FallbackAdvanceX)
+        // ImWchar                     FallbackChar;       // = '?'        // Replacement glyph if one isn't found. Only set via SetFallbackChar()
+        CLASS_MEMBER(ImFont, FallbackChar)
+        // ImWchar                     EllipsisChar;       // 2     // out // = -1       // Character used for ellipsis rendering.
+        CLASS_MEMBER(ImFont, EllipsisChar)
+
+        // Members: Cold ~18/26 bytes
+        // short                       ConfigDataCount;    // ~ 1          // Number of ImFontConfig involved in creating this font. Bigger than 1 when merging multiple font sources into one ImFont.
+        CLASS_MEMBER(ImFont, ConfigDataCount)
+        // ImFontConfig*               ConfigData;         //              // Pointer within ContainerAtlas->ConfigData
+        // CLASS_MEMBER(ImFont, ConfigData)
+        .function("IterateConfigData", FUNCTION(void, (ImFont* that, emscripten::val callback), {
+            for (int n = 0; n < that->ConfigDataCount; n++) {
+                auto cfg = &that->ConfigData[n];
+                callback(emscripten::val(cfg));
+            }
+        }), emscripten::allow_raw_pointers())
+        // ImFontAtlas*                ContainerAtlas;     //              // What we has been loaded into
+        // CLASS_MEMBER(ImFont, ContainerAtlas)
+        // float                       Ascent, Descent;    //              // Ascent: distance from top to bottom of e.g. 'A' [0..FontSize]
+        CLASS_MEMBER(ImFont, Ascent)
+        CLASS_MEMBER(ImFont, Descent)
+        // int                         MetricsTotalSurface;//              // Total surface in pixels to get an idea of the font rasterization/texture cost (not exact, we approximate the cost of padding between glyphs)
+        CLASS_MEMBER(ImFont, MetricsTotalSurface)
+
+        // Methods
+        // IMGUI_API ImFont();
+        // IMGUI_API ~ImFont();
+        // IMGUI_API void              ClearOutputData();
+        CLASS_METHOD(ImFont, ClearOutputData)
+        // IMGUI_API void              BuildLookupTable();
+        CLASS_METHOD(ImFont, BuildLookupTable)
+        // IMGUI_API const ImFontGlyph*FindGlyph(ImWchar c) const;
+        .function("FindGlyph", FUNCTION(emscripten::val, (const ImFont& that, ImWchar c), {
+            const ImFontGlyph* glyph = that.FindGlyph(c);
+            return glyph == NULL ? emscripten::val::null() : emscripten::val(glyph);
+        }), emscripten::allow_raw_pointers())
+        // IMGUI_API const ImFontGlyph*FindGlyphNoFallback(ImWchar c) const;
+        .function("FindGlyphNoFallback", FUNCTION(emscripten::val, (const ImFont& that, ImWchar c), {
+            const ImFontGlyph* glyph = that.FindGlyphNoFallback(c);
+            return glyph == NULL ? emscripten::val::null() : emscripten::val(glyph);
+        }), emscripten::allow_raw_pointers())
+        // IMGUI_API void              SetFallbackChar(ImWchar c);
+        CLASS_METHOD(ImFont, SetFallbackChar)
+        // float                       GetCharAdvance(ImWchar c) const     { return ((int)c < IndexAdvanceX.Size) ? IndexAdvanceX[(int)c] : FallbackAdvanceX; }
+        CLASS_METHOD(ImFont, GetCharAdvance)
+        // bool                        IsLoaded() const                    { return ContainerAtlas != NULL; }
+        CLASS_METHOD(ImFont, IsLoaded)
+        // const char*                 GetDebugName() const                { return ConfigData ? ConfigData->Name : "<unknown>"; }
+        .function("GetDebugName", FUNCTION(std::string, (const ImFont& that), { return that.GetDebugName(); }))
+
+        // 'max_width' stops rendering after a certain width (could be turned into a 2d size). FLT_MAX to disable.
+        // 'wrap_width' enable automatic word-wrapping across multiple lines to fit into given width. 0.0f to disable.
+        // IMGUI_API ImVec2            CalcTextSizeA(float size, float max_width, float wrap_width, const char* text_begin, const char* text_end = NULL, const char** remaining = NULL) const; // utf8
+        .function("CalcTextSizeA", FUNCTION(emscripten::val, (const ImFont& that, float size, float max_width, float wrap_width, std::string text_begin, emscripten::val remaining, emscripten::val out), {
+            const char* _text_begin = text_begin.c_str();
+            const char* _remaining = NULL;
+            const ImVec2 text_size = that.CalcTextSizeA(size, max_width, wrap_width, _text_begin, NULL, &_remaining);
+            if (!remaining.isNull()) {
+                remaining.set(0, (int)(_remaining - _text_begin));
+            }
+            return export_ImVec2(text_size, out);
+        }))
+        // IMGUI_API const char*       CalcWordWrapPositionA(float scale, const char* text, const char* text_end, float wrap_width) const;
+        .function("CalcWordWrapPositionA", FUNCTION(int, (const ImFont& that, float scale, std::string text, float wrap_width), {
+            const char* _text = text.c_str();
+            const char* pos = that.CalcWordWrapPositionA(scale, _text, NULL, wrap_width);
+            return (int)(pos - _text);
+        }))
+        // IMGUI_API void              RenderChar(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col, unsigned short c) const;
+        .function("RenderChar", FUNCTION(void, (const ImFont& that, emscripten::val draw_list, float size, emscripten::val pos, ImU32 col, unsigned short c), {
+            that.RenderChar(draw_list.as<ImDrawList*>(emscripten::allow_raw_pointers()), size, import_ImVec2(pos), col, c);
+        }))
+        // IMGUI_API void              RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col, const ImVec4& clip_rect, const char* text_begin, const char* text_end, float wrap_width = 0.0f, bool cpu_fine_clip = false) const;
+
+        // [Internal]
+        // IMGUI_API void              GrowIndex(int new_size);
+        // IMGUI_API void              AddGlyph(ImWchar c, float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, float advance_x);
+        // IMGUI_API void              AddRemapChar(ImWchar dst, ImWchar src, bool overwrite_dst = true); // Makes 'dst' character/glyph points to 'src' character/glyph. Currently needs to be called AFTER fonts have been built.
+
+        // #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+        // typedef ImFontGlyph Glyph; // OBSOLETE 1.52+
+        // #endif
+    ;
+}
+
+#endif
 
 EMSCRIPTEN_BINDINGS(ImGuiIO) {
     emscripten::class_<ImGuiIO>("ImGuiIO")

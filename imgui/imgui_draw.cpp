@@ -1731,6 +1731,8 @@ ImFontConfig::ImFontConfig()
     DstFont = NULL;
 }
 
+#ifndef USE_EXTERNAL_FONT
+
 //-----------------------------------------------------------------------------
 // [SECTION] ImFontAtlas
 //-----------------------------------------------------------------------------
@@ -3448,6 +3450,8 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col
     draw_list->_IdxWritePtr = idx_write;
     draw_list->_VtxCurrentIdx = vtx_current_idx;
 }
+
+#endif
 
 //-----------------------------------------------------------------------------
 // [SECTION] ImGui Internal Render Helpers

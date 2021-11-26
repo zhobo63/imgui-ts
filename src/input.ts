@@ -1,4 +1,5 @@
-import * as ImGui from './imgui'
+import { ImFont } from "./imgui";
+import {ImGui, ImGui_Impl } from "./index";
 
 export class Input
 {
@@ -47,25 +48,37 @@ export class Input
         }
         this.setVisible(false);        
     }
+    public isMe(id:ImGui.ImGuiID):boolean {
+        return this.isVisible && this._id==id;
+    }
 
+    public get Text():string {
+        return this._dom_input.value;
+    }
     public setRect(x:number, y:number, w:number, h:number)
     {
         let input=this._dom_input;
         input.style.left=x + 'px';
         input.style.top=y + 'px';
-        input.style.width=w + 'px';
-        input.style.height=h + 'px';
+        input.style.width=w -5 + 'px';
+        input.style.height=h -5 + 'px';
     }
-    public setText(text:string)
+    public setText(text:string, id:ImGui.ImGuiID, font:ImFont)
     {
+        this._id=id;
         let input=this._dom_input;
+        input.style.font=font.FontSize+"px "+font.FontName;
         input.value=text;
+        this.setVisible(true);
     }
     public setVisible(b:boolean)
     {
         let input=this._dom_input;
         if(b) {
             input.style.display='inline-block';
+            if(ImGui_Impl.ctx_text) {
+                input.style.font=ImGui_Impl.ctx_text.font;
+            }
             input.focus();
         }else {
             input.style.display='none';
@@ -74,5 +87,6 @@ export class Input
     }
 
     private _dom_input:HTMLInputElement|HTMLTextAreaElement;
+    private _id:ImGui.ImGuiID;
     public isVisible:boolean=false;
 }

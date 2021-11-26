@@ -1,8 +1,9 @@
+import { Font } from "./font";
 import * as ImGui from "./imgui";
 
 let clipboard_text: string = "";
 
-let canvas: HTMLCanvasElement | null = null;
+export let canvas: HTMLCanvasElement | null = null;
 
 export let gl: WebGL2RenderingContext | WebGLRenderingContext | null = null;
 let g_ShaderHandle: WebGLProgram | null = null;
@@ -18,6 +19,29 @@ let g_ElementsHandle: WebGLBuffer | null = null;
 let g_FontTexture: WebGLTexture | null = null;
 
 export let ctx: CanvasRenderingContext2D | null = null;
+
+let scale_text:number=1;
+let canvas_text: HTMLCanvasElement | null = null;
+export let ctx_text: CanvasRenderingContext2D = null;
+
+function create_text_ctx():void
+{
+    canvas_text=document.createElement("canvas");
+    canvas_text.style.backgroundColor="transparent";
+    canvas_text.style.position='absolute';
+    canvas_text.style.top='0px';
+    canvas_text.style.left='0px';
+    canvas_text.style.borderWidth='0';
+    canvas_text.style.borderStyle='none';
+    canvas_text.style.pointerEvents='none';
+    canvas_text.style.font='12px sans-serif';
+    canvas_text.width=canvas.scrollWidth*scale_text;
+    canvas_text.height=canvas.scrollHeight*scale_text;
+
+    document.body.appendChild(canvas_text);
+    ctx_text=canvas_text.getContext("2d");
+    ctx_text.font="20px monospace";
+}
 
 let prev_time: number = 0;
 
@@ -47,8 +71,12 @@ function document_on_paste(event: ClipboardEvent): void {
 
 function window_on_resize(): void {
     if (canvas !== null) {
-        canvas.width = canvas.scrollWidth;
-        canvas.height = canvas.scrollHeight;
+        canvas.width = canvas.scrollWidth*scale_text;
+        canvas.height = canvas.scrollHeight*scale_text;
+        if(canvas_text) {
+            canvas_text.width=canvas.scrollWidth*scale_text;
+            canvas_text.height=canvas.scrollHeight*scale_text;
+        }
     }
 }
 
@@ -147,6 +175,7 @@ function canvas_on_pointerdown(event: PointerEvent): void  {
     // if (io.WantCaptureMouse) {
     //     event.preventDefault();
     // }
+    //console.log("canvas_on_pointerdown", event);
 }
 function canvas_on_contextmenu(event: Event): void  {
     const io = ImGui.GetIO();
@@ -161,6 +190,7 @@ function canvas_on_pointerup(event: PointerEvent): void  {
     if (io.WantCaptureMouse) {
         event.preventDefault();
     }
+    //console.log("canvas_on_pointerup", event);
 }
 
 function canvas_on_wheel(event: WheelEvent): void  {
@@ -193,11 +223,13 @@ export function Init(value: HTMLCanvasElement | WebGL2RenderingContext | WebGLRe
         io.ConfigMacOSXBehaviors = navigator.platform.match(/Mac/) !== null;
     }
 
+    /*
     if (typeof(document) !== "undefined") {
         document.body.addEventListener("copy", document_on_copy);
         document.body.addEventListener("cut", document_on_cut);
         document.body.addEventListener("paste", document_on_paste);
     }
+    */
 
     io.SetClipboardTextFn = (user_data: any, text: string): void => {
         clipboard_text = text;
@@ -250,23 +282,25 @@ export function Init(value: HTMLCanvasElement | WebGL2RenderingContext | WebGLRe
         }
     }
 
+    scale_text=window.devicePixelRatio;
+
     if (canvas !== null) {
         window_on_resize();
         canvas.style.touchAction = "none"; // Disable browser handling of all panning and zooming gestures.
         canvas.addEventListener("blur", canvas_on_blur);
-        if(ImGui.isMobile.any())    {
+        //if(ImGui.isMobile.any())    {
             canvas.addEventListener("keydown", canvas_on_keydown);
             canvas.addEventListener("keyup", canvas_on_keyup);
             canvas.addEventListener("keypress", canvas_on_keypress);
-        }else {
-            window.addEventListener("keydown", canvas_on_keydown);
-            window.addEventListener("keyup", canvas_on_keyup);
-            window.addEventListener("keypress", canvas_on_keypress);
-        }
+        //}else {
+        //    window.addEventListener("keydown", canvas_on_keydown);
+        //    window.addEventListener("keyup", canvas_on_keyup);
+        //    window.addEventListener("keypress", canvas_on_keypress);
+        //}
         canvas.addEventListener("pointermove", canvas_on_pointermove);
-        canvas.addEventListener("pointerdown", canvas_on_pointerdown);
+        window.addEventListener("pointerdown", canvas_on_pointerdown);
         canvas.addEventListener("contextmenu", canvas_on_contextmenu);
-        canvas.addEventListener("pointerup", canvas_on_pointerup);
+        window.addEventListener("pointerup", canvas_on_pointerup);
         canvas.addEventListener("wheel", canvas_on_wheel);
     }
 
@@ -501,8 +535,34 @@ export function NewFrame(time: number): void {
     }
 }
 
+function toRgba(col:number):string
+{
+    const r=(col>>>24);
+    const g=(col>>16)&0xFF;
+    const b=(col>>8)&0xFF;
+    const a=(col&0xFF);
+    return 'rgba('+r+','+g+','+b+','+a+')';    
+}
+
+export let dom_font:Font=new Font;
+
 export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawData()): void {
     const io = ImGui.GetIO();
+
+    io.Fonts.Fonts.forEach(font=>{
+        let hasNewGlyph=false;
+        font.GlyphToCreate.forEach(gly=>{
+            gly=dom_font.Create(gly, font);
+            font.GlyphCreated(gly);
+            hasNewGlyph=true;
+        })
+        if(hasNewGlyph) {
+            font.ClearGlyphCreated();
+        }
+    });
+    dom_font.UpdateTexture();
+
+
     if (draw_data === null) { throw new Error(); }
 
     gl || ctx || console.log(draw_data);
@@ -515,6 +575,9 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
     }
     draw_data.ScaleClipRects(io.DisplayFramebufferScale);
 
+    if(ctx_text) {
+        ctx_text.clearRect(0,0,ctx_text.canvas.width, ctx_text.canvas.height);
+    }
     const gl2: WebGL2RenderingContext | null = typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext && gl || null;
     const gl_vao: OES_vertex_array_object | null = gl && gl.getExtension("OES_vertex_array_object") || null;
 
@@ -586,18 +649,21 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
     // Draw
     const pos = draw_data.DisplayPos;
     const idx_buffer_type: GLenum = gl && ((ImGui.DrawIdxSize === 4) ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT) || 0;
-    draw_data.IterateDrawLists((draw_list: ImGui.DrawList): void => {
+    draw_data.IterateDrawLists((draw_list: ImGui.DrawList): void => {           
         gl || ctx || console.log(draw_list);
         gl || ctx || console.log("VtxBuffer.length", draw_list.VtxBuffer.length);
         gl || ctx || console.log("IdxBuffer.length", draw_list.IdxBuffer.length);
-        
+            
         let idx_buffer_offset: number = 0;
 
-        gl && gl.bindBuffer(gl.ARRAY_BUFFER, g_VboHandle);
-        gl && gl.bufferData(gl.ARRAY_BUFFER, draw_list.VtxBuffer, gl.STREAM_DRAW);
-        gl && gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
-        gl && gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, draw_list.IdxBuffer, gl.STREAM_DRAW);
-
+        if(draw_list.VtxBuffer) {
+            gl && gl.bindBuffer(gl.ARRAY_BUFFER, g_VboHandle);
+            gl && gl.bufferData(gl.ARRAY_BUFFER, draw_list.VtxBuffer, gl.STREAM_DRAW);
+        }
+        if(draw_list.IdxBuffer) {
+            gl && gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
+            gl && gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, draw_list.IdxBuffer, gl.STREAM_DRAW);
+        }
         draw_list.IterateDrawCmds((draw_cmd: ImGui.DrawCmd): void => {
             gl || ctx || console.log(draw_cmd);
             gl || ctx || console.log("ElemCount", draw_cmd.ElemCount);
@@ -610,7 +676,7 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
                     console.log(`${i}: ${view.pos[0].toFixed(2)} ${view.pos[1].toFixed(2)} ${view.uv[0].toFixed(5)} ${view.uv[1].toFixed(5)} ${("00000000" + view.col[0].toString(16)).substr(-8)}`);
                 }
             }
-
+            
             if (draw_cmd.UserCallback !== null) {
                 // User callback (registered via ImDrawList::AddCallback)
                 draw_cmd.UserCallback(draw_list, draw_cmd);
@@ -730,7 +796,7 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
 }
 
 export function CreateFontsTexture(): void {
-    const io = ImGui.GetIO();
+    const io = ImGui.GetIO();    
 
     // Backup GL state
     const last_texture: WebGLTexture | null = gl && gl.getParameter(gl.TEXTURE_BINDING_2D);
@@ -739,21 +805,30 @@ export function CreateFontsTexture(): void {
     // const width: number = 256;
     // const height: number = 256;
     // const pixels: Uint8Array = new Uint8Array(4 * width * height).fill(0xff);
-    const { width, height, pixels } = io.Fonts.GetTexDataAsRGBA32();   // Load as RGBA 32-bits (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
-    // console.log(`font texture ${width} x ${height} @ ${pixels.length}`);
+    
+    //const { width, height, pixels } = io.Fonts.GetTexDataAsRGBA32();   // Load as RGBA 32-bits (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
+    const { width, height, pixels } = io.Fonts.GetTexDataAsAlpha8();
+    if(width && height && pixels) {
+        let rgba4:Uint16Array=new Uint16Array(width*height);
+        let i=0;
+        pixels.forEach(p=>{
+            rgba4[i]=0xFFF0|(p>>4);
+            i++;
+        })
+        
+        // Upload texture to graphics system
+        g_FontTexture = gl && gl.createTexture();
+        gl && gl.bindTexture(gl.TEXTURE_2D, g_FontTexture);
+        gl && gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl && gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        // gl && gl.pixelStorei(gl.UNPACK_ROW_LENGTH); // WebGL2
+        gl && gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_SHORT_4_4_4_4, rgba4);
+        //gl && gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 
-    // Upload texture to graphics system
-    g_FontTexture = gl && gl.createTexture();
-    gl && gl.bindTexture(gl.TEXTURE_2D, g_FontTexture);
-    gl && gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl && gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    // gl && gl.pixelStorei(gl.UNPACK_ROW_LENGTH); // WebGL2
-    gl && gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-
-    // Store our identifier
-    io.Fonts.TexID = g_FontTexture || { foo: "bar" };
-    // console.log("font texture id", g_FontTexture);
-
+        // Store our identifier
+        io.Fonts.TexID = g_FontTexture || { foo: "bar" };
+        // console.log("font texture id", g_FontTexture);
+    }
     if (ctx) {
         const image_canvas: HTMLCanvasElement = document.createElement("canvas");
         image_canvas.width = width;
@@ -879,11 +954,13 @@ export class Texture
         gl.bindTexture(gl.TEXTURE_2D, this._texture);
     }
 
-    public Update(src:TexImageSource|Uint8Array|null, param?:any):void {
+    public Update(src:TexImageSource|Uint8Array|Uint16Array|null, param?:any):void {
         let w, h;
         if(src==null)   {
-            w=param.width;
-            h=param.height;
+            if(param) {
+                w=param.width;
+                h=param.height;
+            }
         }
         else if(src instanceof HTMLVideoElement) {
             let srcVideo=src as HTMLVideoElement;
@@ -892,10 +969,15 @@ export class Texture
                 h=srcVideo.videoHeight;
             }
         }
-        else if(src instanceof Uint8Array) 
+        else if(src instanceof Uint8Array||src instanceof Uint16Array) 
         {
-            w=param.width;
-            h=param.height;
+            if(param) {
+                w=param.width;
+                h=param.height;
+            }else {
+                w=this._width;
+                h=this._height;
+            }
         }else {
             w=src.width;
             h=src.height;    
@@ -917,7 +999,7 @@ export class Texture
                 gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat, 
                     w,h,0,this._srcFormat, this._srcType, data);
             }
-            else if(src instanceof Uint8Array) {
+            else if(src instanceof Uint8Array||src instanceof Uint16Array) {
                 gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat, 
                     w,h,0,this._srcFormat, this._srcType, src);
             }else {
@@ -927,7 +1009,7 @@ export class Texture
             this._width=w;
             this._height=h;
         }else {
-            if(src instanceof Uint8Array) {
+            if(src instanceof Uint8Array||src instanceof Uint16Array) {
                 gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, w, h, this._srcFormat, this._srcType, src);
             }else {
                 gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, this._srcFormat, this._srcType, src);

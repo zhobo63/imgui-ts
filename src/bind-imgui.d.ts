@@ -582,9 +582,13 @@ export interface reference_ImDrawData extends Emscripten.EmscriptenClassReferenc
 
 export interface reference_ImFont extends Emscripten.EmscriptenClassReference {
     // Members: Hot ~62/78 bytes
+    FontName:string;
     // float                       FontSize;           // <user set>   // Height of characters, set during loading (don't change after loading)
     FontSize: number;
     // float                       Scale;              // = 1.f        // Base font scale, multiplied by the per-window font scale which you can adjust with SetFontScale()
+    SpaceX0:number;
+    SpaceX1:number;
+
     Scale: number;
     // ImVec2                      DisplayOffset;      // = (0.f,1.f)  // Offset font rendering by xx pixels
     readonly DisplayOffset: reference_ImVec2;
@@ -608,7 +612,8 @@ export interface reference_ImFont extends Emscripten.EmscriptenClassReference {
     ConfigDataCount: number;
     // ImFontConfig*               ConfigData;         //              // Pointer within ContainerAtlas->ConfigData
     // ConfigData: any;
-    IterateConfigData(callback: (cfg: interface_ImFontConfig) => void): void;
+    //IterateConfigData(callback: (cfg: interface_ImFontConfig) => void): void;
+    ConfigData:Readonly<reference_ImFontConfig> | null;
     // ImFontAtlas*                ContainerAtlas;     //              // What we has been loaded into
     // ContainerAtlas: any;
     // float                       Ascent, Descent;    //              // Ascent: distance from top to bottom of e.g. 'A' [0..FontSize]
@@ -655,6 +660,10 @@ export interface reference_ImFont extends Emscripten.EmscriptenClassReference {
     // #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
     // typedef ImFontGlyph Glyph; // OBSOLETE 1.52+
     // #endif
+    GlyphToCreate():Readonly<reference_ImFontGlyph> | null;
+    IterateGlyphToCreate(callback: (glyph: reference_ImFontGlyph) => void): void;
+    GlyphCreated(glyph: interface_ImFontGlyph):void;
+    ClearGlyphCreated():void;
 }
 
 export interface interface_ImFontConfig {
@@ -716,6 +725,9 @@ export interface interface_ImFontGlyph {
     V0: number;
     U1: number;
     V1: number;
+
+    TexID:number;
+    Char:number;
 }
 
 export interface reference_ImFontGlyph extends Emscripten.EmscriptenClassReference, interface_ImFontGlyph {}
@@ -848,6 +860,7 @@ export interface reference_ImFontAtlas extends Emscripten.EmscriptenClassReferen
     // ImVector<CustomRect>        CustomRects;        // Rectangles for packing custom texture data into the atlas.
     // ImVector<ImFontConfig>      ConfigData;         // Internal data
     // int                         CustomRectIds[1];   // Identifiers of custom texture rectangle used by ImFontAtlas/ImDrawList
+    readonly CurrentFont: Readonly<reference_ImFont>;
 }
 
 export interface reference_ImGuiIO extends Emscripten.EmscriptenClassReference {

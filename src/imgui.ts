@@ -6,12 +6,13 @@ export interface RGB { r: number; g: number; b: number; }
 export interface RGBA extends RGB { a: number; }
 
 import * as Bind from "./bind-imgui";
+import { ImGui } from "./index";
 import { Input } from "./input";
 export { Bind };
 
 let bind: Bind.Module;
-let input:Input;
-let inputMultiline:Input;
+let dom_input:Input;
+let dom_inputMultiline:Input;
 
 export default async function(value?: Partial<Bind.Module>): Promise<void> {
     return new Promise<void>((resolve: () => void) => {
@@ -1470,6 +1471,7 @@ export const ImDrawCallback_ResetRenderState = -1;
 // Typically, 1 command = 1 GPU draw call (unless command is a callback)
 // Pre 1.71 back-ends will typically ignore the VtxOffset/IdxOffset fields. When 'io.BackendFlags & ImGuiBackendFlags_RendererHasVtxOffset'
 // is enabled, those fields allow us to render meshes larger than 64K vertices while keeping 16-bits indices.
+
 export { ImDrawCmd as DrawCmd }
 export class ImDrawCmd
 {
@@ -1940,6 +1942,10 @@ export class script_ImFontGlyph implements Bind.interface_ImFontGlyph
     V0: number = 0.0;
     U1: number = 1.0;
     V1: number = 1.0;
+
+    TexID:number=null;
+
+    Char:number=0;
 }
 
 export { ImFontGlyph as FontGlyph }
@@ -1951,16 +1957,31 @@ export class ImFontGlyph implements Bind.interface_ImFontGlyph {
     get Visible(): boolean {  return this.internal.Visible; }
     // float           AdvanceX;           // Distance to next character (= data from font + ImFontConfig::GlyphExtraSpacing.x baked in)
     get AdvanceX(): number { return this.internal.AdvanceX; };
+    set AdvanceX(v:number) {this.internal.AdvanceX=v;}
     // float           X0, Y0, X1, Y1;     // Glyph corners
     get X0(): number { return this.internal.X0; };
+    set X0(v:number) {this.internal.X0=v;}
     get Y0(): number { return this.internal.Y0; };
+    set Y0(v:number) {this.internal.Y0=v;}
     get X1(): number { return this.internal.X1; };
+    set X1(v:number) {this.internal.X1=v;}
     get Y1(): number { return this.internal.Y1; };
+    set Y1(v:number) {this.internal.Y1=v;}
     // float           U0, V0, U1, V1;     // Texture coordinates
     get U0(): number { return this.internal.U0; };
+    set U0(v:number) {this.internal.U0=v;}
     get V0(): number { return this.internal.V0; };
+    set V0(v:number) {this.internal.V0=v;}
     get U1(): number { return this.internal.U1; };
+    set U1(v:number) {this.internal.U1=v;}
     get V1(): number { return this.internal.V1; };
+    set V1(v:number) {this.internal.V1=v;}
+
+    get TexID():number {return this.internal.TexID;}
+    
+    get TextureID(): ImTextureID|null { return ImGuiContext.getTexture(this.internal.TexID); };
+    set TextureID(v:ImTextureID|null) {this.internal.TexID=ImGuiContext.setTexture(v);}
+    get Char(): number { return this.internal.Char; };
 }
 
 // See ImFontAtlas::AddCustomRectXXX functions.
@@ -2146,6 +2167,9 @@ export class ImFontAtlas
     // ImVector<CustomRect>        CustomRects;        // Rectangles for packing custom texture data into the atlas.
     // ImVector<ImFontConfig>      ConfigData;         // Internal data
     // int                         CustomRectIds[1];   // Identifiers of custom texture rectangle used by ImFontAtlas/ImDrawList
+    get CurrentFont():ImFont {
+        return new ImFont(this.native.CurrentFont);
+    }
 }
 
 // Font runtime data and rendering
@@ -2157,7 +2181,15 @@ export class ImFont
 
     // Members: Hot ~62/78 bytes
     // float                       FontSize;           // <user set>   // Height of characters, set during loading (don't change after loading)
+    get FontName(): string { return this.native.FontName; }
+    set FontName(v:string) {this.native.FontName=v;}
+
     get FontSize(): number { return this.native.FontSize; }
+    set FontSize(v:number) {this.native.FontSize=v;}
+
+    get SpaceX():number[] {return [this.native.SpaceX0, this.native.SpaceX1];}
+    set SpaceX(v:number[]) {this.native.SpaceX0=v[0]; this.native.SpaceX1=v[1];}
+
     // float                       Scale;              // = 1.f        // Base font scale, multiplied by the per-window font scale which you can adjust with SetFontScale()
     get Scale(): number { return this.native.Scale; }
     set Scale(value: number) { this.native.Scale = value; }
@@ -2190,14 +2222,10 @@ export class ImFont
 
     // Members: Cold ~18/26 bytes
     // short                       ConfigDataCount;    // ~ 1          // Number of ImFontConfig involved in creating this font. Bigger than 1 when merging multiple font sources into one ImFont.
-    get ConfigDataCount(): number { return this.ConfigData.length; }
+    get ConfigDataCount(): number { return this.native.ConfigDataCount; }
     // ImFontConfig*               ConfigData;         //              // Pointer within ContainerAtlas->ConfigData
-    get ConfigData(): ImFontConfig[] {
-        const cfg_data: ImFontConfig[] = [];
-        this.native.IterateConfigData((cfg: Bind.interface_ImFontConfig): void => {
-            cfg_data.push(new ImFontConfig(cfg));
-        });
-        return cfg_data;
+    get ConfigData(): ImFontConfig {
+        return new ImFontConfig(this.native.ConfigData);
     }
     // ImFontAtlas*                ContainerAtlas;     //              // What we has been loaded into
     get ContainerAtlas(): ImFontAtlas | null { return null; }
@@ -2261,6 +2289,21 @@ export class ImFont
 
     // IMGUI_API bool              IsGlyphRangeUnused(unsigned int c_begin, unsigned int c_last);
     public IsGlyphRangeUnused(c_begin: number, c_last: number): boolean { return false; } // TODO
+
+    get GlyphToCreate():ImFontGlyph[] {
+        const glyphs: ImFontGlyph[] = [];
+        this.native.IterateGlyphToCreate((glyph: Bind.reference_ImFontGlyph): void => {
+            glyphs.push(new ImFontGlyph(glyph));
+        });
+        return glyphs;
+    } 
+    public GlyphCreated(glyph:ImFontGlyph) {
+        this.native.GlyphCreated(glyph.internal);
+    }
+    public ClearGlyphCreated() {
+        this.native.ClearGlyphCreated();
+    }
+
 }
 
 // a script version of Bind.ImGuiStyle with matching interface
@@ -3605,33 +3648,30 @@ export function InputText<T>(label: string, buf: ImStringBuffer | Bind.ImAccess<
         const _buf_size: number = Math.min(buf_size, buf.size);
         text=buf.buffer;
         ret = bind.InputText(label, ref_buf, _buf_size, flags, _callback, null);
-        buf.buffer = ref_buf[0];
+        //buf.buffer = ref_buf[0];
     } else {
         const ref_buf: Bind.ImScalar<string> = [ buf() ];
         text=buf();
         ret = bind.InputText(label, ref_buf, buf_size + 1, flags, _callback, null);
-        buf(ref_buf[0]);
+        //buf(ref_buf[0]);
     }
-    if(isMobile.any())   {
+    if(isMobile.any()||true)   {
         if(IsItemClicked()) {
-            if(!input)  {
-                input=new Input(false);            
-            }
-            input.setText(text);
-            input.setVisible(true);
-            input.on_input=(e)=>{
-                if (Array.isArray(buf)) {
-                }else if (buf instanceof ImStringBuffer) {
-                    buf.buffer = e;
-                }else {
-                    buf(e);
-                }
-            };
+            if(!dom_input)  {
+                dom_input=new Input(false);            
+            }            
+            dom_input.setText(text, GetID(label), GetIO().Fonts.CurrentFont);
         }
-        if(input && input.isVisible) {
+        if(dom_input && dom_input.isMe(GetID(label))) {
             let size=GetItemRectSize();
             size.x=CalcItemWidth();        
-            input.setRect(screenPos.x, screenPos.y, size.x, size.y);
+            dom_input.setRect(screenPos.x, screenPos.y, size.x, size.y);
+            if (Array.isArray(buf)) {            
+            } else if (buf instanceof ImStringBuffer) {
+                buf.buffer=dom_input.Text;
+            } else {
+                buf(dom_input.Text);
+            }
         }
     }
 
@@ -3650,33 +3690,30 @@ export function InputTextMultiline<T>(label: string, buf: ImStringBuffer | Bind.
         const _buf_size: number = Math.min(buf_size, buf.size);
         text=buf.buffer;
         ret = bind.InputTextMultiline(label, ref_buf, _buf_size, size, flags, _callback, null);
-        buf.buffer = ref_buf[0];
+        //buf.buffer = ref_buf[0];
     } else {
         const ref_buf: Bind.ImScalar<string> = [ buf() ];
         text=buf();
         ret = bind.InputTextMultiline(label, ref_buf, buf_size, size, flags, _callback, null);
-        buf(ref_buf[0]);        
+        //buf(ref_buf[0]);        
     }
-    if(isMobile.any())   {
+    if(isMobile.any()||true)   {
         if(IsItemClicked()) {
-            if(!inputMultiline)  {
-                inputMultiline=new Input(true);            
+            if(!dom_inputMultiline)  {
+                dom_inputMultiline=new Input(true);            
             }
-            inputMultiline.setText(text);
-            inputMultiline.setVisible(true);
-            inputMultiline.on_input=(e)=>{
-                if (Array.isArray(buf)) {
-                }else if (buf instanceof ImStringBuffer) {
-                    buf.buffer = e;
-                }else {
-                    buf(e);
-                }
-            };
+            dom_inputMultiline.setText(text, GetID(label), GetIO().Fonts.CurrentFont);
         }
-        if(inputMultiline && inputMultiline.isVisible) {
+        if(dom_inputMultiline && dom_inputMultiline.isMe(GetID(label))) {
             let size=GetItemRectSize();
             size.x=CalcItemWidth();        
-            inputMultiline.setRect(screenPos.x, screenPos.y, size.x, size.y);
+            dom_inputMultiline.setRect(screenPos.x, screenPos.y, size.x, size.y);
+            if (Array.isArray(buf)) {            
+            } else if (buf instanceof ImStringBuffer) {
+                buf.buffer=dom_inputMultiline.Text;
+            } else {
+                buf(dom_inputMultiline.Text);
+            }
         }
     }
     return ret;
@@ -3694,33 +3731,30 @@ export function InputTextWithHint<T>(label: string, hint: string, buf: ImStringB
         const _buf_size: number = Math.min(buf_size, buf.size);
         text=buf.buffer;
         ret = bind.InputTextWithHint(label, hint, ref_buf, _buf_size, flags, _callback, null);
-        buf.buffer = ref_buf[0];
+        //buf.buffer = ref_buf[0];
     } else {
         const ref_buf: Bind.ImScalar<string> = [ buf() ];
         text=buf();
         ret = bind.InputTextWithHint(label, hint, ref_buf, buf_size, flags, _callback, null);
-        buf(ref_buf[0]);
+        //buf(ref_buf[0]);
     }
-    if(isMobile.any())   {
+    if(isMobile.any()||true)   {
         if(IsItemClicked()) {
-            if(!input)  {
-                input=new Input(false);            
+            if(!dom_input)  {
+                dom_input=new Input(false);            
             }
-            input.setText(text);
-            input.setVisible(true);
-            input.on_input=(e)=>{
-                if (Array.isArray(buf)) {
-                }else if (buf instanceof ImStringBuffer) {
-                    buf.buffer = e;
-                }else {
-                    buf(e);
-                }
-            };
+            dom_input.setText(text, GetID(label), GetIO().Fonts.CurrentFont);
         }
-        if(input && input.isVisible) {
+        if(dom_input && dom_input.isMe(GetID(label))) {
             let size=GetItemRectSize();
             size.x=CalcItemWidth();        
-            input.setRect(screenPos.x, screenPos.y, size.x, size.y);
+            dom_input.setRect(screenPos.x, screenPos.y, size.x, size.y);
+            if (Array.isArray(buf)) {            
+            } else if (buf instanceof ImStringBuffer) {
+                buf.buffer=dom_input.Text;
+            } else {
+                buf(dom_input.Text);
+            }
         }
     }
     return ret;
