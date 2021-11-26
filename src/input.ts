@@ -76,9 +76,6 @@ export class Input
         let input=this._dom_input;
         if(b) {
             input.style.display='inline-block';
-            if(ImGui_Impl.ctx_text) {
-                input.style.font=ImGui_Impl.ctx_text.font;
-            }
             input.focus();
         }else {
             input.style.display='none';

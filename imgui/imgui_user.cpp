@@ -352,12 +352,7 @@ const char* ImFont::CalcWordWrapPositionA(float scale, const char* text, const c
 
 float ImFont::GetCharAdvance(ImWchar c) const
 {
-    c=c<256?c:0;
-    if(IndexAdvanceX[c]==0) {
-        float &adv=(float&)(const float&)IndexAdvanceX[c];
-        adv=ConfigData.SizePixels;
-    }
-	return c < 256 ? IndexAdvanceX[c] + SpaceX[0] : IndexAdvanceX[0] + SpaceX[1];
+	return c < 256 ? IndexAdvanceX[c] : IndexAdvanceX[0];
 }
 
 ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, const char* text_begin, const char* text_end, const char** remaining) const // utf8
@@ -592,6 +587,13 @@ void ImFont::GlyphCreated(const ImFontGlyph &_glyph)
 		IndexAdvanceX[_glyph.Char]=_glyph.AdvanceX;
 	}else {
 		IndexAdvanceX[0]=_glyph.AdvanceX;
+	}
+	for(int i=0;i<GlyphsToCreate.size();i++)	{
+		if(GlyphsToCreate[i].Char==_glyph.Char)	{
+			GlyphsToCreate[i]=GlyphsToCreate.back();
+			GlyphsToCreate.pop_back();
+			break;
+		}
 	}
 }
 

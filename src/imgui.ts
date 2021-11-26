@@ -2290,7 +2290,12 @@ export class ImFont
     // IMGUI_API bool              IsGlyphRangeUnused(unsigned int c_begin, unsigned int c_last);
     public IsGlyphRangeUnused(c_begin: number, c_last: number): boolean { return false; } // TODO
 
-    get GlyphToCreate():ImFontGlyph[] {
+    get GlyphToCreate():ImFontGlyph {
+        let glyph=this.native.GlyphToCreate();
+        return glyph?new ImFontGlyph(glyph):null;
+    }
+
+    get IterateGlyphToCreate():ImFontGlyph[] {
         const glyphs: ImFontGlyph[] = [];
         this.native.IterateGlyphToCreate((glyph: Bind.reference_ImFontGlyph): void => {
             glyphs.push(new ImFontGlyph(glyph));

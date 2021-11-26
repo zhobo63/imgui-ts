@@ -20,29 +20,6 @@ let g_FontTexture: WebGLTexture | null = null;
 
 export let ctx: CanvasRenderingContext2D | null = null;
 
-let scale_text:number=1;
-let canvas_text: HTMLCanvasElement | null = null;
-export let ctx_text: CanvasRenderingContext2D = null;
-
-function create_text_ctx():void
-{
-    canvas_text=document.createElement("canvas");
-    canvas_text.style.backgroundColor="transparent";
-    canvas_text.style.position='absolute';
-    canvas_text.style.top='0px';
-    canvas_text.style.left='0px';
-    canvas_text.style.borderWidth='0';
-    canvas_text.style.borderStyle='none';
-    canvas_text.style.pointerEvents='none';
-    canvas_text.style.font='12px sans-serif';
-    canvas_text.width=canvas.scrollWidth*scale_text;
-    canvas_text.height=canvas.scrollHeight*scale_text;
-
-    document.body.appendChild(canvas_text);
-    ctx_text=canvas_text.getContext("2d");
-    ctx_text.font="20px monospace";
-}
-
 let prev_time: number = 0;
 
 function document_on_copy(event: ClipboardEvent): void {
@@ -71,12 +48,9 @@ function document_on_paste(event: ClipboardEvent): void {
 
 function window_on_resize(): void {
     if (canvas !== null) {
-        canvas.width = canvas.scrollWidth*scale_text;
-        canvas.height = canvas.scrollHeight*scale_text;
-        if(canvas_text) {
-            canvas_text.width=canvas.scrollWidth*scale_text;
-            canvas_text.height=canvas.scrollHeight*scale_text;
-        }
+        let scale=window.devicePixelRatio;
+        canvas.width = canvas.scrollWidth*scale;
+        canvas.height = canvas.scrollHeight*scale;
     }
 }
 
@@ -281,8 +255,6 @@ export function Init(value: HTMLCanvasElement | WebGL2RenderingContext | WebGLRe
             ctx = value;
         }
     }
-
-    scale_text=window.devicePixelRatio;
 
     if (canvas !== null) {
         window_on_resize();
@@ -550,14 +522,11 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
     const io = ImGui.GetIO();
 
     io.Fonts.Fonts.forEach(font=>{
-        let hasNewGlyph=false;
-        font.GlyphToCreate.forEach(gly=>{
-            gly=dom_font.Create(gly, font);
-            font.GlyphCreated(gly);
-            hasNewGlyph=true;
-        })
-        if(hasNewGlyph) {
-            font.ClearGlyphCreated();
+        let glyph=font.GlyphToCreate;
+        while(glyph)   {
+            glyph=dom_font.Create(glyph, font);
+            font.GlyphCreated(glyph);
+            glyph=font.GlyphToCreate;
         }
     });
     dom_font.UpdateTexture();
@@ -575,34 +544,32 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
     }
     draw_data.ScaleClipRects(io.DisplayFramebufferScale);
 
-    if(ctx_text) {
-        ctx_text.clearRect(0,0,ctx_text.canvas.width, ctx_text.canvas.height);
-    }
     const gl2: WebGL2RenderingContext | null = typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext && gl || null;
     const gl_vao: OES_vertex_array_object | null = gl && gl.getExtension("OES_vertex_array_object") || null;
 
     // Backup GL state
-    const last_active_texture: GLenum | null = gl && gl.getParameter(gl.ACTIVE_TEXTURE) || null;
-    const last_program: WebGLProgram | null = gl && gl.getParameter(gl.CURRENT_PROGRAM) || null;
-    const last_texture: WebGLTexture | null = gl && gl.getParameter(gl.TEXTURE_BINDING_2D) || null;
-    const last_array_buffer: WebGLBuffer | null = gl && gl.getParameter(gl.ARRAY_BUFFER_BINDING) || null;
-    const last_element_array_buffer: WebGLBuffer | null = gl && gl.getParameter(gl.ELEMENT_ARRAY_BUFFER_BINDING) || null;
-    const last_vertex_array_object: WebGLVertexArrayObject | WebGLVertexArrayObjectOES | null = gl2 && gl2.getParameter(gl2.VERTEX_ARRAY_BINDING) || gl && gl_vao && gl.getParameter(gl_vao.VERTEX_ARRAY_BINDING_OES) || null;
-    // GLint last_polygon_mode[2]; glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
-    const last_viewport: Int32Array | null = gl && gl.getParameter(gl.VIEWPORT) || null;
-    const last_scissor_box: Int32Array | null = gl && gl.getParameter(gl.SCISSOR_BOX) || null;
-    const last_blend_src_rgb: GLenum | null = gl && gl.getParameter(gl.BLEND_SRC_RGB) || null;
-    const last_blend_dst_rgb: GLenum | null = gl && gl.getParameter(gl.BLEND_DST_RGB) || null;
-    const last_blend_src_alpha: GLenum | null = gl && gl.getParameter(gl.BLEND_SRC_ALPHA) || null;
-    const last_blend_dst_alpha: GLenum | null = gl && gl.getParameter(gl.BLEND_DST_ALPHA) || null;
-    const last_blend_equation_rgb: GLenum | null = gl && gl.getParameter(gl.BLEND_EQUATION_RGB) || null;
-    const last_blend_equation_alpha: GLenum | null = gl && gl.getParameter(gl.BLEND_EQUATION_ALPHA) || null;
-    const last_enable_blend: GLboolean | null = gl && gl.getParameter(gl.BLEND) || null;
-    const last_enable_cull_face: GLboolean | null = gl && gl.getParameter(gl.CULL_FACE) || null;
-    const last_enable_depth_test: GLboolean | null = gl && gl.getParameter(gl.DEPTH_TEST) || null;
-    const last_enable_scissor_test: GLboolean | null = gl && gl.getParameter(gl.SCISSOR_TEST) || null;
-
-    // Setup desired GL state
+    /*
+        const last_active_texture: GLenum | null = gl && gl.getParameter(gl.ACTIVE_TEXTURE) || null;
+        const last_program: WebGLProgram | null = gl && gl.getParameter(gl.CURRENT_PROGRAM) || null;
+        const last_texture: WebGLTexture | null = gl && gl.getParameter(gl.TEXTURE_BINDING_2D) || null;
+        const last_array_buffer: WebGLBuffer | null = gl && gl.getParameter(gl.ARRAY_BUFFER_BINDING) || null;
+        const last_element_array_buffer: WebGLBuffer | null = gl && gl.getParameter(gl.ELEMENT_ARRAY_BUFFER_BINDING) || null;
+        const last_vertex_array_object: WebGLVertexArrayObject | WebGLVertexArrayObjectOES | null = gl2 && gl2.getParameter(gl2.VERTEX_ARRAY_BINDING) || gl && gl_vao && gl.getParameter(gl_vao.VERTEX_ARRAY_BINDING_OES) || null;
+        // GLint last_polygon_mode[2]; glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
+        const last_viewport: Int32Array | null = gl && gl.getParameter(gl.VIEWPORT) || null;
+        const last_scissor_box: Int32Array | null = gl && gl.getParameter(gl.SCISSOR_BOX) || null;
+        const last_blend_src_rgb: GLenum | null = gl && gl.getParameter(gl.BLEND_SRC_RGB) || null;
+        const last_blend_dst_rgb: GLenum | null = gl && gl.getParameter(gl.BLEND_DST_RGB) || null;
+        const last_blend_src_alpha: GLenum | null = gl && gl.getParameter(gl.BLEND_SRC_ALPHA) || null;
+        const last_blend_dst_alpha: GLenum | null = gl && gl.getParameter(gl.BLEND_DST_ALPHA) || null;
+        const last_blend_equation_rgb: GLenum | null = gl && gl.getParameter(gl.BLEND_EQUATION_RGB) || null;
+        const last_blend_equation_alpha: GLenum | null = gl && gl.getParameter(gl.BLEND_EQUATION_ALPHA) || null;
+        const last_enable_blend: GLboolean | null = gl && gl.getParameter(gl.BLEND) || null;
+        const last_enable_cull_face: GLboolean | null = gl && gl.getParameter(gl.CULL_FACE) || null;
+        const last_enable_depth_test: GLboolean | null = gl && gl.getParameter(gl.DEPTH_TEST) || null;
+        const last_enable_scissor_test: GLboolean | null = gl && gl.getParameter(gl.SCISSOR_TEST) || null;
+    */
+        // Setup desired GL state
     // Recreate the VAO every time (this is to easily allow multiple GL contexts to be rendered to. VAO are not shared among GL contexts)
     // The renderer would actually work without any VAO bound, but then our VertexAttrib calls would overwrite the default one currently bound.
     const vertex_array_object: WebGLVertexArrayObject | WebGLVertexArrayObjectOES | null = gl2 && gl2.createVertexArray() || gl_vao && gl_vao.createVertexArrayOES();
@@ -777,22 +744,24 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
     gl_vao && gl_vao.deleteVertexArrayOES(vertex_array_object);
 
     // Restore modified GL state
-    gl && (last_program !== null) && gl.useProgram(last_program);
-    gl && (last_texture !== null) && gl.bindTexture(gl.TEXTURE_2D, last_texture);
-    gl && (last_active_texture !== null) && gl.activeTexture(last_active_texture);
-    gl2 && gl2.bindVertexArray(last_vertex_array_object);
-    gl_vao && gl_vao.bindVertexArrayOES(last_vertex_array_object);
-    gl && (last_array_buffer !== null) && gl.bindBuffer(gl.ARRAY_BUFFER, last_array_buffer);
-    gl && (last_element_array_buffer !== null) && gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, last_element_array_buffer);
-    gl && (last_blend_equation_rgb !== null && last_blend_equation_alpha !== null) && gl.blendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
-    gl && (last_blend_src_rgb !== null && last_blend_src_alpha !== null && last_blend_dst_rgb !== null && last_blend_dst_alpha !== null) && gl.blendFuncSeparate(last_blend_src_rgb, last_blend_src_alpha, last_blend_dst_rgb, last_blend_dst_alpha);
-    gl && (last_enable_blend ? gl.enable(gl.BLEND) : gl.disable(gl.BLEND));
-    gl && (last_enable_cull_face ? gl.enable(gl.CULL_FACE) : gl.disable(gl.CULL_FACE));
-    gl && (last_enable_depth_test ? gl.enable(gl.DEPTH_TEST) : gl.disable(gl.DEPTH_TEST));
-    gl && (last_enable_scissor_test ? gl.enable(gl.SCISSOR_TEST) : gl.disable(gl.SCISSOR_TEST));
-    // glPolygonMode(GL_FRONT_AND_BACK, (GLenum)last_polygon_mode[0]);
-    gl && (last_viewport !== null) && gl.viewport(last_viewport[0], last_viewport[1], last_viewport[2], last_viewport[3]);
-    gl && (last_scissor_box !== null) && gl.scissor(last_scissor_box[0], last_scissor_box[1], last_scissor_box[2], last_scissor_box[3]);
+    /*
+        gl && (last_program !== null) && gl.useProgram(last_program);
+        gl && (last_texture !== null) && gl.bindTexture(gl.TEXTURE_2D, last_texture);
+        gl && (last_active_texture !== null) && gl.activeTexture(last_active_texture);
+        gl2 && gl2.bindVertexArray(last_vertex_array_object);
+        gl_vao && gl_vao.bindVertexArrayOES(last_vertex_array_object);
+        gl && (last_array_buffer !== null) && gl.bindBuffer(gl.ARRAY_BUFFER, last_array_buffer);
+        gl && (last_element_array_buffer !== null) && gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, last_element_array_buffer);
+        gl && (last_blend_equation_rgb !== null && last_blend_equation_alpha !== null) && gl.blendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
+        gl && (last_blend_src_rgb !== null && last_blend_src_alpha !== null && last_blend_dst_rgb !== null && last_blend_dst_alpha !== null) && gl.blendFuncSeparate(last_blend_src_rgb, last_blend_src_alpha, last_blend_dst_rgb, last_blend_dst_alpha);
+        gl && (last_enable_blend ? gl.enable(gl.BLEND) : gl.disable(gl.BLEND));
+        gl && (last_enable_cull_face ? gl.enable(gl.CULL_FACE) : gl.disable(gl.CULL_FACE));
+        gl && (last_enable_depth_test ? gl.enable(gl.DEPTH_TEST) : gl.disable(gl.DEPTH_TEST));
+        gl && (last_enable_scissor_test ? gl.enable(gl.SCISSOR_TEST) : gl.disable(gl.SCISSOR_TEST));
+        // glPolygonMode(GL_FRONT_AND_BACK, (GLenum)last_polygon_mode[0]);
+        gl && (last_viewport !== null) && gl.viewport(last_viewport[0], last_viewport[1], last_viewport[2], last_viewport[3]);
+        gl && (last_scissor_box !== null) && gl.scissor(last_scissor_box[0], last_scissor_box[1], last_scissor_box[2], last_scissor_box[3]);
+    */
 }
 
 export function CreateFontsTexture(): void {

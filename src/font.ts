@@ -80,15 +80,12 @@ export class TexturePage
         glyph.U1=(px+(m.width+2)*this.Scale)*uv_scale;
         glyph.V1=(py+this.FontSize*this.Scale)*uv_scale;
 
-        console.log(text, glyph);
-        console.log(this);
-        //console.log(img_data);
-
         this.Dirty=true;
         return glyph;
     }
 
     UpdateTexture() {
+        console.log(this.FontName + " UpdateTexture");
         this.Texure.Update(this.PixelData);
         this.Dirty=false;
     }
