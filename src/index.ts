@@ -3,6 +3,7 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
+
 let _main:Main;
 
 function _loop(time:number) {
@@ -95,7 +96,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     ImGui.StyleColorsDark();
     ImGui_Impl.SetCanvasScale(window.devicePixelRatio);
 
-    let font =io.Fonts.AddFontDefault();
+    //let font =io.Fonts.AddFontDefault();
 
     const canvas:HTMLCanvasElement=document.getElementById("canvas") as HTMLCanvasElement;
     ImGui_Impl.Init(canvas);

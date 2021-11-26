@@ -161,6 +161,10 @@ void ImFontAtlas::BuildRenderDefaultTexData()
 
 void ImFontAtlas::GetTexDataAsAlpha8(unsigned char** out_pixels, int* out_width, int* out_height, int* out_bytes_per_pixel)
 {
+	if(Fonts.empty())	{
+		AddFontDefault();
+	}
+
     if(TexPixels.empty())   {
         TexPixels.resize(TexWidth*TexHeight);
    	    BuildRenderLinesTexData();
