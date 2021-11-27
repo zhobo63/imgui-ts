@@ -134,8 +134,9 @@ export class Font
     Create(glyph: ImFontGlyph, font:ImFont):ImFontGlyph
     {
         let page=null;
-        for(page of this.texturePage)   {
-            if(page.FontSize==font.FontSize&&page.IsAvailable)  {
+        for(let page2 of this.texturePage)   {
+            if(page2.FontSize==font.FontSize&&page2.IsAvailable)  {
+                page=page2;
                 break;
             }
         }
