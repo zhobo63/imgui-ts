@@ -62,6 +62,8 @@ struct ImFont
     ImFont();
     ~ImFont();
 
+    void Initialize();
+
     IMGUI_API const ImFontGlyph* FindGlyph(ImWchar c) const;
     IMGUI_API const ImFontGlyph* FindGlyphNoFallback(ImWchar c) const;
     float GetCharAdvance(ImWchar c) const;

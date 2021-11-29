@@ -1,22 +1,34 @@
 import { ImFont } from "./imgui";
 import {ImGui, ImGui_Impl } from "./index";
 
+export enum EType
+{
+    eInput,
+    eMultiLine, 
+    ePassword,
+}
+
 export class Input
 {
-    constructor(multiline:boolean)
+    constructor(type:EType)
     {
         let textCol=ImGui.GetStyleColorVec4(ImGui.ImGuiCol.Text);
         let textBg=ImGui.GetStyleColorVec4(ImGui.ImGuiCol.WindowBg);
 
         let input;
-        if(multiline)   {
-            input=document.createElement('textarea');
-            input.style.resize='none';
-        }
-        else 
-        {
+        switch(type)    {
+        case EType.eInput:
             input=document.createElement('input');
             input.type='text';
+            break;
+        case EType.eMultiLine:
+            input=document.createElement('textarea');
+            input.style.resize='none';
+            break;
+        case EType.ePassword:
+            input=document.createElement('input');
+            input.type='password';
+            break;
         }
         input.style.position='fixed';
         input.style.top=0 + 'px';

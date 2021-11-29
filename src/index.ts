@@ -4,6 +4,7 @@ import * as ImGui_Impl from "./imgui_impl"
 export {ImGui, ImGui_Impl}
 
 
+
 let _main:Main;
 
 function _loop(time:number) {
@@ -23,6 +24,7 @@ export class Main
     text_area:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,'whats up multiline');
     text_area2:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,
         '觀自在菩薩，行深般若波羅蜜多時，\n照見五蘊皆空，度一切苦厄。');
+    first:boolean=true;
 
     ImObject(obj:any, id:number=0):number
     {
@@ -57,6 +59,8 @@ export class Main
     }
 
     loop(time:number):void {
+        if(ImGui_Impl.is_contextlost)
+            return;
         if(!ImGui_Impl.any_pointerdown() && time-this.prev_time<1000.0/30)   {
             return;
         }
@@ -64,10 +68,18 @@ export class Main
 
         ImGui_Impl.NewFrame(time);
         ImGui.NewFrame();
+
+        if(this.first)  {
+            ImGui.SetNextWindowPos(new ImGui.ImVec2(0,0));
+            ImGui.SetNextWindowSize(new ImGui.ImVec2(ImGui_Impl.canvas.scrollWidth,ImGui_Impl.canvas.scrollHeight));
+            this.first=false
+        }
+
         ImGui.Begin("Hello");
         ImGui.Text("Version " + ImGui.VERSION);
         ImGui.InputText("Input", this.text);
         ImGui.InputText("Input2", this.text2);
+        ImGui.InputText("Password", this.text, this.text.size, ImGui.InputTextFlags.Password);
         ImGui.InputTextMultiline("Text", this.text_area);
         ImGui.InputTextMultiline("Text2", this.text_area2);
         //this.ImObject(ImGui.GetIO().Fonts);
@@ -96,7 +108,8 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     ImGui.StyleColorsDark();
     ImGui_Impl.SetCanvasScale(window.devicePixelRatio);
 
-    //let font =io.Fonts.AddFontDefault();
+    let font =io.Fonts.AddFontDefault();
+    font.FontName="Microsoft JhengHei";
 
     const canvas:HTMLCanvasElement=document.getElementById("canvas") as HTMLCanvasElement;
     ImGui_Impl.Init(canvas);
@@ -104,4 +117,5 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     _main=new Main;
     window.requestAnimationFrame(_loop);
 });        
+
 

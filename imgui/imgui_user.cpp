@@ -83,6 +83,7 @@ ImFontAtlas::~ImFontAtlas()
 ImFont* ImFontAtlas::AddFontDefault(const ImFontConfig* _font_cfg)
 {
     ImFont *font=IM_NEW(ImFont);
+	font->Initialize();
     ImFontConfig &font_cfg=font->ConfigData;
     font->ConfigDataCount=1;
 
@@ -164,7 +165,6 @@ void ImFontAtlas::GetTexDataAsAlpha8(unsigned char** out_pixels, int* out_width,
 	if(Fonts.empty())	{
 		AddFontDefault();
 	}
-
     if(TexPixels.empty())   {
         TexPixels.resize(TexWidth*TexHeight);
    	    BuildRenderLinesTexData();
@@ -222,6 +222,14 @@ inline ImU8 GetBit(ImU8 *buf,int i)	{return (ImU8)(*(buf+((i)>>3))&(1<<((i)&7)))
 
 ImFont::ImFont()
 {
+}
+ImFont::~ImFont()
+{
+
+}
+
+void ImFont::Initialize()
+{
 	Scale = 1;
 	Glyphs.push_back(ImFontGlyph());	//0	Uncreated
 	Glyphs.push_back(ImFontGlyph());	//1 Wait For Create
@@ -230,13 +238,12 @@ ImFont::ImFont()
     memset(IndexLookup.Data, 0, sizeof(ImWchar)*IndexLookup.size());
 	SpaceX[0]=SpaceX[1]=0;
 }
-ImFont::~ImFont()
-{
-
-}
 
 const ImFontGlyph* ImFont::FindGlyph(ImWchar c) const
 {
+	if(IndexLookup.empty())	{
+		return FallbackGlyph;
+	}
     ImWchar &find=(ImWchar&)(const ImWchar&)IndexLookup[c];
     if(find==0) {
         ImFontGlyph glyph;
@@ -356,6 +363,8 @@ const char* ImFont::CalcWordWrapPositionA(float scale, const char* text, const c
 
 float ImFont::GetCharAdvance(ImWchar c) const
 {
+	if(IndexAdvanceX.empty())
+		return FallbackAdvanceX;
 	return c < 256 ? IndexAdvanceX[c] : IndexAdvanceX[0];
 }
 
@@ -457,7 +466,13 @@ ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, cons
 }
 void ImFont::RenderChar(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col, ImWchar c) const
 {
+	const ImFontGlyph *glyph=FindGlyph(c);
 
+	ImVec2 px(pos.x+glyph->X0, pos.y+glyph->Y0);
+	ImVec2 ps(px.x + glyph->X1, px.y + glyph->Y1);
+	ImVec2 uv0(glyph->U0, glyph->V0);
+	ImVec2 uv1(glyph->U1, glyph->V1);
+	draw_list->AddImage(glyph->TexID, px, ps, uv0, uv1, col);
 }
 void ImFont::RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col, const ImVec4& clip_rect, const char* text_begin, const char* text_end, float wrap_width, bool cpu_fine_clip) const
 {

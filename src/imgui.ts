@@ -6,13 +6,13 @@ export interface RGB { r: number; g: number; b: number; }
 export interface RGBA extends RGB { a: number; }
 
 import * as Bind from "./bind-imgui";
-import { ImGui } from "./index";
-import { Input } from "./input";
+import { Input, EType } from "./input";
 export { Bind };
 
 let bind: Bind.Module;
 let dom_input:Input;
 let dom_inputMultiline:Input;
+let dom_password:Input;
 
 export default async function(value?: Partial<Bind.Module>): Promise<void> {
     return new Promise<void>((resolve: () => void) => {
@@ -3661,21 +3661,31 @@ export function InputText<T>(label: string, buf: ImStringBuffer | Bind.ImAccess<
         //buf(ref_buf[0]);
     }
     if(isMobile.any()||true)   {
+        let inp:Input=null;
         if(IsItemClicked()) {
-            if(!dom_input)  {
-                dom_input=new Input(false);            
-            }            
-            dom_input.setText(text, GetID(label), GetIO().Fonts.CurrentFont);
+            if(flags&ImGuiInputTextFlags.Password)  {
+                if(!dom_password)   {
+                    dom_password=new Input(EType.ePassword);
+                }
+                inp=dom_password;
+            }else {
+                if(!dom_input)  {
+                    dom_input=new Input(EType.eInput);            
+                }      
+                inp=dom_input;
+            }      
+            inp.setText(text, GetID(label), GetIO().Fonts.CurrentFont);
         }
-        if(dom_input && dom_input.isMe(GetID(label))) {
+        inp=flags&ImGuiInputTextFlags.Password?dom_password:dom_input;
+        if(inp && inp.isMe(GetID(label))) {
             let size=GetItemRectSize();
             size.x=CalcItemWidth();        
-            dom_input.setRect(screenPos.x, screenPos.y, size.x, size.y);
+            inp.setRect(screenPos.x, screenPos.y, size.x, size.y);
             if (Array.isArray(buf)) {            
             } else if (buf instanceof ImStringBuffer) {
-                buf.buffer=dom_input.Text;
+                buf.buffer=inp.Text;
             } else {
-                buf(dom_input.Text);
+                buf(inp.Text);
             }
         }
     }
@@ -3705,7 +3715,7 @@ export function InputTextMultiline<T>(label: string, buf: ImStringBuffer | Bind.
     if(isMobile.any()||true)   {
         if(IsItemClicked()) {
             if(!dom_inputMultiline)  {
-                dom_inputMultiline=new Input(true);            
+                dom_inputMultiline=new Input(EType.eMultiLine);            
             }
             dom_inputMultiline.setText(text, GetID(label), GetIO().Fonts.CurrentFont);
         }
@@ -3744,21 +3754,31 @@ export function InputTextWithHint<T>(label: string, hint: string, buf: ImStringB
         //buf(ref_buf[0]);
     }
     if(isMobile.any()||true)   {
+        let inp:Input=null;
         if(IsItemClicked()) {
-            if(!dom_input)  {
-                dom_input=new Input(false);            
-            }
-            dom_input.setText(text, GetID(label), GetIO().Fonts.CurrentFont);
+            if(flags&ImGuiInputTextFlags.Password)  {
+                if(!dom_password)   {
+                    dom_password=new Input(EType.ePassword);
+                }
+                inp=dom_password;
+            }else {
+                if(!dom_input)  {
+                    dom_input=new Input(EType.eInput);            
+                }      
+                inp=dom_input;
+            }      
+            inp.setText(text, GetID(label), GetIO().Fonts.CurrentFont);
         }
-        if(dom_input && dom_input.isMe(GetID(label))) {
+        inp=flags&ImGuiInputTextFlags.Password?dom_password:dom_input;
+        if(inp && inp.isMe(GetID(label))) {
             let size=GetItemRectSize();
             size.x=CalcItemWidth();        
-            dom_input.setRect(screenPos.x, screenPos.y, size.x, size.y);
+            inp.setRect(screenPos.x, screenPos.y, size.x, size.y);
             if (Array.isArray(buf)) {            
             } else if (buf instanceof ImStringBuffer) {
-                buf.buffer=dom_input.Text;
+                buf.buffer=inp.Text;
             } else {
-                buf(dom_input.Text);
+                buf(inp.Text);
             }
         }
     }

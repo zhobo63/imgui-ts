@@ -146,18 +146,24 @@ export class Font
         }
         this.canvas.width=font.FontSize;
         this.canvas.height=font.FontSize;
-
+        this.dirty=true;
         return page.Create(glyph, this.ctx);
     }
     async UpdateTexture() {
+        if(!this.dirty)
+            return;
+        console.log("Font UpdateTexture begin");
         this.texturePage.forEach(page=>{
             if(page.Dirty)  {
                 page.UpdateTexture();
             }
         })
+        console.log("Font UpdateTexture end");
+        this.dirty=false;
     }
 
     texturePage:TexturePage[]=[];
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
+    dirty:boolean=false;
 }

@@ -60,6 +60,8 @@ function window_on_resize(): void {
     if (canvas !== null) {
         canvas.width = canvas.scrollWidth*canvas_scale;
         canvas.height = canvas.scrollHeight*canvas_scale;
+        //canvas.width = canvas.scrollWidth;
+        //canvas.height = canvas.scrollHeight;
     }
 }
 
@@ -201,6 +203,20 @@ function canvas_on_wheel(event: WheelEvent): void  {
     }
 }
 
+export let is_contextlost:boolean=false;
+
+function canvas_on_contextlost(e:Event):void {
+    e.preventDefault();
+    console.log("canvas_on_contextlost");
+    is_contextlost=true;
+}
+
+function canvas_on_contextrestored(e:Event):void {
+    console.log("canvas_on_contextrestored");
+    Init(canvas);
+    is_contextlost=false;
+}
+
 export function Init(value: HTMLCanvasElement | WebGL2RenderingContext | WebGLRenderingContext | CanvasRenderingContext2D | null): void {
     const io = ImGui.GetIO();
 
@@ -293,6 +309,9 @@ export function Init(value: HTMLCanvasElement | WebGL2RenderingContext | WebGLRe
         canvas.addEventListener("contextmenu", canvas_on_contextmenu);
         window.addEventListener("pointerup", canvas_on_pointerup);
         canvas.addEventListener("wheel", canvas_on_wheel);
+
+        canvas.addEventListener( 'webglcontextlost', canvas_on_contextlost, false );
+		canvas.addEventListener( 'webglcontextrestored', canvas_on_contextrestored, false);
     }
 
     // Setup back-end capabilities flags
