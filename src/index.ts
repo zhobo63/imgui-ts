@@ -3,8 +3,6 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
-
-
 let _main:Main;
 
 function _loop(time:number) {

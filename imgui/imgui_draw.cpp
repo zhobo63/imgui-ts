@@ -131,6 +131,7 @@ namespace IMGUI_STB_NAMESPACE
 #endif
 #endif
 
+#ifdef  IMGUI_ENABLE_STB_TRUETYPE
 #ifndef STB_TRUETYPE_IMPLEMENTATION                         // in case the user already have an implementation in the _same_ compilation unit (e.g. unity builds)
 #ifndef IMGUI_DISABLE_STB_TRUETYPE_IMPLEMENTATION
 #define STBTT_malloc(x,u)   ((void)(u), IM_ALLOC(x))
@@ -151,6 +152,7 @@ namespace IMGUI_STB_NAMESPACE
 #include IMGUI_STB_TRUETYPE_FILENAME
 #else
 #include "imstb_truetype.h"
+#endif
 #endif
 #endif
 
@@ -3685,6 +3687,8 @@ void ImGui::RenderColorRectWithAlphaCheckerboard(ImDrawList* draw_list, ImVec2 p
 // Decompression from stb.h (public domain) by Sean Barrett https://github.com/nothings/stb/blob/master/stb.h
 //-----------------------------------------------------------------------------
 
+#ifdef ENABLE_STB_DECOMPRESS
+
 static unsigned int stb_decompress_length(const unsigned char *input)
 {
     return (input[8] << 24) + (input[9] << 16) + (input[10] << 8) + input[11];
@@ -3899,5 +3903,7 @@ static const char* GetDefaultCompressedFontDataTTFBase85()
 {
     return proggy_clean_ttf_compressed_data_base85;
 }
+
+#endif
 
 #endif // #ifndef IMGUI_DISABLE

@@ -2157,13 +2157,21 @@ export class ImFontAtlas
     // ImVec2                      TexUvWhitePixel;    // Texture coordinates to a white pixel
     get TexUvWhitePixel(): Readonly<Bind.reference_ImVec2> { return this.native.TexUvWhitePixel; }
     // ImVector<ImFont*>           Fonts;              // Hold all the fonts returned by AddFont*. Fonts[0] is the default font upon calling ImGui::NewFrame(), use ImGui::PushFont()/PopFont() to change the current font.
-    get Fonts(): ImVector<ImFont> {
+    get Fonts_(): ImVector<ImFont> {        
         const fonts: ImVector<ImFont> = new ImVector<ImFont>();
         this.native.IterateFonts((font: Bind.reference_ImFont) => {
             fonts.push(new ImFont(font));
         });
         return fonts;
     }
+    get Fonts(): ImVector<ImFont> {
+        if(this._Fonts==null)   {
+            this._Fonts=this.Fonts_;
+        }
+        return this._Fonts;
+    }
+    _Fonts:ImVector<ImFont>=null;
+
     // ImVector<CustomRect>        CustomRects;        // Rectangles for packing custom texture data into the atlas.
     // ImVector<ImFontConfig>      ConfigData;         // Internal data
     // int                         CustomRectIds[1];   // Identifiers of custom texture rectangle used by ImFontAtlas/ImDrawList

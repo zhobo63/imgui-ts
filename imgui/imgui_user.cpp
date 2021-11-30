@@ -135,7 +135,6 @@ void ImFontAtlas::BuildRenderDefaultTexData()
 {
 	ImU8* pb = TexPixels.Data + 64;
 	ImU8* pw = TexPixels.Data + 64 + 32 * TexWidth;
-	int iy = 0;
 	for (int y = 0; y < FONT_ATLAS_DEFAULT_TEX_DATA_H; y++) {
 		for (int x = 0; x < FONT_ATLAS_DEFAULT_TEX_DATA_W; x++) {
 			switch (FONT_ATLAS_DEFAULT_TEX_DATA_PIXELS[y * FONT_ATLAS_DEFAULT_TEX_DATA_W + x]) {
@@ -528,7 +527,7 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col
 	//ImDrawIdx* idx_write = draw_list->_IdxWritePtr;
 	//unsigned int vtx_current_idx = draw_list->_VtxCurrentIdx;
 
-	const ImU32 col_untinted = col | ~IM_COL32_A_MASK;
+	//const ImU32 col_untinted = col | ~IM_COL32_A_MASK;
 
 	while (s < text_end)
 	{
