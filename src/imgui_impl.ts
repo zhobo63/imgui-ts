@@ -5,14 +5,14 @@ let clipboard_text: string = "";
 
 export let canvas: HTMLCanvasElement | null = null;
 
-let canvas_scale:number=window.devicePixelRatio;
-export function SetCanvasScale(v:number)
-{
-    canvas_scale=v;
+export let canvas_scale:number=ImGui.isMobile.any()?1:window.devicePixelRatio;
+export let font_scale:number=Math.max(window.devicePixelRatio, 1.5);
+
+export function setCanvasScale(scale:number):void {
+    canvas_scale=scale;
 }
-export function GetCanvasScale():number
-{
-    return canvas_scale;
+export function setFontScale(scale:number):void {
+    font_scale=scale;
 }
 
 export let gl: WebGL2RenderingContext | WebGLRenderingContext | null = null;
@@ -206,26 +206,14 @@ function canvas_on_wheel(event: WheelEvent): void  {
 
 export let is_contextlost:boolean=false;
 export function add_key_event():void {
-    if(ImGui.isMobile.any() && canvas)    {
-        canvas.addEventListener("keydown", canvas_on_keydown);
-        canvas.addEventListener("keyup", canvas_on_keyup);
-        canvas.addEventListener("keypress", canvas_on_keypress);
-    }else {
-        window.addEventListener("keydown", canvas_on_keydown);
-        window.addEventListener("keyup", canvas_on_keyup);
-        window.addEventListener("keypress", canvas_on_keypress);
-    }
+    window.addEventListener("keydown", canvas_on_keydown);
+    window.addEventListener("keyup", canvas_on_keyup);
+    window.addEventListener("keypress", canvas_on_keypress);
 }
 export function remove_key_event():void {
-    if(ImGui.isMobile.any() && canvas)    {
-        canvas.removeEventListener("keydown", canvas_on_keydown);
-        canvas.removeEventListener("keyup", canvas_on_keyup);
-        canvas.removeEventListener("keypress", canvas_on_keypress);
-    }else {
-        window.removeEventListener("keydown", canvas_on_keydown);
-        window.removeEventListener("keyup", canvas_on_keyup);
-        window.removeEventListener("keypress", canvas_on_keypress);
-    }
+    window.removeEventListener("keydown", canvas_on_keydown);
+    window.removeEventListener("keyup", canvas_on_keyup);
+    window.removeEventListener("keypress", canvas_on_keypress);
 }
 
 function canvas_on_contextlost(e:Event):void {
@@ -569,9 +557,7 @@ function toRgba(col:number):string
 
 export let dom_font:Font=new Font;
 
-export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawData()): void {
-    const io = ImGui.GetIO();
-
+async function font_update(io:ImGui.IO) {
     io.Fonts.Fonts.forEach(font=>{
         let glyph=font.GlyphToCreate;
         while(glyph)   {
@@ -580,8 +566,13 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
             glyph=font.GlyphToCreate;
         }
     });
-    dom_font.UpdateTexture();
+    dom_font.UpdateTexture();    
+}
 
+export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawData()): void {
+    const io = ImGui.GetIO();
+
+    font_update(io);
 
     if (draw_data === null) { throw new Error(); }
 

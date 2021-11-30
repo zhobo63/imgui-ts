@@ -2866,7 +2866,7 @@ export function GetDrawData(): ImDrawData | null {
 // IMGUI_API void          ShowFontSelector(const char* label);        // add font selector block (not a window), essentially a combo listing the loaded fonts.
 // IMGUI_API void          ShowUserGuide();                            // add basic help/info block (not a window): how to manipulate ImGui as a end-user (mouse/keyboard controls).
 // IMGUI_API const char*   GetVersion();                               // get the compiled version string e.g. "1.80 WIP" (essentially the value for IMGUI_VERSION from the compiled version of imgui.cpp)
-/*
+
 export function ShowDemoWindow(p_open: Bind.ImScalar<boolean> | null = null): void { bind.ShowDemoWindow(p_open); }
 export function ShowMetricsWindow(p_open: Bind.ImScalar<boolean> | Bind.ImAccess<boolean> | null = null): void {
     if (p_open === null) {
@@ -2907,7 +2907,7 @@ export function ShowStyleEditor(ref: ImGuiStyle | null = null): void {
 export function ShowStyleSelector(label: string): boolean { return bind.ShowStyleSelector(label); }
 export function ShowFontSelector(label: string): void { bind.ShowFontSelector(label); }
 export function ShowUserGuide(): void { bind.ShowUserGuide(); }
-*/
+
 export function GetVersion(): string { return bind.GetVersion(); }
 
 // Styles

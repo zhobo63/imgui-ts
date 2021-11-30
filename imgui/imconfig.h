@@ -107,7 +107,7 @@ namespace ImGui
     void MyFunction(const char* name, const MyMatrix44& v);
 }
 */
-
+#define HAVE_IMGUI_DEMO
 #define IMGUI_INCLUDE_IMGUI_USER_H
 #define USE_EXTERNAL_FONT
 

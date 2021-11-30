@@ -10,7 +10,7 @@ export class TexturePage
     {
         let font_size=font.FontSize;
         this.FontName= font_size + "px " + font.FontName;
-        this.Scale=ImGui_Impl.GetCanvasScale();
+        this.Scale=ImGui_Impl.font_scale;
         this.TextureSize=tex_size;
         this.FontSize=font_size;
         this.SpaceX=font.SpaceX;
@@ -25,7 +25,7 @@ export class TexturePage
         let gl=ImGui_Impl.gl;
         this.Texure=new Texture();
         this.Texure._srcType=gl.UNSIGNED_SHORT_4_4_4_4;
-        if(this.Scale==window.devicePixelRatio) {
+        if(this.Scale==ImGui_Impl.canvas_scale) {
             this.Texure._minFilter=gl.NEAREST;
             this.Texure._magFilter=gl.NEAREST;
         }
@@ -71,13 +71,14 @@ export class TexturePage
         }        
 
         glyph.X0=0;
+        //glyph.Y0=m.fontBoundingBoxDescent-this.FontSize;
         glyph.Y0=m.fontBoundingBoxAscent;
         glyph.X1=m.width+2;
         glyph.Y1=this.FontSize;
         glyph.AdvanceX=(m.width)+(glyph.Char<256?this.SpaceX[0]:this.SpaceX[1]);
         let uv_scale=1.0/(this.TextureSize);
         glyph.U0=(px)*uv_scale;
-        glyph.V0=(py+FONT_SPACE)*uv_scale;
+        glyph.V0=(py+2.5*this.Scale)*uv_scale;
         glyph.U1=(px+(m.width+2)*this.Scale)*uv_scale;
         glyph.V1=glyph.V0+(this.FontSize*this.Scale)*uv_scale;
 

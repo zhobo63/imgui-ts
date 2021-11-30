@@ -46,7 +46,7 @@ struct ImFont
     const ImFontGlyph* FallbackGlyph;      // 4-8   // out // = FindGlyph(FontFallbackChar)
 
     ImFontAtlas* ContainerAtlas;     // 4-8   // out //            // What we has been loaded into
-    ImFontConfig ConfigData;         // 4-8   // in  //            // Pointer within ContainerAtlas->ConfigData
+    ImFontConfig ConfigData[1];      // 4-8   // in  //            // Pointer within ContainerAtlas->ConfigData
     short        ConfigDataCount;    // 2     // in  // ~ 1        // Number of ImFontConfig involved in creating this font. Bigger than 1 when merging multiple font sources into one ImFont.
 
     ImWchar                     FallbackChar;       // 2     // out // = FFFD/'?' // Character used if a glyph isn't found.
@@ -78,6 +78,14 @@ struct ImFont
 
     void GlyphCreated(const ImFontGlyph &glyph);
     void ClearGlyphCreated()    {GlyphsToCreate.clear();}
+
+    char DebugName[32]={0};
+    const char* GetDebugName() {
+        if(!DebugName[0])   {
+            sprintf(DebugName, "%dpx %s", (int)FontSize, FontName.c_str());
+        }
+        return DebugName;
+    }
 };
 
 #endif

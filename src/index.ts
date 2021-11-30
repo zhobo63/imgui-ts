@@ -3,6 +3,8 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
+
+
 let _main:Main;
 
 function _loop(time:number) {
@@ -81,15 +83,17 @@ export class Main
         ImGui.InputText("Password", this.text, this.text.size, ImGui.InputTextFlags.Password);
         ImGui.InputTextMultiline("Text", this.text_area);
         ImGui.InputTextMultiline("Text2", this.text_area2);
+        ImGui.TextWrapped(this.text_area2.buffer);
         ImGui.SliderFloat4("Slider", this.v4, 0,100);
         ImGui.InputFloat4("Float4", this.v4);
         //this.ImObject(ImGui.GetIO().Fonts);
         ImGui.TextColored(new ImGui.ImVec4(0,1,0,1), "FontTexturePool");
         ImGui_Impl.dom_font.texturePage.forEach(page=>{
-            ImGui.Image(page.Texure._texture, new ImGui.ImVec2(512/window.devicePixelRatio,512/window.devicePixelRatio));
+            ImGui.Image(page.Texure._texture, new ImGui.ImVec2(512,512));
         })
-
         ImGui.End();
+        ImGui.ShowDemoWindow();
+
         ImGui.EndFrame();
         ImGui.Render();
 
@@ -105,10 +109,13 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     console.log("ImGui.CreateContext() VERSION=", ImGui.VERSION);
 
     ImGui.CreateContext();
-    const io:ImGui.IO=ImGui.GetIO();
     ImGui.StyleColorsDark();
-    ImGui_Impl.SetCanvasScale(window.devicePixelRatio);
+    if(ImGui.isMobile.any())    {
+        ImGui_Impl.setCanvasScale(1);
+        ImGui_Impl.setFontScale(1.5)
+    }
 
+    const io:ImGui.IO=ImGui.GetIO();
     let font =io.Fonts.AddFontDefault();
     font.FontName="Microsoft JhengHei";
 

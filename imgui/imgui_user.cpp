@@ -5,6 +5,10 @@
 #endif
 #include "imgui_internal.h"
 
+#ifdef HAVE_IMGUI_DEMO
+#include "imgui_demo.cpp"
+#endif
+
 extern ImGuiContext*   GImGui;
 
 ImFont* GetCurrentFont()
@@ -84,7 +88,7 @@ ImFont* ImFontAtlas::AddFontDefault(const ImFontConfig* _font_cfg)
 {
     ImFont *font=IM_NEW(ImFont);
 	font->Initialize();
-    ImFontConfig &font_cfg=font->ConfigData;
+    ImFontConfig &font_cfg=font->ConfigData[0];
     font->ConfigDataCount=1;
 
     font_cfg = _font_cfg ? *_font_cfg : ImFontConfig();

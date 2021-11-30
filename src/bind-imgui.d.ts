@@ -1109,13 +1109,13 @@ export interface Module extends Emscripten.EmscriptenModule {
     // IMGUI_API void          ShowFontSelector(const char* label);        // add font selector block (not a window), essentially a combo listing the loaded fonts.
     // IMGUI_API void          ShowUserGuide();                            // add basic help/info block (not a window): how to manipulate ImGui as a end-user (mouse/keyboard controls).
     // IMGUI_API const char*   GetVersion();                               // get the compiled version string e.g. "1.80 WIP" (essentially the value for IMGUI_VERSION from the compiled version of imgui.cpp)
-    //ShowDemoWindow(p_open: ImScalar<boolean> | null): void;
-    //ShowMetricsWindow(p_open: ImScalar<boolean> | null): void;
-    //ShowAboutWindow(p_open: ImScalar<boolean> | null): void;
-    //ShowStyleEditor(ref: ImGuiStyle | null): void;
-    //ShowStyleSelector(label: string): boolean;
-    //ShowFontSelector(label: string): void;
-    //ShowUserGuide(): void;
+    ShowDemoWindow(p_open: ImScalar<boolean> | null): void;
+    ShowMetricsWindow(p_open: ImScalar<boolean> | null): void;
+    ShowAboutWindow(p_open: ImScalar<boolean> | null): void;
+    ShowStyleEditor(ref: ImGuiStyle | null): void;
+    ShowStyleSelector(label: string): boolean;
+    ShowFontSelector(label: string): void;
+    ShowUserGuide(): void;
     GetVersion(): string;
 
     // Styles
