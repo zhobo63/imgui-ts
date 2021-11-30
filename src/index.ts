@@ -3,8 +3,6 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
-
-
 let _main:Main;
 
 function _loop(time:number) {
@@ -12,7 +10,7 @@ function _loop(time:number) {
     window.requestAnimationFrame(_loop);
 }
 
-export class Main
+class Main
 {
     constructor()
     {
@@ -93,6 +91,7 @@ export class Main
         })
         ImGui.End();
         ImGui.ShowDemoWindow();
+        ImGui.ShowMetricsWindow();
 
         ImGui.EndFrame();
         ImGui.Render();

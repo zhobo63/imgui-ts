@@ -615,7 +615,6 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
         // Setup desired GL state
     // Recreate the VAO every time (this is to easily allow multiple GL contexts to be rendered to. VAO are not shared among GL contexts)
     // The renderer would actually work without any VAO bound, but then our VertexAttrib calls would overwrite the default one currently bound.
-    const vertex_array_object: WebGLVertexArrayObject | WebGLVertexArrayObjectOES | null = gl2 && gl2.createVertexArray() || gl_vao && gl_vao.createVertexArrayOES();
 
     // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
     gl && gl.enable(gl.BLEND);
@@ -643,9 +642,13 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
     gl && gl.uniform1i(g_AttribLocationTex, 0);
     gl && g_AttribLocationProjMtx && gl.uniformMatrix4fv(g_AttribLocationProjMtx, false, ortho_projection);
 
-    gl2 && gl2.bindVertexArray(vertex_array_object);
-    gl_vao && gl_vao.bindVertexArrayOES(vertex_array_object);
-
+    const enable_vao=false;
+    let vertex_array_object: WebGLVertexArrayObject | WebGLVertexArrayObjectOES | null;
+    if(enable_vao) {
+        vertex_array_object = gl2 && gl2.createVertexArray() || gl_vao && gl_vao.createVertexArrayOES();
+        gl2 && gl2.bindVertexArray(vertex_array_object);
+        gl_vao && gl_vao.bindVertexArrayOES(vertex_array_object);
+    }
     // Render command lists
     gl && gl.bindBuffer(gl.ARRAY_BUFFER, g_VboHandle);
     gl && gl.enableVertexAttribArray(g_AttribLocationPosition);
@@ -665,14 +668,17 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
         gl || ctx || console.log("IdxBuffer.length", draw_list.IdxBuffer.length);
             
         let idx_buffer_offset: number = 0;
+        const vx=draw_list.VtxBuffer;
+        const ix=draw_list.IdxBuffer;
+        const ixU16=new Uint16Array(ix.buffer.slice(ix.byteOffset, ix.byteOffset+ix.byteLength));
 
-        if(draw_list.VtxBuffer) {
+        if(vx) {
             gl && gl.bindBuffer(gl.ARRAY_BUFFER, g_VboHandle);
-            gl && gl.bufferData(gl.ARRAY_BUFFER, draw_list.VtxBuffer, gl.STREAM_DRAW);
+            gl && gl.bufferData(gl.ARRAY_BUFFER, vx, gl.STREAM_DRAW);
         }
-        if(draw_list.IdxBuffer) {
+        if(ixU16) {
             gl && gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
-            gl && gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, draw_list.IdxBuffer, gl.STREAM_DRAW);
+            gl && gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, ixU16, gl.STREAM_DRAW);
         }
         draw_list.IterateDrawCmds((draw_cmd: ImGui.DrawCmd): void => {
             gl || ctx || console.log(draw_cmd);
@@ -783,9 +789,13 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
     });
 
     // Destroy the temporary VAO
-    gl2 && gl2.deleteVertexArray(vertex_array_object);
-    gl_vao && gl_vao.deleteVertexArrayOES(vertex_array_object);
-
+    if(enable_vao) {
+        gl2 && gl2.deleteVertexArray(vertex_array_object);
+        gl_vao && gl_vao.deleteVertexArrayOES(vertex_array_object);
+    }else {
+        gl && gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl && gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+    }
     // Restore modified GL state
     
         //gl && (last_program !== null) && gl.useProgram(last_program);
