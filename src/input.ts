@@ -87,9 +87,11 @@ export class Input
     {
         let input=this._dom_input;
         if(b) {
+            ImGui_Impl.remove_key_event();
             input.style.display='inline-block';
             input.focus();
         }else {
+            ImGui_Impl.add_key_event();
             input.style.display='none';
         }
         this.isVisible=b;

@@ -23,6 +23,7 @@ export class Main
     text_area2:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,
         '觀自在菩薩，行深般若波羅蜜多時，\n照見五蘊皆空，度一切苦厄。');
     first:boolean=true;
+    v4:ImGui.Vec4=new ImGui.Vec4;
 
     ImObject(obj:any, id:number=0):number
     {
@@ -80,6 +81,8 @@ export class Main
         ImGui.InputText("Password", this.text, this.text.size, ImGui.InputTextFlags.Password);
         ImGui.InputTextMultiline("Text", this.text_area);
         ImGui.InputTextMultiline("Text2", this.text_area2);
+        ImGui.SliderFloat4("Slider", this.v4, 0,100);
+        ImGui.InputFloat4("Float4", this.v4);
         //this.ImObject(ImGui.GetIO().Fonts);
         ImGui.TextColored(new ImGui.ImVec4(0,1,0,1), "FontTexturePool");
         ImGui_Impl.dom_font.texturePage.forEach(page=>{

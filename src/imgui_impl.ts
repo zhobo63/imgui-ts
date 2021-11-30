@@ -88,6 +88,7 @@ function canvas_on_blur(event: FocusEvent): void {
     for (let i = 0; i < io.MouseDown.length; ++i) {
         io.MouseDown[i] = false;
     }
+    console.log("canvas_on_blur");
 }
 
 const key_code_to_index: Record<string, number> = {
@@ -204,6 +205,28 @@ function canvas_on_wheel(event: WheelEvent): void  {
 }
 
 export let is_contextlost:boolean=false;
+export function add_key_event():void {
+    if(ImGui.isMobile.any() && canvas)    {
+        canvas.addEventListener("keydown", canvas_on_keydown);
+        canvas.addEventListener("keyup", canvas_on_keyup);
+        canvas.addEventListener("keypress", canvas_on_keypress);
+    }else {
+        window.addEventListener("keydown", canvas_on_keydown);
+        window.addEventListener("keyup", canvas_on_keyup);
+        window.addEventListener("keypress", canvas_on_keypress);
+    }
+}
+export function remove_key_event():void {
+    if(ImGui.isMobile.any() && canvas)    {
+        canvas.removeEventListener("keydown", canvas_on_keydown);
+        canvas.removeEventListener("keyup", canvas_on_keyup);
+        canvas.removeEventListener("keypress", canvas_on_keypress);
+    }else {
+        window.removeEventListener("keydown", canvas_on_keydown);
+        window.removeEventListener("keyup", canvas_on_keyup);
+        window.removeEventListener("keypress", canvas_on_keypress);
+    }
+}
 
 function canvas_on_contextlost(e:Event):void {
     e.preventDefault();
@@ -295,15 +318,7 @@ export function Init(value: HTMLCanvasElement | WebGL2RenderingContext | WebGLRe
         window_on_resize();
         canvas.style.touchAction = "none"; // Disable browser handling of all panning and zooming gestures.
         canvas.addEventListener("blur", canvas_on_blur);
-        //if(ImGui.isMobile.any())    {
-            canvas.addEventListener("keydown", canvas_on_keydown);
-            canvas.addEventListener("keyup", canvas_on_keyup);
-            canvas.addEventListener("keypress", canvas_on_keypress);
-        //}else {
-        //    window.addEventListener("keydown", canvas_on_keydown);
-        //    window.addEventListener("keyup", canvas_on_keyup);
-        //    window.addEventListener("keypress", canvas_on_keypress);
-        //}
+        add_key_event();
         canvas.addEventListener("pointermove", canvas_on_pointermove);
         window.addEventListener("pointerdown", canvas_on_pointerdown);
         canvas.addEventListener("contextmenu", canvas_on_contextmenu);
@@ -347,11 +362,9 @@ export function Init(value: HTMLCanvasElement | WebGL2RenderingContext | WebGLRe
 export function Shutdown(): void {
     DestroyDeviceObjects();
 
+    remove_key_event();
     if (canvas !== null) {
         canvas.removeEventListener("blur", canvas_on_blur);
-        canvas.removeEventListener("keydown", canvas_on_keydown);
-        canvas.removeEventListener("keyup", canvas_on_keyup);
-        canvas.removeEventListener("keypress", canvas_on_keypress);
         canvas.removeEventListener("pointermove", canvas_on_pointermove);
         canvas.removeEventListener("pointerdown", canvas_on_pointerdown);
         canvas.removeEventListener("contextmenu", canvas_on_contextmenu);
