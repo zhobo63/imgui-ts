@@ -15,6 +15,8 @@ export class TexturePage
         this.FontSize=font_size;
         this.SpaceX=font.SpaceX;
         this.FontImageSize=Math.ceil((font_size+FONT_SPACE)*this.Scale);
+        this.Ascent=font.Ascent;
+        this.Descent=font.Descent;
 
         this.PixelData=new Uint16Array(tex_size*tex_size);
 
@@ -52,13 +54,13 @@ export class TexturePage
         ctx.canvas.width=image_size;
         ctx.canvas.height=image_size;
         ctx.textAlign='left';
-        ctx.textBaseline='top';
+        ctx.textBaseline='hanging';
         ctx.font=this.FontName;
         ctx.clearRect(0,0,image_size,image_size);
         ctx.scale(this.Scale, this.Scale);
+        let m=ctx.measureText(text);
         ctx.fillText(text, 1, 1);
         //ctx.strokeRect(0,0,image_size-FONT_SPACE, image_size-FONT_SPACE);
-        let m=ctx.measureText(text);
         ctx.restore();
         const img_data=ctx.getImageData(0,0,image_size, image_size);
         const img_data_u32=new Uint32Array(img_data.data.buffer);
@@ -71,14 +73,13 @@ export class TexturePage
         }        
 
         glyph.X0=0;
-        //glyph.Y0=m.fontBoundingBoxDescent-this.FontSize;
-        glyph.Y0=m.fontBoundingBoxAscent;
+        glyph.Y0=this.Descent;
         glyph.X1=m.width+2;
         glyph.Y1=this.FontSize;
         glyph.AdvanceX=(m.width)+(glyph.Char<256?this.SpaceX[0]:this.SpaceX[1]);
         let uv_scale=1.0/(this.TextureSize);
         glyph.U0=(px)*uv_scale;
-        glyph.V0=(py+2.5*this.Scale)*uv_scale;
+        glyph.V0=(py+this.Ascent*this.Scale)*uv_scale;
         glyph.U1=(px+(m.width+2)*this.Scale)*uv_scale;
         glyph.V1=glyph.V0+(this.FontSize*this.Scale)*uv_scale;
 
@@ -106,6 +107,8 @@ export class TexturePage
     Texure:Texture;
     Dirty:boolean=false;
     SpaceX:number[];
+    Ascent:number=0;
+    Descent:number=0;
 }
 
 export class Font

@@ -109,6 +109,7 @@ ImFont* ImFontAtlas::AddFontDefault(const ImFontConfig* _font_cfg)
 	font->FontName=font_cfg.Name;
     font->ContainerAtlas=this;
     font->FontSize=font_cfg.SizePixels;
+	font->Descent=1;
     Fonts.push_back(font);
 	return font;
 }
@@ -225,6 +226,10 @@ inline ImU8 GetBit(ImU8 *buf,int i)	{return (ImU8)(*(buf+((i)>>3))&(1<<((i)&7)))
 
 ImFont::ImFont()
 {
+	Scale = 1;
+	Ascent=Descent=0;
+	SpaceX[0]=SpaceX[1]=0;
+	MetricsTotalSurface=0;
 }
 ImFont::~ImFont()
 {
@@ -233,13 +238,11 @@ ImFont::~ImFont()
 
 void ImFont::Initialize()
 {
-	Scale = 1;
 	Glyphs.push_back(ImFontGlyph());	//0	Uncreated
 	Glyphs.push_back(ImFontGlyph());	//1 Wait For Create
     IndexAdvanceX.resize(256);
     IndexLookup.resize(65536);
     memset(IndexLookup.Data, 0, sizeof(ImWchar)*IndexLookup.size());
-	SpaceX[0]=SpaceX[1]=0;
 }
 
 const ImFontGlyph* ImFont::FindGlyph(ImWchar c) const

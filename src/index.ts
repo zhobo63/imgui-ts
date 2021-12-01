@@ -3,6 +3,8 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
+
+
 let _main:Main;
 
 function _loop(time:number) {
@@ -70,7 +72,8 @@ class Main
 
         if(this.first)  {
             ImGui.SetNextWindowPos(new ImGui.ImVec2(0,0));
-            ImGui.SetNextWindowSize(new ImGui.ImVec2(ImGui_Impl.canvas.scrollWidth,ImGui_Impl.canvas.scrollHeight));
+            if(ImGui.isMobile.any())
+                ImGui.SetNextWindowSize(new ImGui.ImVec2(ImGui_Impl.canvas.scrollWidth,ImGui_Impl.canvas.scrollHeight));
             this.first=false
         }
 
@@ -114,9 +117,10 @@ window.addEventListener('DOMContentLoaded', async ()=>{
         ImGui_Impl.setFontScale(1.5)
     }
 
-    const io:ImGui.IO=ImGui.GetIO();
-    let font =io.Fonts.AddFontDefault();
-    font.FontName="Microsoft JhengHei";
+    //const io:ImGui.IO=ImGui.GetIO();
+    //let font =io.Fonts.AddFontDefault();
+    //font.FontName="Microsoft JhengHei";
+    //font.Ascent=2.5;
 
     const canvas:HTMLCanvasElement=document.getElementById("canvas") as HTMLCanvasElement;
     ImGui_Impl.Init(canvas);

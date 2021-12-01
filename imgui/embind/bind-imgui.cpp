@@ -1045,6 +1045,9 @@ EMSCRIPTEN_BINDINGS(ImFont) {
         CLASS_MEMBER(ImFont, FontName)
         CLASS_MEMBER(ImFont, FontSize)
         CLASS_MEMBER(ImFont, Scale)
+        CLASS_MEMBER(ImFont, Ascent)
+        CLASS_MEMBER(ImFont, Descent)
+        CLASS_MEMBER(ImFont, MetricsTotalSurface)
 
         CLASS_MEMBER_GET_SET(ImFont, SpaceX0, 
             { return emscripten::val(that.SpaceX[0]); }, 

@@ -27,6 +27,8 @@ let g_AttribLocationColor: GLint = -1;
 let g_VboHandle: WebGLBuffer | null = null;
 let g_ElementsHandle: WebGLBuffer | null = null;
 let g_FontTexture: WebGLTexture | null = null;
+const enable_vao:boolean=true;
+let g_vao:WebGLVertexArrayObject;
 
 export let ctx: CanvasRenderingContext2D | null = null;
 
@@ -643,11 +645,12 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
     gl && g_AttribLocationProjMtx && gl.uniformMatrix4fv(g_AttribLocationProjMtx, false, ortho_projection);
 
     const enable_vao=false;
-    let vertex_array_object: WebGLVertexArrayObject | WebGLVertexArrayObjectOES | null;
     if(enable_vao) {
-        vertex_array_object = gl2 && gl2.createVertexArray() || gl_vao && gl_vao.createVertexArrayOES();
-        gl2 && gl2.bindVertexArray(vertex_array_object);
-        gl_vao && gl_vao.bindVertexArrayOES(vertex_array_object);
+        if(!g_vao)  {
+            g_vao = gl2 && gl2.createVertexArray();   // || gl_vao && gl_vao.createVertexArrayOES();
+        }
+        gl2 && gl2.bindVertexArray(g_vao);
+        //gl_vao && gl_vao.bindVertexArrayOES(vertex_array_object);
     }
     // Render command lists
     gl && gl.bindBuffer(gl.ARRAY_BUFFER, g_VboHandle);
@@ -790,8 +793,9 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
 
     // Destroy the temporary VAO
     if(enable_vao) {
-        gl2 && gl2.deleteVertexArray(vertex_array_object);
-        gl_vao && gl_vao.deleteVertexArrayOES(vertex_array_object);
+        gl2 && gl2.bindVertexArray(null);
+        //gl2 && gl2.deleteVertexArray(vertex_array_object);
+        //gl_vao && gl_vao.deleteVertexArrayOES(vertex_array_object);
     }else {
         gl && gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl && gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
@@ -924,6 +928,10 @@ export function CreateDeviceObjects(): void {
 export function DestroyDeviceObjects(): void {
     DestroyFontsTexture();
 
+    const gl2: WebGL2RenderingContext | null = typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext && gl || null;
+    if(g_vao) {
+        gl2 && gl2.deleteVertexArray(g_vao);
+    }
     gl && gl.deleteBuffer(g_VboHandle); g_VboHandle = null;
     gl && gl.deleteBuffer(g_ElementsHandle); g_ElementsHandle = null;
 

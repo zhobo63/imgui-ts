@@ -2182,10 +2182,26 @@ export class ImFontAtlas
 
 // Font runtime data and rendering
 // ImFontAtlas automatically loads a default embedded font for you when you call GetTexDataAsAlpha8() or GetTexDataAsRGBA32().
+
+export interface DOMFontConfig
+{
+    name:string;
+    fontsize:number;
+    ascent?:number;
+    descent?:number;
+}
+
 export { ImFont as Font }
 export class ImFont
 {
     constructor(public readonly native: Bind.reference_ImFont) {}
+
+    public setFont(config:DOMFontConfig):void {
+        this.native.FontName=config.name;
+        this.native.FontSize=config.fontsize;
+        this.native.Ascent=config.ascent?config.ascent:0;
+        this.native.Descent=config.descent?config.descent:0;
+    }
 
     // Members: Hot ~62/78 bytes
     // float                       FontSize;           // <user set>   // Height of characters, set during loading (don't change after loading)
@@ -2239,7 +2255,9 @@ export class ImFont
     get ContainerAtlas(): ImFontAtlas | null { return null; }
     // float                       Ascent, Descent;    //              // Ascent: distance from top to bottom of e.g. 'A' [0..FontSize]
     get Ascent(): number { return this.native.Ascent; }
+    set Ascent(v:number) {this.native.Ascent=v;}
     get Descent(): number { return this.native.Descent; }
+    set Descent(v:number) {this.native.Descent=v;}
     // int                         MetricsTotalSurface;//              // Total surface in pixels to get an idea of the font rasterization/texture cost (not exact, we approximate the cost of padding between glyphs)
     get MetricsTotalSurface(): number { return this.native.MetricsTotalSurface; }
 
