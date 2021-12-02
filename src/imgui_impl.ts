@@ -644,7 +644,6 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
     gl && gl.uniform1i(g_AttribLocationTex, 0);
     gl && g_AttribLocationProjMtx && gl.uniformMatrix4fv(g_AttribLocationProjMtx, false, ortho_projection);
 
-    const enable_vao=false;
     if(enable_vao) {
         if(!g_vao)  {
             g_vao = gl2 && gl2.createVertexArray();   // || gl_vao && gl_vao.createVertexArrayOES();
