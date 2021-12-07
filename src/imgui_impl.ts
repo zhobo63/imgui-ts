@@ -571,10 +571,65 @@ async function font_update(io:ImGui.IO) {
     dom_font.UpdateTexture();    
 }
 
+let current_window_id:ImGui.ImGuiID=0;
+export let scroll_acc:ImGui.ImVec2=new ImGui.ImVec2(0,0);
+let mouse_first_down:boolean=false;
+
+function scroll_update(io:ImGui.IO) {
+    const hoveredWin= ImGui.GetHoveredWindow();
+    const hoveredId= ImGui.GetHoveredID();
+    if(hoveredWin && hoveredId==0)  {
+        if(current_window_id!=hoveredWin.ID)    {
+            current_window_id=hoveredWin.ID;
+            scroll_acc.Set(0,0);
+            mouse_first_down=true;
+        }
+
+        if(hoveredWin.Flags & ImGui.ImGuiWindowFlags.NoMove)    {
+
+            let first_down=false;
+            if(io.MouseDown[0]) {
+                first_down=mouse_first_down;
+                mouse_first_down=false;
+            }else {
+                mouse_first_down=true;
+            }
+            
+            let scroll=new ImGui.ImVec2(hoveredWin.Scroll.x, hoveredWin.Scroll.y);
+            if(hoveredWin.ScrollbarY)   {                
+                if(io.MouseDown[0] && !first_down) {
+                    scroll.y-=io.MouseDelta.y;
+                    scroll_acc.y=io.MouseDelta.y;
+                }else if(Math.abs(scroll_acc.y)>1) {
+                    scroll.y-=scroll_acc.y;
+                    scroll_acc.y*=0.8;
+                }
+                if(scroll.y<0) scroll.y=0;
+                else if(scroll.y>hoveredWin.ScrollMax.y)    {
+                    scroll.y=hoveredWin.ScrollMax.y;
+                }
+                hoveredWin.Scroll=scroll;
+            }
+            if(hoveredWin.ScrollbarX)   {
+                if(io.MouseDown[0]) {
+                    scroll.x-=io.MouseDelta.x;
+                    scroll_acc.x=io.MouseDelta.x;
+                }
+                if(scroll.x<0) scroll.x=0;
+                else if(scroll.x>hoveredWin.ScrollMax.x)    {
+                    scroll.x=hoveredWin.ScrollMax.x;
+                }
+                hoveredWin.Scroll=scroll;
+            }
+        }
+    }
+}
+
 export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawData()): void {
     const io = ImGui.GetIO();
 
     font_update(io);
+    scroll_update(io);    
 
     if (draw_data === null) { throw new Error(); }
 
@@ -817,7 +872,6 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
         // glPolygonMode(GL_FRONT_AND_BACK, (GLenum)last_polygon_mode[0]);
         //gl && (last_viewport !== null) && gl.viewport(last_viewport[0], last_viewport[1], last_viewport[2], last_viewport[3]);
         //gl && (last_scissor_box !== null) && gl.scissor(last_scissor_box[0], last_scissor_box[1], last_scissor_box[2], last_scissor_box[3]);
-    
 }
 
 export function CreateFontsTexture(): void {

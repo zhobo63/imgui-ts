@@ -1052,6 +1052,37 @@ export interface reference_ImGuiIO extends Emscripten.EmscriptenClassReference {
     // IMGUI_API   ImGuiIO();
 }
 
+export interface reference_ImGuiWindow extends Emscripten.EmscriptenClassReference {
+    readonly ID:ImGuiID;
+    Flags:ImGuiWindowFlags;
+    readonly Pos: Readonly<reference_ImVec2>;
+    readonly Size: Readonly<reference_ImVec2>;
+    readonly SizeFull: Readonly<reference_ImVec2>;
+    readonly ContentSize: Readonly<reference_ImVec2>;
+    readonly ContentSizeIdeal: Readonly<reference_ImVec2>;
+    readonly ContentSizeExplicit: Readonly<reference_ImVec2>;
+    readonly WindowPadding: Readonly<reference_ImVec2>;
+    WindowRounding:number;
+    WindowBorderSize:number;
+    readonly Scroll: Readonly<reference_ImVec2>;
+    readonly ScrollMax: Readonly<reference_ImVec2>;
+    readonly ScrollTarget: Readonly<reference_ImVec2>;
+    readonly ScrollTargetCenterRatio: Readonly<reference_ImVec2>;
+    readonly ScrollTargetEdgeSnapDist: Readonly<reference_ImVec2>;
+    readonly ScrollbarSizes: Readonly<reference_ImVec2>;
+    ScrollbarX:boolean;
+    ScrollbarY:boolean;
+    Active:boolean;
+    WasActive:boolean;
+
+    ItemWidthDefault:number;
+
+    ParentWindow:Readonly<reference_ImGuiWindow>;
+    RootWindow:Readonly<reference_ImGuiWindow>;
+    RootWindowForTitleBarHighlight:Readonly<reference_ImGuiWindow>;
+    RootWindowForNav:Readonly<reference_ImGuiWindow>;
+}
+
 export interface Module extends Emscripten.EmscriptenModule {
 
     mallinfo(): mallinfo;
@@ -2019,4 +2050,11 @@ export interface Module extends Emscripten.EmscriptenModule {
     SetAllocatorFunctions(alloc_func: (sz: number, user_data: any) => number, free_func: (ptr: number, user_data: any) => void, user_data: any): void;
     MemAlloc(sz: number): any;
     MemFree(ptr: any): void;
+
+    GetCurrentWindow():reference_ImGuiWindow;
+    GetHoveredWindow():reference_ImGuiWindow;
+    GetHoveredRootWindow():reference_ImGuiWindow;
+    GetActiveWindow():reference_ImGuiWindow;
+    GetHoveredID():ImGuiID;
+    GetHoveredPreviousFrameID():ImGuiID;
 }

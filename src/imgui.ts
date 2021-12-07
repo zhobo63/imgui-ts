@@ -4656,3 +4656,78 @@ export function SetAllocatorFunctions(alloc_func: (sz: number, user_data: any) =
 }
 export function MemAlloc(sz: number): void { bind.MemAlloc(sz); }
 export function MemFree(ptr: any): void { bind.MemFree(ptr); }
+
+export { ImGuiWindow as Window }
+export class ImGuiWindow
+{
+    constructor(public readonly native: Bind.reference_ImGuiWindow) {}
+
+    get ID(): ImGuiID { return this.native.ID; }
+    get Flags():ImGuiWindowFlags {return this.native.Flags;}
+    set Flags(f:ImGuiWindowFlags) {this.native.Flags=f;}
+
+    get Pos(): Readonly<Bind.interface_ImVec2> { return this.native.Pos; }
+    set Pos(v:ImVec2) {this.native.Pos.Set(v.x, v.y);}
+
+    get Size(): Readonly<Bind.interface_ImVec2> { return this.native.Size; }
+    set Size(v:ImVec2) {this.native.Size.Set(v.x, v.y);}
+
+    get SizeFull(): Readonly<Bind.interface_ImVec2> { return this.native.SizeFull; }
+    set SizeFull(v:ImVec2) {this.native.SizeFull.Set(v.x, v.y);}
+
+    get ContentSize(): Readonly<Bind.interface_ImVec2> { return this.native.ContentSize; }
+    set ContentSize(v:ImVec2) {this.native.ContentSize.Set(v.x, v.y);}
+
+    get ContentSizeIdeal(): Readonly<Bind.interface_ImVec2> { return this.native.ContentSizeIdeal; }
+    set ContentSizeIdeal(v:ImVec2) {this.native.ContentSizeIdeal.Set(v.x, v.y);}
+
+    get ContentSizeExplicit(): Readonly<Bind.interface_ImVec2> { return this.native.ContentSizeExplicit; }
+    set ContentSizeExplicit(v:ImVec2) {this.native.ContentSizeExplicit.Set(v.x, v.y);}
+
+    get WindowPadding(): Readonly<Bind.interface_ImVec2> { return this.native.WindowPadding; }
+    set WindowPadding(v:ImVec2) {this.native.WindowPadding.Set(v.x, v.y);}
+
+    get WindowRounding():number {return this.native.WindowRounding;}
+    set WindowRounding(v:number) {this.native.WindowRounding=v;}
+    get WindowBorderSize():number {return this.native.WindowBorderSize;}
+    set WindowBorderSize(v:number) {this.native.WindowBorderSize=v;}
+
+    get Scroll(): Readonly<Bind.interface_ImVec2> { return this.native.Scroll; }
+    set Scroll(v:ImVec2) {this.native.Scroll.Set(v.x, v.y);}
+
+    get ScrollMax(): Readonly<Bind.interface_ImVec2> { return this.native.ScrollMax; }
+    set ScrollMax(v:ImVec2) {this.native.ScrollMax.Set(v.x, v.y);}
+
+    get ScrollTarget(): Readonly<Bind.interface_ImVec2> { return this.native.ScrollTarget; }
+    set ScrollTarget(v:ImVec2) {this.native.ScrollTarget.Set(v.x, v.y);}
+
+    get ScrollTargetCenterRatio(): Readonly<Bind.interface_ImVec2> { return this.native.ScrollTargetCenterRatio; }
+    set ScrollTargetCenterRatio(v:ImVec2) {this.native.ScrollTargetCenterRatio.Set(v.x, v.y);}
+
+    get ScrollTargetEdgeSnapDist(): Readonly<Bind.interface_ImVec2> { return this.native.ScrollTargetEdgeSnapDist; }
+    set ScrollTargetEdgeSnapDist(v:ImVec2) {this.native.ScrollTargetEdgeSnapDist.Set(v.x, v.y);}
+
+    get ScrollbarSizes(): Readonly<Bind.interface_ImVec2> { return this.native.ScrollbarSizes; }
+    set ScrollbarSizes(v:ImVec2) {this.native.ScrollbarSizes.Set(v.x, v.y);}
+
+    get ScrollbarX():boolean {return this.native.ScrollbarX;}
+    get ScrollbarY():boolean {return this.native.ScrollbarY;}
+    get Active():boolean {return this.native.Active;}
+    get WasActive():boolean {return this.native.WasActive;}
+
+    get ItemWidthDefault():number {return this.native.ItemWidthDefault;}
+    set ItemWidthDefault(v:number) {this.native.ItemWidthDefault=v;}
+
+    get ParentWindow():ImGuiWindow {return this.native.ParentWindow?new ImGuiWindow(this.native.ParentWindow):null;}
+    get RootWindow():ImGuiWindow {return this.native.RootWindow?new ImGuiWindow(this.native.RootWindow):null;}
+    get RootWindowForTitleBarHighlight():ImGuiWindow {return this.native.RootWindowForTitleBarHighlight?new ImGuiWindow(this.native.RootWindowForTitleBarHighlight):null;}
+    get RootWindowForNav():ImGuiWindow {return this.native.RootWindowForNav?new ImGuiWindow(this.native.RootWindowForNav):null;}
+}
+
+export function GetCurrentWindow(): ImGuiWindow { return new ImGuiWindow(bind.GetCurrentWindow()); }
+export function GetHoveredWindow(): ImGuiWindow { return bind.GetHoveredWindow()?new ImGuiWindow(bind.GetHoveredWindow()):null; }
+export function GetHoveredRootWindow(): ImGuiWindow { return bind.GetHoveredRootWindow()?new ImGuiWindow(bind.GetHoveredRootWindow()):null; }
+export function GetActiveWindow(): ImGuiWindow { return bind.GetActiveWindow()?new ImGuiWindow(bind.GetActiveWindow()):null; }
+
+export function GetHoveredID():ImGuiID {return bind.GetHoveredID();}
+export function GetHoveredPreviousFrameID():ImGuiID {return bind.GetHoveredPreviousFrameID();}

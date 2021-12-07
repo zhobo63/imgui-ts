@@ -29,6 +29,10 @@ class Main
 
     ImObject(obj:any, id:number=0):number
     {
+        if(obj==null)   {
+            ImGui.Text("(null)");
+            return;
+        }
         Object.entries(obj).forEach(([key, value])=>{
             ImGui.PushID(id);
             id++;
@@ -63,7 +67,7 @@ class Main
         if(ImGui_Impl.is_contextlost)
             return;
         if(!ImGui_Impl.any_pointerdown() && time-this.prev_time<1000.0/30)   {
-            return;
+            //return;
         }
         this.prev_time=time;
 
@@ -87,7 +91,21 @@ class Main
         ImGui.TextWrapped(this.text_area2.buffer);
         ImGui.SliderFloat4("Slider", this.v4, 0,100);
         ImGui.InputFloat4("Float4", this.v4);
-        //this.ImObject(ImGui.GetIO().Fonts);
+        //this.ImObject(ImGui.GetCurrentWindow());
+        let win=ImGui.GetHoveredWindow();
+        if(win) {
+            if(ImGui.TreeNode("HoveredWindow")) {
+                ImGui.Text("ID:" + win.ID);
+                ImGui.InputFloat2("Pos", win.Pos);
+                ImGui.SliderFloat2("Scroll", win.Scroll, 0, win.ScrollMax.y);
+                ImGui.InputFloat2("ScrollMax", win.ScrollMax);
+                ImGui.Text("ScrollbarX:" + win.ScrollbarX);
+                ImGui.Text("ScrollbarY:" + win.ScrollbarY);
+                ImGui.TreePop();
+            }                        
+        }
+        ImGui.Text("HoveredID:" + ImGui.GetHoveredID());
+        ImGui.InputFloat2("scroll_acc",  ImGui_Impl.scroll_acc);
         ImGui.TextColored(new ImGui.ImVec4(0,1,0,1), "FontTexturePool");
         ImGui_Impl.dom_font.texturePage.forEach(page=>{
             ImGui.Image(page.Texure._texture, new ImGui.ImVec2(512,512));

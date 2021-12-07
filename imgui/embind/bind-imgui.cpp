@@ -3131,3 +3131,45 @@ EMSCRIPTEN_BINDINGS(ImGui) {
     emscripten::function("MemAlloc", FUNCTION(emscripten::val, (size_t sz), { void* p = ImGui::MemAlloc(sz); return emscripten::val(p); }), emscripten::allow_raw_pointers());
     emscripten::function("MemFree", FUNCTION(void, (emscripten::val ptr), { void* _ptr = ptr.as<void*>(emscripten::allow_raw_pointers()); ImGui::MemFree(_ptr); }));
 }
+
+#include "imgui_internal.h"
+
+EMSCRIPTEN_BINDINGS(ImGuiWindow) {
+    emscripten::class_<ImGuiWindow>("ImGuiWindow")
+
+    CLASS_MEMBER(ImGuiWindow, ID)
+    CLASS_MEMBER(ImGuiWindow, Flags)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, Pos)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, Size)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, SizeFull)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, ContentSize)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, ContentSizeIdeal)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, ContentSizeExplicit)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, WindowPadding)
+    CLASS_MEMBER(ImGuiWindow, WindowRounding)
+    CLASS_MEMBER(ImGuiWindow, WindowBorderSize)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, Scroll)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, ScrollMax)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, ScrollTarget)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, ScrollTargetCenterRatio)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, ScrollTargetEdgeSnapDist)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, ScrollbarSizes)
+    CLASS_MEMBER(ImGuiWindow, ScrollbarX)
+    CLASS_MEMBER(ImGuiWindow, ScrollbarY)
+    CLASS_MEMBER(ImGuiWindow, Active)
+    CLASS_MEMBER(ImGuiWindow, WasActive)
+
+    CLASS_MEMBER(ImGuiWindow, ItemWidthDefault)
+
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, ParentWindow)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, RootWindow)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, RootWindowForTitleBarHighlight)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiWindow, RootWindowForNav)
+    ;
+    emscripten::function("GetCurrentWindow", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->CurrentWindow); }), emscripten::allow_raw_pointers());
+    emscripten::function("GetHoveredWindow", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredWindow); }), emscripten::allow_raw_pointers());
+    emscripten::function("GetHoveredRootWindow", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredRootWindow); }), emscripten::allow_raw_pointers());
+    emscripten::function("GetActiveWindow", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->ActiveIdWindow); }), emscripten::allow_raw_pointers());
+    emscripten::function("GetHoveredID", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredId); }));
+    emscripten::function("GetHoveredPreviousFrameID", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredIdPreviousFrame); }));
+}

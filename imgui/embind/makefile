@@ -18,7 +18,8 @@ EMS += -s ENVIRONMENT=web
 LIBS += $(EMS)
 
 
-SRC=imgui.o imgui_draw.o imgui_tables.o imgui_widgets.o bind-imgui.o imgui_user.o
+SRC=imgui.o imgui_draw.o imgui_tables.o imgui_widgets.o \
+	bind-imgui.o imgui_user.o
 
 %.o: ../%.cpp
 	$(CXX) $(FLAGS) $(INC) -c -o $@ $<
