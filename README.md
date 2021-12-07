@@ -2,6 +2,32 @@
 
 JavaScript bindings for [Dear ImGui](https://github.com/ocornut/imgui) using [Emscripten](https://github.com/kripken/emscripten) and TypeScript, modularized with webpack for [imgui-js](https://github.com/flyover/imgui-js)
 
+## Notes
+
+* Fonts
+
+```Fonts
+imconfig.h
+USE_EXTERNAL_FONT
+
+Use canvas2d fillText to generate the fonts that used at runtime. 
+```
+
+* Input Text
+
+```Input
+Use overlay document element 'input' for single line text, and 'textarea' for multi-line text input.
+We can input text from mobile now.
+
+TODO InputInt and other function input from mobile
+```
+
+* Slide Content from Mobile
+
+```Slide Window Content
+When window is no_move, we can slide content then HoveredID=0. Usefull for mobile with no mouse wheel.
+```
+
 ## Building
 
 * compile cpp to js
