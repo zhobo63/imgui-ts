@@ -3,6 +3,41 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
+export function ImGuiObject(obj:any, id:number=0):number
+{
+    if(obj==null)   {
+        ImGui.Text("(null)");
+        return;
+    }
+    Object.entries(obj).forEach(([key, value])=>{
+        ImGui.PushID(id);
+        id++;
+        if(value==null) {
+            ImGui.Text(key + ": (null)");
+        }
+        else if(typeof(value)==='object')    {
+            if(ImGui.TreeNode(key)) {
+                id=this.ImObject(value, id+1);
+                ImGui.TreePop();
+            }
+        }    
+        else if(typeof(value)==='number')    {
+            let v=(_:number=value as number):number=>obj[key]=_;
+            ImGui.SetNextItemWidth(100);
+            ImGui.InputFloat(key, v);
+        }
+        else if(typeof(value)==='boolean')    {
+            let v=(_:boolean=value as boolean):boolean=>obj[key]=_;
+            ImGui.SetNextItemWidth(100);
+            ImGui.Checkbox(key, v);
+        }
+        else {
+            ImGui.Text(key + ": " + value);
+        }
+        ImGui.PopID();
+    })
+    return id;
+}
 
 
 let _main:Main;
@@ -27,40 +62,14 @@ class Main
     first:boolean=true;
     v4:ImGui.Vec4=new ImGui.Vec4;
 
-    ImObject(obj:any, id:number=0):number
-    {
-        if(obj==null)   {
-            ImGui.Text("(null)");
-            return;
-        }
-        Object.entries(obj).forEach(([key, value])=>{
-            ImGui.PushID(id);
-            id++;
-            if(value==null) {
-                ImGui.Text(key + ": (null)");
-            }
-            else if(typeof(value)==='object')    {
-                if(ImGui.TreeNode(key)) {
-                    id=this.ImObject(value, id+1);
-                    ImGui.TreePop();
-                }
-            }    
-            else if(typeof(value)==='number')    {
-                let v=(_:number=value as number):number=>obj[key]=_;
-                ImGui.SetNextItemWidth(100);
-                ImGui.InputFloat(key, v);
-            }
-            else if(typeof(value)==='boolean')    {
-                let v=(_:boolean=value as boolean):boolean=>obj[key]=_;
-                ImGui.SetNextItemWidth(100);
-                ImGui.Checkbox(key, v);
-            }
-            else {
-                ImGui.Text(key + ": " + value);
-            }
-            ImGui.PopID();
-        })
-        return id;
+
+    ImGuiWindow(win:ImGui.Window)   {
+        ImGui.Text("ID:" + win.ID);
+        ImGui.InputFloat2("Pos", win.Pos);
+        ImGui.SliderFloat2("Scroll", win.Scroll, 0, win.ScrollMax.y);
+        ImGui.InputFloat2("ScrollMax", win.ScrollMax);
+        ImGui.Text("ScrollbarX:" + win.ScrollbarX);
+        ImGui.Text("ScrollbarY:" + win.ScrollbarY);
     }
 
     loop(time:number):void {
@@ -84,9 +93,11 @@ class Main
         ImGui.Begin("Hello");
         ImGui.Text("Version " + ImGui.VERSION);
         ImGui.InputText("Input", this.text);
+        ImGui.SetNextItemWidth(-ImGui.FLT_MIN);
         ImGui.InputText("Input2", this.text2);
         ImGui.InputText("Password", this.text, this.text.size, ImGui.InputTextFlags.Password);
         ImGui.InputTextMultiline("Text", this.text_area);
+        ImGui.SetNextItemWidth(-ImGui.FLT_MIN);
         ImGui.InputTextMultiline("Text2", this.text_area2);
         ImGui.TextWrapped(this.text_area2.buffer);
         ImGui.SliderFloat4("Slider", this.v4, 0,100);
@@ -95,16 +106,26 @@ class Main
         let win=ImGui.GetHoveredWindow();
         if(win) {
             if(ImGui.TreeNode("HoveredWindow")) {
-                ImGui.Text("ID:" + win.ID);
-                ImGui.InputFloat2("Pos", win.Pos);
-                ImGui.SliderFloat2("Scroll", win.Scroll, 0, win.ScrollMax.y);
-                ImGui.InputFloat2("ScrollMax", win.ScrollMax);
-                ImGui.Text("ScrollbarX:" + win.ScrollbarX);
-                ImGui.Text("ScrollbarY:" + win.ScrollbarY);
+                this.ImGuiWindow(win)
                 ImGui.TreePop();
             }                        
         }
-        ImGui.Text("HoveredID:" + ImGui.GetHoveredID());
+        ImGui.Text("HoveredID:" + ImGui.GetHoveredId());
+        ImGui.Text("ActiveID:" + ImGui.GetActiveId());
+        ImGui.Text("InputTextID:" + ImGui.GetInputTextId());
+        let inpText=ImGui.GetInputTextState(ImGui.GetInputTextId());
+        if(inpText) {
+            if(ImGui.TreeNode("InputText")) {
+                ImGui.Text("ID:" + inpText.ID);
+                ImGui.Text("Flags:" + inpText.Flags);
+                ImGui.InputFloat2("FrameBBMin", inpText.FrameBB.Min);
+                ImGui.InputFloat2("FrameBBMax", inpText.FrameBB.Max);
+                let text:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,inpText.Text);
+                ImGui.InputText("Text", text);
+                ImGui.TreePop();
+            }
+        }
+        
         ImGui.InputFloat2("scroll_acc",  ImGui_Impl.scroll_acc);
         ImGui.TextColored(new ImGui.ImVec4(0,1,0,1), "FontTexturePool");
         ImGui_Impl.dom_font.texturePage.forEach(page=>{

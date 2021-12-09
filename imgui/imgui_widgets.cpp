@@ -3908,6 +3908,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
         const int buf_len = (int)strlen(buf);
         state->InitialTextA.resize(buf_len + 1);    // UTF-8. we use +1 to make sure that .Data is always pointing to at least an empty string.
         memcpy(state->InitialTextA.Data, buf, buf_len + 1);
+        state->Flags=flags;
 
         // Start edition
         const char* buf_end = NULL;
@@ -4017,6 +4018,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
         state->UserFlags = flags;
         state->UserCallback = callback;
         state->UserCallbackData = callback_user_data;
+        state->FrameBB=frame_bb;
 
         // Although we are active we don't prevent mouse from hovering other elements unless we are interacting right now with the widget.
         // Down the line we should have a cleaner library-wide concept of Selected vs Active.
@@ -4277,8 +4279,9 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
                     event_flag = ImGuiInputTextFlags_CallbackHistory;
                     event_key = ImGuiKey_DownArrow;
                 }
-                else if ((flags & ImGuiInputTextFlags_CallbackEdit) && state->Edited)
+                else if ((flags & ImGuiInputTextFlags_CallbackEdit) && (state->Edited || state->ExternEdited))
                 {
+                    state->ExternEdited=false;
                     event_flag = ImGuiInputTextFlags_CallbackEdit;
                 }
                 else if (flags & ImGuiInputTextFlags_CallbackAlways)

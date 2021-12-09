@@ -1832,6 +1832,8 @@ EMSCRIPTEN_BINDINGS(ImGui) {
     emscripten::constant("ImDrawVertUVOffset", IM_OFFSETOF(ImDrawVert, uv));
     emscripten::constant("ImDrawVertColOffset", IM_OFFSETOF(ImDrawVert, col));
 
+    emscripten::constant("FLT_MIN",FLT_MIN);
+    emscripten::constant("FLT_MAX",FLT_MAX);
     // Context creation and access
     // Each context create its own ImFontAtlas by default. You may instance one yourself and pass it to CreateContext() to share a font atlas between imgui contexts.
     // None of those functions is reliant on the current context.
@@ -3134,6 +3136,38 @@ EMSCRIPTEN_BINDINGS(ImGui) {
 
 #include "imgui_internal.h"
 
+EMSCRIPTEN_BINDINGS(ImRect) {
+    emscripten::class_<ImRect>("ImRect")
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImRect, Min)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImRect, Max)
+    ;
+}
+
+EMSCRIPTEN_BINDINGS(ImGuiInputTextState) {
+    emscripten::class_<ImGuiInputTextState>("ImGuiInputTextState")
+
+    CLASS_MEMBER(ImGuiInputTextState, ID)
+    CLASS_MEMBER(ImGuiInputTextState, Flags)
+    CLASS_MEMBER_GET_RAW_REFERENCE(ImGuiInputTextState, FrameBB)
+    CLASS_MEMBER_GET_SET(ImGuiInputTextState, Text, 
+        { 
+            std::string text=that.InitialTextA.Data;
+            return emscripten::val(text); 
+        }, 
+        { 
+            int buf_size=that.TextW.size()-1;
+            const std::string &text = value.as<std::string>(); 
+            that.TextA.resize(text.length()+1);
+            memcpy(that.TextA.Data, text.c_str(), text.length()+1);
+            that.CurLenA=text.length();
+            const char *str=text.c_str();
+            that.CurLenW=ImTextStrFromUtf8(that.TextW.Data, buf_size, str, str+text.length());
+            that.ExternEdited=true;
+        }
+    )
+    ;
+}
+
 EMSCRIPTEN_BINDINGS(ImGuiWindow) {
     emscripten::class_<ImGuiWindow>("ImGuiWindow")
 
@@ -3170,6 +3204,12 @@ EMSCRIPTEN_BINDINGS(ImGuiWindow) {
     emscripten::function("GetHoveredWindow", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredWindow); }), emscripten::allow_raw_pointers());
     emscripten::function("GetHoveredRootWindow", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredRootWindow); }), emscripten::allow_raw_pointers());
     emscripten::function("GetActiveWindow", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->ActiveIdWindow); }), emscripten::allow_raw_pointers());
-    emscripten::function("GetHoveredID", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredId); }));
-    emscripten::function("GetHoveredPreviousFrameID", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredIdPreviousFrame); }));
+    emscripten::function("GetHoveredId", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredId); }));
+    emscripten::function("GetHoveredIdPreviousFrame", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredIdPreviousFrame); }));
+    emscripten::function("GetActiveId", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->ActiveId); }));
+    emscripten::function("GetActiveIdPreviousFrame", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->ActiveIdPreviousFrame); }));
+    emscripten::function("SetActiveId", FUNCTION(void, (ImGuiID id), { ImGui::GetCurrentContext()->ActiveId=id; }));
+
+    emscripten::function("GetInputTextState", FUNCTION(emscripten::val, (ImGuiID id), { ImGuiInputTextState *state=ImGui::GetInputTextState(id); return emscripten::val(state); }), emscripten::allow_raw_pointers());
+    emscripten::function("GetInputTextId", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->InputTextState.ID); }));
 }

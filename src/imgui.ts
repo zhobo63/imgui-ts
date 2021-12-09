@@ -10,14 +10,16 @@ import { Input, EType } from "./input";
 export { Bind };
 
 let bind: Bind.Module;
-let dom_input:Input;
-let dom_inputMultiline:Input;
-let dom_password:Input;
+
+export let FLT_MIN:number;
+export let FLT_MAX:number;
 
 export default async function(value?: Partial<Bind.Module>): Promise<void> {
     return new Promise<void>((resolve: () => void) => {
         Bind.default(value).then((value: Bind.Module): void => {
             bind = value;
+            FLT_MIN=bind.FLT_MIN;
+            FLT_MAX=bind.FLT_MAX;
             resolve();
         });
     });
@@ -3669,7 +3671,6 @@ export function VSliderScalar(label: string, size: Readonly<Bind.interface_ImVec
 // IMGUI_API bool          InputScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 export function InputText<T>(label: string, buf: ImStringBuffer | Bind.ImAccess<string> | Bind.ImScalar<string>, buf_size: number = buf instanceof ImStringBuffer ? buf.size : ImGuiInputTextDefaultSize, flags: ImGuiInputTextFlags = 0, callback: ImGuiInputTextCallback<T> | null = null, user_data: T | null = null): boolean {
     let ret:boolean=false;
-    let screenPos=GetCursorScreenPos();
     let text:string;
     const _callback = callback && ((data: Bind.reference_ImGuiInputTextCallbackData): number => callback(new ImGuiInputTextCallbackData<T>(data, user_data))) || null;
     if (Array.isArray(buf)) {
@@ -3679,48 +3680,17 @@ export function InputText<T>(label: string, buf: ImStringBuffer | Bind.ImAccess<
         const _buf_size: number = Math.min(buf_size, buf.size);
         text=buf.buffer;
         ret = bind.InputText(label, ref_buf, _buf_size, flags, _callback, null);
-        //buf.buffer = ref_buf[0];
+        buf.buffer = ref_buf[0];
     } else {
         const ref_buf: Bind.ImScalar<string> = [ buf() ];
         text=buf();
         ret = bind.InputText(label, ref_buf, buf_size + 1, flags, _callback, null);
-        //buf(ref_buf[0]);
+        buf(ref_buf[0]);
     }
-    if(isMobile.any()||true)   {
-        let inp:Input=null;
-        if(IsItemClicked()) {
-            if(flags&ImGuiInputTextFlags.Password)  {
-                if(!dom_password)   {
-                    dom_password=new Input(EType.ePassword);
-                }
-                inp=dom_password;
-            }else {
-                if(!dom_input)  {
-                    dom_input=new Input(EType.eInput);            
-                }      
-                inp=dom_input;
-            }      
-            inp.setText(text, GetID(label), GetIO().Fonts.CurrentFont);
-        }
-        inp=flags&ImGuiInputTextFlags.Password?dom_password:dom_input;
-        if(inp && inp.isMe(GetID(label))) {
-            let size=GetItemRectSize();
-            size.x=CalcItemWidth();        
-            inp.setRect(screenPos.x, screenPos.y, size.x, size.y);
-            if (Array.isArray(buf)) {            
-            } else if (buf instanceof ImStringBuffer) {
-                buf.buffer=inp.Text;
-            } else {
-                buf(inp.Text);
-            }
-        }
-    }
-
     return ret;
 }
 export function InputTextMultiline<T>(label: string, buf: ImStringBuffer | Bind.ImAccess<string> | Bind.ImScalar<string>, buf_size: number = buf instanceof ImStringBuffer ? buf.size : ImGuiInputTextDefaultSize, size: Readonly<Bind.interface_ImVec2> = ImVec2.ZERO, flags: ImGuiInputTextFlags = 0, callback: ImGuiInputTextCallback<T> | null = null, user_data: T | null = null): boolean {
     let ret:boolean=false;
-    let screenPos=GetCursorScreenPos();
     let text:string;
 
     const _callback = callback && ((data: Bind.reference_ImGuiInputTextCallbackData): number => callback(new ImGuiInputTextCallbackData<T>(data, user_data))) || null;
@@ -3731,37 +3701,17 @@ export function InputTextMultiline<T>(label: string, buf: ImStringBuffer | Bind.
         const _buf_size: number = Math.min(buf_size, buf.size);
         text=buf.buffer;
         ret = bind.InputTextMultiline(label, ref_buf, _buf_size, size, flags, _callback, null);
-        //buf.buffer = ref_buf[0];
+        buf.buffer = ref_buf[0];
     } else {
         const ref_buf: Bind.ImScalar<string> = [ buf() ];
         text=buf();
         ret = bind.InputTextMultiline(label, ref_buf, buf_size, size, flags, _callback, null);
-        //buf(ref_buf[0]);        
-    }
-    if(isMobile.any()||true)   {
-        if(IsItemClicked()) {
-            if(!dom_inputMultiline)  {
-                dom_inputMultiline=new Input(EType.eMultiLine);            
-            }
-            dom_inputMultiline.setText(text, GetID(label), GetIO().Fonts.CurrentFont);
-        }
-        if(dom_inputMultiline && dom_inputMultiline.isMe(GetID(label))) {
-            let size=GetItemRectSize();
-            size.x=CalcItemWidth();        
-            dom_inputMultiline.setRect(screenPos.x, screenPos.y, size.x, size.y);
-            if (Array.isArray(buf)) {            
-            } else if (buf instanceof ImStringBuffer) {
-                buf.buffer=dom_inputMultiline.Text;
-            } else {
-                buf(dom_inputMultiline.Text);
-            }
-        }
+        buf(ref_buf[0]);        
     }
     return ret;
 }
 export function InputTextWithHint<T>(label: string, hint: string, buf: ImStringBuffer | Bind.ImAccess<string> | Bind.ImScalar<string>, buf_size: number = buf instanceof ImStringBuffer ? buf.size : ImGuiInputTextDefaultSize, flags: ImGuiInputTextFlags = 0, callback: ImGuiInputTextCallback<T> | null = null, user_data: T | null = null): boolean {
     let ret:boolean=false;
-    let screenPos=GetCursorScreenPos();
     let text:string;
 
     const _callback = callback && ((data: Bind.reference_ImGuiInputTextCallbackData): number => callback(new ImGuiInputTextCallbackData<T>(data, user_data))) || null;
@@ -3772,41 +3722,12 @@ export function InputTextWithHint<T>(label: string, hint: string, buf: ImStringB
         const _buf_size: number = Math.min(buf_size, buf.size);
         text=buf.buffer;
         ret = bind.InputTextWithHint(label, hint, ref_buf, _buf_size, flags, _callback, null);
-        //buf.buffer = ref_buf[0];
+        buf.buffer = ref_buf[0];
     } else {
         const ref_buf: Bind.ImScalar<string> = [ buf() ];
         text=buf();
         ret = bind.InputTextWithHint(label, hint, ref_buf, buf_size, flags, _callback, null);
-        //buf(ref_buf[0]);
-    }
-    if(isMobile.any()||true)   {
-        let inp:Input=null;
-        if(IsItemClicked()) {
-            if(flags&ImGuiInputTextFlags.Password)  {
-                if(!dom_password)   {
-                    dom_password=new Input(EType.ePassword);
-                }
-                inp=dom_password;
-            }else {
-                if(!dom_input)  {
-                    dom_input=new Input(EType.eInput);            
-                }      
-                inp=dom_input;
-            }      
-            inp.setText(text, GetID(label), GetIO().Fonts.CurrentFont);
-        }
-        inp=flags&ImGuiInputTextFlags.Password?dom_password:dom_input;
-        if(inp && inp.isMe(GetID(label))) {
-            let size=GetItemRectSize();
-            size.x=CalcItemWidth();        
-            inp.setRect(screenPos.x, screenPos.y, size.x, size.y);
-            if (Array.isArray(buf)) {            
-            } else if (buf instanceof ImStringBuffer) {
-                buf.buffer=inp.Text;
-            } else {
-                buf(inp.Text);
-            }
-        }
+        buf(ref_buf[0]);
     }
     return ret;
 }
@@ -4724,10 +4645,30 @@ export class ImGuiWindow
     get RootWindowForNav():ImGuiWindow {return this.native.RootWindowForNav?new ImGuiWindow(this.native.RootWindowForNav):null;}
 }
 
+export { ImGuiInputTextState as InputTextState }
+export class ImGuiInputTextState
+{
+    constructor(public readonly native: Bind.reference_ImGuiInputTextState) {}
+
+    get ID(): ImGuiID { return this.native.ID; }
+    get Flags():ImGuiInputTextFlags {return this.native.Flags;}
+
+    get FrameBB():Readonly<Bind.interface_ImRect> {return this.native.FrameBB;}
+
+    get Text():string {return this.native.Text;}
+    set Text(t:string) {this.native.Text=t;}
+}
+
 export function GetCurrentWindow(): ImGuiWindow { return new ImGuiWindow(bind.GetCurrentWindow()); }
 export function GetHoveredWindow(): ImGuiWindow { return bind.GetHoveredWindow()?new ImGuiWindow(bind.GetHoveredWindow()):null; }
 export function GetHoveredRootWindow(): ImGuiWindow { return bind.GetHoveredRootWindow()?new ImGuiWindow(bind.GetHoveredRootWindow()):null; }
 export function GetActiveWindow(): ImGuiWindow { return bind.GetActiveWindow()?new ImGuiWindow(bind.GetActiveWindow()):null; }
 
-export function GetHoveredID():ImGuiID {return bind.GetHoveredID();}
-export function GetHoveredPreviousFrameID():ImGuiID {return bind.GetHoveredPreviousFrameID();}
+export function GetHoveredId():ImGuiID {return bind.GetHoveredId();}
+export function GetHoveredIdPreviousFrame():ImGuiID {return bind.GetHoveredIdPreviousFrame();}
+export function GetActiveId():ImGuiID {return bind.GetActiveId();}
+export function GetActiveIdPreviousFrame():ImGuiID {return bind.GetActiveIdPreviousFrame();}
+export function SetActiveId(id:ImGuiID) {return bind.SetActiveId(id);}
+
+export function GetInputTextState(id:ImGuiID): ImGuiInputTextState { return new ImGuiInputTextState(bind.GetInputTextState(id)); }
+export function GetInputTextId():ImGuiID {return bind.GetInputTextId();}

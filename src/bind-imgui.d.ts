@@ -1083,6 +1083,20 @@ export interface reference_ImGuiWindow extends Emscripten.EmscriptenClassReferen
     RootWindowForNav:Readonly<reference_ImGuiWindow>;
 }
 
+export interface interface_ImRect {
+    Min:Readonly<reference_ImVec2>;
+    Max:Readonly<reference_ImVec2>;
+}
+
+export interface reference_ImRect extends Emscripten.EmscriptenClassReference, interface_ImRect {}
+
+export interface reference_ImGuiInputTextState extends Emscripten.EmscriptenClassReference {
+    readonly ID:ImGuiID;
+    Flags:ImGuiInputTextFlags;
+    FrameBB:Readonly<reference_ImRect>;
+    Text:string;
+}
+
 export interface Module extends Emscripten.EmscriptenModule {
 
     mallinfo(): mallinfo;
@@ -1101,6 +1115,9 @@ export interface Module extends Emscripten.EmscriptenModule {
     ImDrawVertPosOffset: number;
     ImDrawVertUVOffset: number;
     ImDrawVertColOffset: number;
+
+    FLT_MIN:number;
+    FLT_MAX:number;
 
     ImGuiListClipper: { new(): ImGuiListClipper; };
     ImGuiStyle: { new(): ImGuiStyle; };
@@ -2055,6 +2072,12 @@ export interface Module extends Emscripten.EmscriptenModule {
     GetHoveredWindow():reference_ImGuiWindow;
     GetHoveredRootWindow():reference_ImGuiWindow;
     GetActiveWindow():reference_ImGuiWindow;
-    GetHoveredID():ImGuiID;
-    GetHoveredPreviousFrameID():ImGuiID;
+    GetHoveredId():ImGuiID;
+    GetHoveredIdPreviousFrame():ImGuiID;
+    GetActiveId():ImGuiID;
+    GetActiveIdPreviousFrame():ImGuiID;
+    SetActiveId(id:ImGuiID):void;
+
+    GetInputTextState(id:ImGuiID):reference_ImGuiInputTextState;
+    GetInputTextId():ImGuiID;
 }

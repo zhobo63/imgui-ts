@@ -1,5 +1,6 @@
 import { Font } from "./font";
 import * as ImGui from "./imgui";
+import * as Input from "./input";
 
 let clipboard_text: string = "";
 
@@ -129,7 +130,7 @@ function canvas_on_keyup(event: KeyboardEvent): void  {
 }
 
 function canvas_on_keypress(event: KeyboardEvent): void  {
-    // console.log(event.type, event.key, event.code, event.keyCode);
+    //console.log(event);
     const io = ImGui.GetIO();
     io.AddInputCharacter(event.charCode);
     if (io.WantCaptureKeyboard) {
@@ -166,6 +167,8 @@ export function any_pointerdown():boolean
 }
 
 function canvas_on_pointerdown(event: PointerEvent): void  {
+    if(event.target!=canvas)
+        return;
     const io = ImGui.GetIO();
     io.MousePos.x = event.offsetX;
     io.MousePos.y = event.offsetY;
@@ -216,6 +219,28 @@ export function remove_key_event():void {
     window.removeEventListener("keydown", canvas_on_keydown);
     window.removeEventListener("keyup", canvas_on_keyup);
     window.removeEventListener("keypress", canvas_on_keypress);
+}
+
+export function add_pointer_event():void {
+    if(canvas) {
+        canvas.addEventListener("pointermove", canvas_on_pointermove);
+        canvas.addEventListener("wheel", canvas_on_wheel);
+        //canvas.addEventListener("pointerdown", canvas_on_pointerdown);
+        //canvas.addEventListener("pointerup", canvas_on_pointerup);
+    }
+    window.addEventListener("pointerdown", canvas_on_pointerdown);
+    window.addEventListener("pointerup", canvas_on_pointerup);
+}
+
+export function remove_pointer_event():void {
+    if(canvas) {
+        canvas.removeEventListener("pointermove", canvas_on_pointermove);
+        canvas.removeEventListener("wheel", canvas_on_wheel);
+        //canvas.removeEventListener("pointerdown", canvas_on_pointerdown);
+        //canvas.removeEventListener("pointerup", canvas_on_pointerup);
+    }
+    window.removeEventListener("pointerdown", canvas_on_pointerdown);
+    window.removeEventListener("pointerup", canvas_on_pointerup);
 }
 
 function canvas_on_contextlost(e:Event):void {
@@ -309,11 +334,8 @@ export function Init(value: HTMLCanvasElement | WebGL2RenderingContext | WebGLRe
         canvas.style.touchAction = "none"; // Disable browser handling of all panning and zooming gestures.
         canvas.addEventListener("blur", canvas_on_blur);
         add_key_event();
-        canvas.addEventListener("pointermove", canvas_on_pointermove);
-        window.addEventListener("pointerdown", canvas_on_pointerdown);
+        add_pointer_event();
         canvas.addEventListener("contextmenu", canvas_on_contextmenu);
-        window.addEventListener("pointerup", canvas_on_pointerup);
-        canvas.addEventListener("wheel", canvas_on_wheel);
 
         canvas.addEventListener( 'webglcontextlost', canvas_on_contextlost, false );
 		canvas.addEventListener( 'webglcontextrestored', canvas_on_contextrestored, false);
@@ -353,13 +375,10 @@ export function Shutdown(): void {
     DestroyDeviceObjects();
 
     remove_key_event();
+    remove_pointer_event();
     if (canvas !== null) {
         canvas.removeEventListener("blur", canvas_on_blur);
-        canvas.removeEventListener("pointermove", canvas_on_pointermove);
-        canvas.removeEventListener("pointerdown", canvas_on_pointerdown);
         canvas.removeEventListener("contextmenu", canvas_on_contextmenu);
-        canvas.removeEventListener("pointerup", canvas_on_pointerup);
-        canvas.removeEventListener("wheel", canvas_on_wheel);
     }
 
     gl = null;
@@ -577,7 +596,7 @@ let mouse_first_down:boolean=false;
 
 function scroll_update(io:ImGui.IO) {
     const hoveredWin= ImGui.GetHoveredWindow();
-    const hoveredId= ImGui.GetHoveredID();
+    const hoveredId= ImGui.GetHoveredId();
     if(hoveredWin && hoveredId==0)  {
         if(current_window_id!=hoveredWin.ID)    {
             current_window_id=hoveredWin.ID;
@@ -625,11 +644,55 @@ function scroll_update(io:ImGui.IO) {
     }
 }
 
+let dom_input:Input.Input;
+let current_input_id:ImGui.ImGuiID=0;
+let current_input_text:string;
+
+function input_text_update(io:ImGui.IO):void {
+    const activeId=ImGui.GetActiveId();
+    const inpId=ImGui.GetInputTextId();
+    if(!activeId || activeId!=inpId)    {
+        current_input_id=0;
+        return;
+    }
+    if(current_input_id !=activeId) {
+        dom_input=null;
+    }
+
+    current_input_id=activeId;
+    let inpState=ImGui.GetInputTextState(activeId);
+    let inp:Input.Input=dom_input;
+    if(!inp)  {
+        if(inpState.Flags & ImGui.ImGuiInputTextFlags.Multiline)    {
+            inp=Input.GetInput(Input.EType.eMultiLine);
+        }
+        else if(inpState.Flags & ImGui.ImGuiInputTextFlags.Password)    {
+            inp=Input.GetInput(Input.EType.ePassword);
+        }else {
+            inp=Input.GetInput(Input.EType.eInput);
+        }
+        current_input_text=inpState.Text;
+        inp.setText(current_input_text, activeId, io.Fonts.CurrentFont);
+        dom_input=inp;
+    }
+    let framebb=inpState.FrameBB;
+    inp.setRect(framebb.Min.x, framebb.Min.y, framebb.Max.x-framebb.Min.x, framebb.Max.y-framebb.Min.y);
+    if(current_input_text!==inp.Text) {
+        current_input_text=inp.Text;
+        inpState.Text=inp.Text;
+        console.log(inp.Text);
+    }
+    if(!inp.isVisible)  {
+        ImGui.SetActiveId(0);
+    }
+}
+
 export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawData()): void {
     const io = ImGui.GetIO();
 
     font_update(io);
     scroll_update(io);    
+    input_text_update(io);
 
     if (draw_data === null) { throw new Error(); }
 

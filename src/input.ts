@@ -6,6 +6,7 @@ export enum EType
     eInput,
     eMultiLine, 
     ePassword,
+    eMax,
 }
 
 export class Input
@@ -88,10 +89,12 @@ export class Input
         let input=this._dom_input;
         if(b) {
             ImGui_Impl.remove_key_event();
+            //ImGui_Impl.remove_pointer_event();
             input.style.display='inline-block';
             input.focus();
         }else {
             ImGui_Impl.add_key_event();
+            //ImGui_Impl.add_pointer_event();
             input.style.display='none';
         }
         this.isVisible=b;
@@ -101,3 +104,16 @@ export class Input
     private _id:ImGui.ImGuiID;
     public isVisible:boolean=false;
 }
+
+let dom_input:any={}
+
+export function GetInput(type:EType):Input
+{
+    let inp=dom_input[type];
+    if(!inp)    {
+        inp=new Input(type);
+        dom_input[type]=inp;
+    }
+    return inp;
+}
+
