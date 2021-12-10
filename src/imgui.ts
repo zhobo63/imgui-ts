@@ -4587,49 +4587,49 @@ export class ImGuiWindow
     get Flags():ImGuiWindowFlags {return this.native.Flags;}
     set Flags(f:ImGuiWindowFlags) {this.native.Flags=f;}
 
-    get Pos(): Readonly<Bind.interface_ImVec2> { return this.native.Pos; }
-    set Pos(v:ImVec2) {this.native.Pos.Set(v.x, v.y);}
+    get Pos(): Bind.interface_ImVec2 { return this.native.Pos; }
+    set Pos(v: Bind.interface_ImVec2) {this.native.Pos.Set(v.x, v.y);}
 
-    get Size(): Readonly<Bind.interface_ImVec2> { return this.native.Size; }
-    set Size(v:ImVec2) {this.native.Size.Set(v.x, v.y);}
+    get Size(): Bind.interface_ImVec2 { return this.native.Size; }
+    set Size(v:Bind.interface_ImVec2) {this.native.Size.Set(v.x, v.y);}
 
-    get SizeFull(): Readonly<Bind.interface_ImVec2> { return this.native.SizeFull; }
-    set SizeFull(v:ImVec2) {this.native.SizeFull.Set(v.x, v.y);}
+    get SizeFull(): Bind.interface_ImVec2 { return this.native.SizeFull; }
+    set SizeFull(v:Bind.interface_ImVec2) {this.native.SizeFull.Set(v.x, v.y);}
 
-    get ContentSize(): Readonly<Bind.interface_ImVec2> { return this.native.ContentSize; }
-    set ContentSize(v:ImVec2) {this.native.ContentSize.Set(v.x, v.y);}
+    get ContentSize(): Bind.interface_ImVec2 { return this.native.ContentSize; }
+    set ContentSize(v:Bind.interface_ImVec2) {this.native.ContentSize.Set(v.x, v.y);}
 
-    get ContentSizeIdeal(): Readonly<Bind.interface_ImVec2> { return this.native.ContentSizeIdeal; }
-    set ContentSizeIdeal(v:ImVec2) {this.native.ContentSizeIdeal.Set(v.x, v.y);}
+    get ContentSizeIdeal(): Bind.interface_ImVec2 { return this.native.ContentSizeIdeal; }
+    set ContentSizeIdeal(v:Bind.interface_ImVec2) {this.native.ContentSizeIdeal.Set(v.x, v.y);}
 
-    get ContentSizeExplicit(): Readonly<Bind.interface_ImVec2> { return this.native.ContentSizeExplicit; }
-    set ContentSizeExplicit(v:ImVec2) {this.native.ContentSizeExplicit.Set(v.x, v.y);}
+    get ContentSizeExplicit(): Bind.interface_ImVec2 { return this.native.ContentSizeExplicit; }
+    set ContentSizeExplicit(v:Bind.interface_ImVec2) {this.native.ContentSizeExplicit.Set(v.x, v.y);}
 
-    get WindowPadding(): Readonly<Bind.interface_ImVec2> { return this.native.WindowPadding; }
-    set WindowPadding(v:ImVec2) {this.native.WindowPadding.Set(v.x, v.y);}
+    get WindowPadding(): Bind.interface_ImVec2 { return this.native.WindowPadding; }
+    set WindowPadding(v:Bind.interface_ImVec2) {this.native.WindowPadding.Set(v.x, v.y);}
 
     get WindowRounding():number {return this.native.WindowRounding;}
     set WindowRounding(v:number) {this.native.WindowRounding=v;}
     get WindowBorderSize():number {return this.native.WindowBorderSize;}
     set WindowBorderSize(v:number) {this.native.WindowBorderSize=v;}
 
-    get Scroll(): Readonly<Bind.interface_ImVec2> { return this.native.Scroll; }
-    set Scroll(v:ImVec2) {this.native.Scroll.Set(v.x, v.y);}
+    get Scroll(): Bind.interface_ImVec2 { return this.native.Scroll; }
+    set Scroll(v:Bind.interface_ImVec2) {this.native.Scroll.Set(v.x, v.y);}
 
-    get ScrollMax(): Readonly<Bind.interface_ImVec2> { return this.native.ScrollMax; }
-    set ScrollMax(v:ImVec2) {this.native.ScrollMax.Set(v.x, v.y);}
+    get ScrollMax(): Bind.interface_ImVec2 { return this.native.ScrollMax; }
+    set ScrollMax(v:Bind.interface_ImVec2) {this.native.ScrollMax.Set(v.x, v.y);}
 
-    get ScrollTarget(): Readonly<Bind.interface_ImVec2> { return this.native.ScrollTarget; }
-    set ScrollTarget(v:ImVec2) {this.native.ScrollTarget.Set(v.x, v.y);}
+    get ScrollTarget(): Bind.interface_ImVec2 { return this.native.ScrollTarget; }
+    set ScrollTarget(v:Bind.interface_ImVec2) {this.native.ScrollTarget.Set(v.x, v.y);}
 
-    get ScrollTargetCenterRatio(): Readonly<Bind.interface_ImVec2> { return this.native.ScrollTargetCenterRatio; }
-    set ScrollTargetCenterRatio(v:ImVec2) {this.native.ScrollTargetCenterRatio.Set(v.x, v.y);}
+    get ScrollTargetCenterRatio(): Bind.interface_ImVec2 { return this.native.ScrollTargetCenterRatio; }
+    set ScrollTargetCenterRatio(v:Bind.interface_ImVec2) {this.native.ScrollTargetCenterRatio.Set(v.x, v.y);}
 
-    get ScrollTargetEdgeSnapDist(): Readonly<Bind.interface_ImVec2> { return this.native.ScrollTargetEdgeSnapDist; }
-    set ScrollTargetEdgeSnapDist(v:ImVec2) {this.native.ScrollTargetEdgeSnapDist.Set(v.x, v.y);}
+    get ScrollTargetEdgeSnapDist(): Bind.interface_ImVec2 { return this.native.ScrollTargetEdgeSnapDist; }
+    set ScrollTargetEdgeSnapDist(v:Bind.interface_ImVec2) {this.native.ScrollTargetEdgeSnapDist.Set(v.x, v.y);}
 
-    get ScrollbarSizes(): Readonly<Bind.interface_ImVec2> { return this.native.ScrollbarSizes; }
-    set ScrollbarSizes(v:ImVec2) {this.native.ScrollbarSizes.Set(v.x, v.y);}
+    get ScrollbarSizes(): Bind.interface_ImVec2 { return this.native.ScrollbarSizes; }
+    set ScrollbarSizes(v:Bind.interface_ImVec2) {this.native.ScrollbarSizes.Set(v.x, v.y);}
 
     get ScrollbarX():boolean {return this.native.ScrollbarX;}
     get ScrollbarY():boolean {return this.native.ScrollbarY;}

@@ -40,6 +40,7 @@ export function ImGuiObject(obj:any, id:number=0):number
 }
 
 
+
 let _main:Main;
 
 function _loop(time:number) {
