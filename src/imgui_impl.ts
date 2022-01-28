@@ -1165,6 +1165,35 @@ export class Texture
 
 }
 
+export class TextureCache
+{
+    public constructor() 
+    {
+    }
+
+    public Destroy():void {
+        Object.entries(this.cache).forEach(([key, value])=>{
+            value.Destroy();            
+        });
+        this.cache={};
+    }
+
+    public async Load(name:string, src:string) :Promise<Texture>
+    {
+        var tex: Texture =new Texture();
+        var image=new Image();
+        image.crossOrigin="anonymous";
+        image.src=src;
+        image.onload=()=>{
+            tex.Update(image);
+        }
+        this.cache[name]=tex;
+        return tex;
+    }
+
+    public cache:{[key:string]:Texture}={};
+}
+
 export class FrameBufferObject
 {
     public constructor() 

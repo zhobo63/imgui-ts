@@ -62,7 +62,9 @@ class Main
         '觀自在菩薩，行深般若波羅蜜多時，\n照見五蘊皆空，度一切苦厄。');
     first:boolean=true;
     v4:ImGui.Vec4=new ImGui.Vec4;
-
+    image_src:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,'');
+    textureCache:ImGui_Impl.TextureCache=new ImGui_Impl.TextureCache;
+    image:ImGui_Impl.Texture;
 
     ImGuiWindow(win:ImGui.Window)   {
         ImGui.Text("ID:" + win.ID);
@@ -132,6 +134,18 @@ class Main
         ImGui_Impl.dom_font.texturePage.forEach(page=>{
             ImGui.Image(page.Texure._texture, new ImGui.ImVec2(512,512));
         })
+        if(ImGui.InputText("image_src", this.image_src))    {
+            this.textureCache.Load("img", this.image_src.buffer).then(img=>{
+                this.image=img;
+            });
+        }
+        if(this.image)  {
+            ImGui.Image(this.image._texture, new ImGui.ImVec2(256,256));
+
+            var drawList:ImGui.ImDrawList = ImGui.GetForegroundDrawList();
+            drawList.AddImage(this.image._texture, new ImGui.Vec2(0,0), new ImGui.Vec2(100,100));
+        }
+
         ImGui.End();
         ImGui.ShowDemoWindow();
         ImGui.ShowMetricsWindow();
@@ -168,5 +182,6 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     _main=new Main;
     window.requestAnimationFrame(_loop);
 });        
+
 
 

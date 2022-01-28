@@ -5,17 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "chrome",
+            "type": "firefox",
             "request": "launch",
-            "name": "Launch Chrome",
-            "url": "http://localhost:8080",
+            "reAttach": true,
+            "name": "Launch firefox",
+            "url": "http://localhost:5501/www",
             "webRoot": "${workspaceFolder}"
         },
         {
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
-            "name": "Open index.html",
-            "file": "d:\\hg\\imgui-ts\\www\\index.html"
+            "name": "Launch Chrome",
+            "url": "http://localhost:5501/www",
+            "webRoot": "${workspaceFolder}"
         }
     ]
 }
