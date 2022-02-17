@@ -174,6 +174,8 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     //const io:ImGui.IO=ImGui.GetIO();
     //let font =io.Fonts.AddFontDefault();
     //font.FontName="Microsoft JhengHei";
+    //font.FontName="Arial";
+    //font.FontSize=32;
     //font.Ascent=2.5;
 
     const canvas:HTMLCanvasElement=document.getElementById("canvas") as HTMLCanvasElement;

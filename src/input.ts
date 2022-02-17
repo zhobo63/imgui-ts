@@ -100,7 +100,7 @@ export class Input
         this.isVisible=b;
     }
 
-    private _dom_input:HTMLInputElement|HTMLTextAreaElement;
+    public _dom_input:HTMLInputElement|HTMLTextAreaElement;
     private _id:ImGui.ImGuiID;
     public isVisible:boolean=false;
 }

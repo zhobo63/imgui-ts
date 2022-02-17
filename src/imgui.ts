@@ -1691,7 +1691,7 @@ export class ImDrawList
             const col: Bind.ImU32 = args[3];
             const text_begin: string = args[4];
             const text_end: number | null = args[5] || null;
-            const wrap_width: number = args[6] = 0.0;
+            const wrap_width: number = args[6] ? args[6] : 0.0;
             const cpu_fine_clip_rect: Readonly<Bind.interface_ImVec4> | null = args[7] || null;
             this.native.AddText_B(font.native, font_size, pos, col, text_end !== null ? text_begin.substring(0, text_end) : text_begin, wrap_width, cpu_fine_clip_rect);
         } else {

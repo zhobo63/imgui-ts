@@ -54,7 +54,7 @@ export class TexturePage
         ctx.canvas.width=image_size;
         ctx.canvas.height=image_size;
         ctx.textAlign='left';
-        ctx.textBaseline='hanging';
+        ctx.textBaseline='top';
         ctx.font=this.FontName;
         ctx.clearRect(0,0,image_size,image_size);
         ctx.scale(this.Scale, this.Scale);
