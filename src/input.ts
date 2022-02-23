@@ -1,5 +1,5 @@
 import { ImFont } from "./imgui";
-import {ImGui, ImGui_Impl } from "./index";
+import {ImGui} from "./index";
 
 export enum EType
 {
@@ -11,11 +11,8 @@ export enum EType
 
 export class Input
 {
-    constructor(type:EType)
+    constructor(type:EType, textCol:string, textBg:string)
     {
-        let textCol=ImGui.GetStyleColorVec4(ImGui.ImGuiCol.Text);
-        let textBg=ImGui.GetStyleColorVec4(ImGui.ImGuiCol.WindowBg);
-
         let input;
         switch(type)    {
         case EType.eInput:
@@ -37,8 +34,8 @@ export class Input
         input.style.borderWidth='0';
         input.style.borderStyle='none';
         input.style.zIndex='999';
-        input.style.backgroundColor=this.to_rgba(textBg);
-        input.style.color=this.to_rgba(textCol);
+        input.style.backgroundColor=textBg;
+        input.style.color=textCol;
         input.value="123";
 
         input.addEventListener('blur', (e)=>{this.onLostFocus(e)})
@@ -48,11 +45,8 @@ export class Input
         this.setVisible(false);
     }
 
-    private to_rgba(c:ImGui.ImVec4):string {
-        return "rgba("+c.x*255+","+c.y*255+","+c.z*255+","+c.w*255+")";
-    }
-
     public on_input: ((this: Input, text: string) => any) | null; 
+    public on_visible: ((this: Input, visible: boolean) => any) | null; 
 
     private onLostFocus(e:Event)
     {
@@ -80,7 +74,7 @@ export class Input
     {
         this._id=id;
         let input=this._dom_input;
-        input.style.font=font.FontSize+"px "+font.FontName;
+        input.style.font=ImGui.Font_toString(font);
         input.value=text;
         this.setVisible(true);
     }
@@ -88,16 +82,15 @@ export class Input
     {
         let input=this._dom_input;
         if(b) {
-            ImGui_Impl.remove_key_event();
-            //ImGui_Impl.remove_pointer_event();
             input.style.display='inline-block';
             input.focus();
         }else {
-            ImGui_Impl.add_key_event();
-            //ImGui_Impl.add_pointer_event();
             input.style.display='none';
         }
         this.isVisible=b;
+        if(this.on_visible) {
+            this.on_visible(b);
+        }
     }
 
     public _dom_input:HTMLInputElement|HTMLTextAreaElement;
@@ -105,13 +98,13 @@ export class Input
     public isVisible:boolean=false;
 }
 
-let dom_input:any={}
+export let dom_input:any={}
 
-export function GetInput(type:EType):Input
+export function GetInput(type:EType, textColor:string, textBgColor:string):Input
 {
     let inp=dom_input[type];
     if(!inp)    {
-        inp=new Input(type);
+        inp=new Input(type, textColor, textBgColor);
         dom_input[type]=inp;
     }
     return inp;

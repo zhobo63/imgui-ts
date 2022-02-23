@@ -1,6 +1,6 @@
 import { ImFont, ImFontGlyph } from './imgui'
 import { Texture } from './imgui_impl';
-import { ImGui, ImGui_Impl } from './index';
+import { ImGui_Impl } from './index';
 
 const FONT_SPACE=3;
 
@@ -9,7 +9,7 @@ export class TexturePage
     constructor(tex_size:number, font:ImFont)
     {
         let font_size=font.FontSize;
-        this.FontName= font_size + "px " + font.FontName;
+        this.FontName= font.FontStyle + " " + font_size + "px " + font.FontName;
         this.Scale=ImGui_Impl.font_scale;
         this.TextureSize=tex_size;
         this.FontSize=font_size;

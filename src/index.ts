@@ -39,8 +39,6 @@ export function ImGuiObject(obj:any, id:number=0):number
     return id;
 }
 
-
-
 let _main:Main;
 
 function _loop(time:number) {
@@ -175,6 +173,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     //let font =io.Fonts.AddFontDefault();
     //font.FontName="Microsoft JhengHei";
     //font.FontName="Arial";
+    //font.FontStyle="bold";
     //font.FontSize=32;
     //font.Ascent=2.5;
 

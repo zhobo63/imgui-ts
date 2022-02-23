@@ -582,6 +582,7 @@ export interface reference_ImDrawData extends Emscripten.EmscriptenClassReferenc
 
 export interface reference_ImFont extends Emscripten.EmscriptenClassReference {
     // Members: Hot ~62/78 bytes
+    FontStyle:string;
     FontName:string;
     // float                       FontSize;           // <user set>   // Height of characters, set during loading (don't change after loading)
     FontSize: number;

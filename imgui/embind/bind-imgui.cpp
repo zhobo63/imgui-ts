@@ -1042,6 +1042,7 @@ EMSCRIPTEN_BINDINGS(ImFontAtlas) {
 EMSCRIPTEN_BINDINGS(ImFont) {
     emscripten::class_<ImFont>("ImFont")
 
+        CLASS_MEMBER(ImFont, FontStyle)
         CLASS_MEMBER(ImFont, FontName)
         CLASS_MEMBER(ImFont, FontSize)
         CLASS_MEMBER(ImFont, Scale)

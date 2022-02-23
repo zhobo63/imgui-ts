@@ -243,6 +243,9 @@ void ImFont::Initialize()
     IndexAdvanceX.resize(256);
     IndexLookup.resize(65536);
     memset(IndexLookup.Data, 0, sizeof(ImWchar)*IndexLookup.size());
+	for(int i=0;i<IndexAdvanceX.size();i++)	{
+		IndexAdvanceX[i]=-1;
+	}
 }
 
 const ImFontGlyph* ImFont::FindGlyph(ImWchar c) const
@@ -450,6 +453,11 @@ ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, cons
 		}
 
 		const float char_width = GetCharAdvance(c);
+		if(char_width<0)	{
+			text_size.x=0;
+			text_size.y=0;
+			return text_size;
+		}
 		if (line_width + char_width >= max_width)
 		{
 			s = prev_s;

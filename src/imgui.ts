@@ -2207,6 +2207,9 @@ export class ImFont
 
     // Members: Hot ~62/78 bytes
     // float                       FontSize;           // <user set>   // Height of characters, set during loading (don't change after loading)
+    get FontStyle(): string { return this.native.FontStyle; }
+    set FontStyle(v:string) {this.native.FontStyle=v;}
+
     get FontName(): string { return this.native.FontName; }
     set FontName(v:string) {this.native.FontName=v;}
 
@@ -4672,3 +4675,21 @@ export function SetActiveId(id:ImGuiID) {return bind.SetActiveId(id);}
 
 export function GetInputTextState(id:ImGuiID): ImGuiInputTextState { return new ImGuiInputTextState(bind.GetInputTextState(id)); }
 export function GetInputTextId():ImGuiID {return bind.GetInputTextId();}
+
+export function Vec4_toRGBA(col:ImVec4):string
+{
+    return "rgba("+col.x*255+","+col.y*255+","+col.z*255+","+col.w*255+")";
+}
+export function Font_toString(font:ImFont):string
+{
+    return font.FontStyle + " " + font.FontSize + "px " + font.FontName;
+}
+export function CreateFont(name:string, size:number, style?:string):ImFont
+{
+    const io=GetIO();
+    let font =io.Fonts.AddFontDefault();
+    font.FontStyle=style;
+    font.FontName=name;
+    font.FontSize=size;
+    return font;
+}

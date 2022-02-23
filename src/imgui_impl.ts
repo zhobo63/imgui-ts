@@ -663,15 +663,25 @@ function input_text_update(io:ImGui.IO):void {
     let inpState=ImGui.GetInputTextState(activeId);
     let inp:Input.Input=dom_input;
     if(!inp)  {
+        let textCol=ImGui.Vec4_toRGBA(ImGui.GetStyleColorVec4(ImGui.ImGuiCol.Text));
+        let textBg=ImGui.Vec4_toRGBA(ImGui.GetStyleColorVec4(ImGui.ImGuiCol.WindowBg));
+
         if(inpState.Flags & ImGui.ImGuiInputTextFlags.Multiline)    {
-            inp=Input.GetInput(Input.EType.eMultiLine);
+            inp=Input.GetInput(Input.EType.eMultiLine, textCol, textBg);
         }
         else if(inpState.Flags & ImGui.ImGuiInputTextFlags.Password)    {
-            inp=Input.GetInput(Input.EType.ePassword);
+            inp=Input.GetInput(Input.EType.ePassword, textCol, textBg);
         }else {
-            inp=Input.GetInput(Input.EType.eInput);
+            inp=Input.GetInput(Input.EType.eInput, textCol, textBg);
         }
         current_input_text=inpState.Text;
+        inp.on_visible=b=>{
+            if(b)   {
+                remove_key_event();
+            }else {
+                add_key_event();
+            }
+        }
         inp.setText(current_input_text, activeId, io.Fonts.CurrentFont);
         dom_input=inp;
     }

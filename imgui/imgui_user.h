@@ -34,6 +34,7 @@ struct ImFontAtlas
 struct ImFont
 {
     int FontId;
+    std::string FontStyle;
     std::string FontName;
 
     ImVector<float>             IndexAdvanceX;      // 12-16 // out //            // Sparse. Glyphs->AdvanceX in a directly indexable way (cache-friendly for CalcTextSize functions which only this this info, and are often bottleneck in large UI).
@@ -79,12 +80,18 @@ struct ImFont
     void GlyphCreated(const ImFontGlyph &glyph);
     void ClearGlyphCreated()    {GlyphsToCreate.clear();}
 
-    char DebugName[32]={0};
+    std::string DebugName;
     const char* GetDebugName() {
-        if(!DebugName[0])   {
-            sprintf(DebugName, "%dpx %s", (int)FontSize, FontName.c_str());
+        if(DebugName.empty())   {
+            char buffer[64]={0};
+            if(FontStyle.empty())   {
+                sprintf(buffer, "%dpx %s", (int)FontSize, FontName.c_str());
+            }else {
+                sprintf(buffer, "%s %dpx %s",FontStyle.c_str(), (int)FontSize, FontName.c_str());
+            }
+            DebugName=buffer;
         }
-        return DebugName;
+        return DebugName.c_str();
     }
 };
 
