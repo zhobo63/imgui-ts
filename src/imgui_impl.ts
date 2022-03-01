@@ -576,9 +576,12 @@ function toRgba(col:number):string
     return 'rgba('+r+','+g+','+b+','+a+')';    
 }
 
-export let dom_font:Font=new Font;
+export let dom_font:Font=null;
 
 async function font_update(io:ImGui.IO) {
+    if(!dom_font)   {
+        dom_font=new Font;
+    }
     io.Fonts.Fonts.forEach(font=>{
         let glyph=font.GlyphToCreate;
         while(glyph)   {
@@ -1001,6 +1004,10 @@ export function DestroyFontsTexture(): void {
     const io = ImGui.GetIO();
     io.Fonts.TexID = null;
     gl && gl.deleteTexture(g_FontTexture); g_FontTexture = null;
+    if(dom_font)    {
+        dom_font.Destroy();
+        dom_font=null;
+    }
 }
 
 export function CreateDeviceObjects(): void {
