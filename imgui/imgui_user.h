@@ -77,6 +77,7 @@ struct ImFont
 
     IMGUI_API bool IsGlyphRangeUnused(unsigned int c_begin, unsigned int c_last) const { return false; }
 
+    void CreateGlyph(const char *text_begin, const char* text_end);
     void GlyphCreated(const ImFontGlyph &glyph);
     void ClearGlyphCreated()    {GlyphsToCreate.clear();}
 

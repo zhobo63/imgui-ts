@@ -661,6 +661,7 @@ export interface reference_ImFont extends Emscripten.EmscriptenClassReference {
     // #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
     // typedef ImFontGlyph Glyph; // OBSOLETE 1.52+
     // #endif
+    CreateGlyph(text:string):void;
     GlyphToCreate():Readonly<reference_ImFontGlyph> | null;
     IterateGlyphToCreate(callback: (glyph: reference_ImFontGlyph) => void): void;
     GlyphCreated(glyph: interface_ImFontGlyph):void;

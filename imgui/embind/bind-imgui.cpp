@@ -1099,12 +1099,14 @@ EMSCRIPTEN_BINDINGS(ImFont) {
         .function("RenderChar", FUNCTION(void, (const ImFont& that, emscripten::val draw_list, float size, emscripten::val pos, ImU32 col, unsigned short c), {
             that.RenderChar(draw_list.as<ImDrawList*>(emscripten::allow_raw_pointers()), size, import_ImVec2(pos), col, c);
         }))
-
+        .function("CreateGlyph", FUNCTION(void, (ImFont& that, std::string text), {
+            const char* _text = text.c_str();
+            that.CreateGlyph(_text, NULL);
+        }))
         .function("GlyphToCreate", FUNCTION(emscripten::val, (const ImFont& that), {
             const ImFontGlyph* glyph = (that.GlyphsToCreate.empty())?NULL:&that.GlyphsToCreate.back();
             return glyph == NULL ? emscripten::val::null() : emscripten::val(glyph);
         }))
-
         .function("IterateGlyphToCreate", FUNCTION(void, (const ImFont& that, emscripten::val callback), {
             for (int n = 0; n < that.GlyphsToCreate.Size; n++) {
                 const ImFontGlyph* glyph = &that.GlyphsToCreate.Data[n];

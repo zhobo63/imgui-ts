@@ -89,7 +89,7 @@ export class TexturePage
 
     UpdateTexture() {
         this.Dirty=false;
-        console.log(this.FontName + " UpdateTexture");
+        console.log(this.FontName + " UpdateTexture " + this.Current + "/" + this.MaxCharCount);
         this.Texure.Update(this.PixelData);
     }
 

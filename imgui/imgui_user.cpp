@@ -611,6 +611,28 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col
 	}
 }
 
+void ImFont::CreateGlyph(const char *text_begin, const char* text_end)
+{
+	if (!text_end)
+		text_end = text_begin + strlen(text_begin); // ImGui:: functions generally already provides a valid text_end, so this is merely to handle direct calls.
+	const char* s = text_begin;
+	while (s < text_end)
+	{
+		unsigned int c = (unsigned int)*s;
+		if (c < 0x80)
+		{
+			s += 1;
+		}
+		else
+		{
+			s += ImTextCharFromUtf8(&c, s, text_end);
+			if (c == 0) // Malformed UTF-8?
+				break;
+		}
+		const ImFontGlyph *glyph=FindGlyph(c);
+	}
+}
+
 void ImFont::GlyphCreated(const ImFontGlyph &_glyph)
 {
 	Glyphs.push_back(_glyph);

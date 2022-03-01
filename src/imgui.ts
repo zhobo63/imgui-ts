@@ -2340,6 +2340,9 @@ export class ImFont
         this.native.ClearGlyphCreated();
     }
 
+    public CreateGlyph(text: string) {
+        this.native.CreateGlyph(text);
+    }
 }
 
 // a script version of Bind.ImGuiStyle with matching interface
