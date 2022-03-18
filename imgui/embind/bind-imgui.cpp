@@ -1082,12 +1082,16 @@ EMSCRIPTEN_BINDINGS(ImFont) {
             const ImFontGlyph* glyph = that.FindGlyphNoFallback(c);
             return glyph == NULL ? emscripten::val::null() : emscripten::val(glyph);
         }), emscripten::allow_raw_pointers())
-        .function("CalcTextSizeA", FUNCTION(emscripten::val, (const ImFont& that, float size, float max_width, float wrap_width, std::string text_begin, emscripten::val remaining, emscripten::val out), {
+        .function("CalcTextSizeA", FUNCTION(emscripten::val, (const ImFont& that, float size, float max_width, float wrap_width, std::string text_begin, emscripten::val remaining,emscripten::val isready , emscripten::val out), {
             const char* _text_begin = text_begin.c_str();
             const char* _remaining = NULL;
-            const ImVec2 text_size = that.CalcTextSizeA(size, max_width, wrap_width, _text_begin, NULL, &_remaining);
+            bool _isReady=true;
+            const ImVec2 text_size = that.CalcTextSizeA(size, max_width, wrap_width, _text_begin, NULL, &_remaining, &_isReady);
             if (!remaining.isNull()) {
                 remaining.set(0, (int)(_remaining - _text_begin));
+            }
+            if(!isready.isNull())   {
+                isready.set(0,_isReady);
             }
             return export_ImVec2(text_size, out);
         }))

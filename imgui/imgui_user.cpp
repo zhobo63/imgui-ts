@@ -377,11 +377,15 @@ float ImFont::GetCharAdvance(ImWchar c) const
 	return c < 256 ? IndexAdvanceX[c] : IndexAdvanceX[0];
 }
 
-ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, const char* text_begin, const char* text_end, const char** remaining) const // utf8
+ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, const char* text_begin, const char* text_end,
+ const char** remaining, bool *isReady) const // utf8
 {
 	if (!text_end)
 		text_end = text_begin + strlen(text_begin); // FIXME-OPT: Need to avoid this.
 	
+	if(isReady) {
+		*isReady=true;
+	}
 
 	const float line_height = size;
 	const float scale = size / FontSize;
@@ -452,10 +456,12 @@ ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, cons
 				continue;
 		}
 
-		const float char_width = GetCharAdvance(c);
+		float char_width = GetCharAdvance(c);
 		if(char_width<0)	{
-			text_size.x=0;
-			break;
+			char_width=0;
+			if(isReady) {
+				*isReady=false;
+			}
 		}
 		if (line_width + char_width >= max_width)
 		{
@@ -466,8 +472,9 @@ ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, cons
 		line_width += char_width;
 	}
 
-	if (text_size.x < line_width)
+	if (text_size.x < line_width) {
 		text_size.x = line_width;
+	}
 
 	if (line_width > 0 || text_size.y == 0.0f)
 		text_size.y += line_height;

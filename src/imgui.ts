@@ -2295,8 +2295,8 @@ export class ImFont
     // 'max_width' stops rendering after a certain width (could be turned into a 2d size). FLT_MAX to disable.
     // 'wrap_width' enable automatic word-wrapping across multiple lines to fit into given width. 0.0f to disable.
     // IMGUI_API ImVec2            CalcTextSizeA(float size, float max_width, float wrap_width, const char* text_begin, const char* text_end = NULL, const char** remaining = NULL) const; // utf8
-    public CalcTextSizeA(size: number, max_width: number, wrap_width: number, text_begin: string, text_end: number | null = null, remaining: Bind.ImScalar<number> | null = null): Bind.interface_ImVec2 {
-        return this.native.CalcTextSizeA(size, max_width, wrap_width, text_end !== null ? text_begin.substring(0, text_end) : text_begin, remaining, new ImVec2());
+    public CalcTextSizeA(size: number, max_width: number, wrap_width: number, text_begin: string, text_end: number | null = null, remaining: Bind.ImScalar<number> | null = null, isready:Bind.ImScalar<boolean>|null=null): Bind.interface_ImVec2 {
+        return this.native.CalcTextSizeA(size, max_width, wrap_width, text_end !== null ? text_begin.substring(0, text_end) : text_begin, remaining, isready, new ImVec2());
     }
     // IMGUI_API const char*       CalcWordWrapPositionA(float scale, const char* text, const char* text_end, float wrap_width) const;
     public CalcWordWrapPositionA(scale: number, text: string, text_end: number | null = null, wrap_width: number): number {

@@ -3,6 +3,7 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
+
 export function ImGuiObject(obj:any, id:number=0):number
 {
     if(obj==null)   {
@@ -129,9 +130,11 @@ class Main
         
         ImGui.InputFloat2("scroll_acc",  ImGui_Impl.scroll_acc);
         ImGui.TextColored(new ImGui.ImVec4(0,1,0,1), "FontTexturePool");
-        ImGui_Impl.dom_font.texturePage.forEach(page=>{
-            ImGui.Image(page.Texure._texture, new ImGui.ImVec2(512,512));
-        })
+        if(ImGui_Impl.dom_font&&ImGui_Impl.dom_font.texturePage) {
+            ImGui_Impl.dom_font.texturePage.forEach(page=>{
+                ImGui.Image(page.Texure._texture, new ImGui.ImVec2(512,512));
+            })
+        }
         if(ImGui.InputText("image_src", this.image_src))    {
             this.textureCache.Load("img", this.image_src.buffer).then(img=>{
                 this.image=img;
@@ -183,6 +186,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     _main=new Main;
     window.requestAnimationFrame(_loop);
 });        
+
 
 
 
