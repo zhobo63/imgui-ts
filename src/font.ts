@@ -71,7 +71,7 @@ export class TexturePage
                 (((img_data_u32[y*image_size+x]>>24)&0xFF)>>4);
             }
         }        
-        let w=m.actualBoundingBoxRight-m.actualBoundingBoxLeft;
+        let w=m.width<this.FontSize?m.width:m.actualBoundingBoxRight-m.actualBoundingBoxLeft;
         glyph.X0=0;
         glyph.Y0=this.Descent;
         glyph.X1=w+2;
