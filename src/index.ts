@@ -172,11 +172,12 @@ window.addEventListener('DOMContentLoaded', async ()=>{
         ImGui_Impl.setFontScale(1.5)
     }
 
-    //const io:ImGui.IO=ImGui.GetIO();
-    //let font =io.Fonts.AddFontDefault();
+    const io:ImGui.IO=ImGui.GetIO();
+    let font =io.Fonts.AddFontDefault();
     //font.FontName="Microsoft JhengHei";
     //font.FontName="Arial";
-    //font.FontStyle="bold";
+    font.FontName="sans-serif"
+    font.FontStyle="bold";
     //font.FontSize=32;
     //font.Ascent=2.5;
 

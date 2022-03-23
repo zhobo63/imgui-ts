@@ -71,16 +71,16 @@ export class TexturePage
                 (((img_data_u32[y*image_size+x]>>24)&0xFF)>>4);
             }
         }        
-
+        let w=m.actualBoundingBoxRight-m.actualBoundingBoxLeft;
         glyph.X0=0;
         glyph.Y0=this.Descent;
-        glyph.X1=m.width+2;
+        glyph.X1=w+2;
         glyph.Y1=this.FontSize;
-        glyph.AdvanceX=(m.width)+(glyph.Char<256?this.SpaceX[0]:this.SpaceX[1]);
+        glyph.AdvanceX=(w)+(glyph.Char<256?this.SpaceX[0]:this.SpaceX[1]);
         let uv_scale=1.0/(this.TextureSize);
         glyph.U0=(px)*uv_scale;
         glyph.V0=(py+this.Ascent*this.Scale)*uv_scale;
-        glyph.U1=(px+(m.width+2)*this.Scale)*uv_scale;
+        glyph.U1=(px+(w+2)*this.Scale)*uv_scale;
         glyph.V1=glyph.V0+(this.FontSize*this.Scale)*uv_scale;
 
         this.Dirty=true;
