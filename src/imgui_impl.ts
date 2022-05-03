@@ -209,6 +209,55 @@ function canvas_on_wheel(event: WheelEvent): void  {
     }
 }
 
+let touch_count:number=0;
+let touch_id:number;
+export class ITouch
+{
+    x:number;
+    y:number;
+}
+export let multi_touch:{[key:number]:ITouch}={};
+
+function canvas_on_touchstart(event: TouchEvent):void {
+    for(let i=0;i<event.changedTouches.length;i++)  {
+        let touch=event.changedTouches[i];
+        touch_id=touch.identifier;        
+        multi_touch[touch.identifier]={x:touch.clientX, y:touch.clientY};
+    }
+    let mtouch=multi_touch[touch_id];
+    let io=ImGui.GetIO();
+    io.MousePos.x=mtouch.x;
+    io.MousePos.y=mtouch.y;
+    io.MouseDown[0]=true;
+}
+function canvas_on_touchmove(event: TouchEvent):void {
+    for(let i=0;i<event.changedTouches.length;i++)  {
+        let touch=event.changedTouches[i];
+        multi_touch[touch.identifier]={x:touch.clientX, y:touch.clientY};
+    }
+    let mtouch=multi_touch[touch_id];
+    let io=ImGui.GetIO();
+    io.MousePos.x=mtouch.x;
+    io.MousePos.y=mtouch.y;
+}
+function canvas_on_touchend(event: TouchEvent):void {
+    let io=ImGui.GetIO();
+    for(let i=0;i<event.changedTouches.length;i++)  {
+        let touch=event.changedTouches[i];
+        if(touch.identifier==touch_id)  {
+            io.MouseDown[0]=false;
+        }
+        delete multi_touch[touch.identifier];
+    }
+    touch_count++;
+    if(touch_count>=200)    {
+        multi_touch={}
+    }
+}
+function canvas_on_touchcancel(event: TouchEvent):void {
+    canvas_on_touchend(event);
+}
+
 export let is_contextlost:boolean=false;
 export function add_key_event():void {
     window.addEventListener("keydown", canvas_on_keydown);
@@ -227,6 +276,10 @@ export function add_pointer_event():void {
         canvas.addEventListener("wheel", canvas_on_wheel);
         //canvas.addEventListener("pointerdown", canvas_on_pointerdown);
         //canvas.addEventListener("pointerup", canvas_on_pointerup);
+        canvas.addEventListener("touchstart", canvas_on_touchstart);
+        canvas.addEventListener("touchmove", canvas_on_touchmove);
+        canvas.addEventListener("touchend", canvas_on_touchend);
+        canvas.addEventListener("touchcancel", canvas_on_touchcancel);
     }
     window.addEventListener("pointerdown", canvas_on_pointerdown);
     window.addEventListener("pointerup", canvas_on_pointerup);
@@ -238,9 +291,14 @@ export function remove_pointer_event():void {
         canvas.removeEventListener("wheel", canvas_on_wheel);
         //canvas.removeEventListener("pointerdown", canvas_on_pointerdown);
         //canvas.removeEventListener("pointerup", canvas_on_pointerup);
+        canvas.removeEventListener("touchstart", canvas_on_touchstart);
+        canvas.removeEventListener("touchmove", canvas_on_touchmove);
+        canvas.removeEventListener("touchend", canvas_on_touchend);
+        canvas.removeEventListener("touchcancel", canvas_on_touchcancel);
     }
     window.removeEventListener("pointerdown", canvas_on_pointerdown);
     window.removeEventListener("pointerup", canvas_on_pointerup);
+
 }
 
 function canvas_on_contextlost(e:Event):void {
