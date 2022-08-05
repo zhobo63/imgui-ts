@@ -751,7 +751,7 @@ function input_text_update(io:ImGui.IO):void {
     if(current_input_text!==inp.Text) {
         current_input_text=inp.Text;
         inpState.Text=inp.Text;
-        console.log(inp.Text);
+        //console.log(inp.Text);
     }
     if(!inp.isVisible)  {
         ImGui.SetActiveId(0);
