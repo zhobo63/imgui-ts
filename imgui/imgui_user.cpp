@@ -636,7 +636,8 @@ void ImFont::CreateGlyph(const char *text_begin, const char* text_end)
 			if (c == 0) // Malformed UTF-8?
 				break;
 		}
-		const ImFontGlyph *glyph=FindGlyph(c);
+		//const ImFontGlyph *glyph=
+		FindGlyph(c);
 	}
 }
 
@@ -647,7 +648,7 @@ void ImFont::GlyphCreated(const ImFontGlyph &_glyph)
 	if(_glyph.Char<256)	{
 		IndexAdvanceX[_glyph.Char]=_glyph.AdvanceX;
 	}else {
-		IndexAdvanceX[0]=_glyph.AdvanceX;
+		IndexAdvanceX[0]=(IndexAdvanceX[0]>_glyph.AdvanceX)?IndexAdvanceX[0]:_glyph.AdvanceX;
 	}
 	for(int i=0;i<GlyphsToCreate.size();i++)	{
 		if(GlyphsToCreate[i].Char==_glyph.Char)	{
