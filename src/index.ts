@@ -40,7 +40,7 @@ export function ImGuiObject(obj:any, id:number=0):number
     return id;
 }
 
-
+/*
 
 let _main:Main;
 
@@ -190,6 +190,5 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     window.requestAnimationFrame(_loop);
 });        
 
-
-
+*/
 

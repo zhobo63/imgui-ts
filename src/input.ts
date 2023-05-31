@@ -39,6 +39,7 @@ export class Input
         input.value="123";
 
         input.addEventListener('blur', (e)=>{this.onLostFocus(e)})
+        input.addEventListener('keydown', (e)=>{this.onKeydown(e as KeyboardEvent)})
 
         document.body.appendChild(input);
         this._dom_input=input;
@@ -55,6 +56,15 @@ export class Input
         }
         this.setVisible(false);        
     }
+    onKeydown(e:KeyboardEvent)
+    {
+        if(e.key=="Tab")    {
+            this.isTab=true;
+            e.preventDefault();
+            this.setVisible(false);
+        }
+    }
+
     public isMe(id:ImGui.ImGuiID):boolean {
         return this.isVisible && this._id==id;
     }
@@ -82,6 +92,7 @@ export class Input
     {
         let input=this._dom_input;
         if(b) {
+            this.isTab=false;
             input.style.display='inline-block';
             input.focus();
         }else {
@@ -96,6 +107,7 @@ export class Input
     public _dom_input:HTMLInputElement|HTMLTextAreaElement;
     private _id:ImGui.ImGuiID;
     public isVisible:boolean=false;
+    public isTab:boolean=false;
 }
 
 export let dom_input:any={}

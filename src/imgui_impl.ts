@@ -95,36 +95,43 @@ function canvas_on_blur(event: FocusEvent): void {
 }
 
 const key_code_to_index: Record<string, number> = {
+    "Tab":9,
+    "Enter":13,
+    "Escape":27,
+    "ArrowLeft":37,
+    "ArrowUp":38,
+    "ArrowRight":39,
+    "ArrowDown":40,
     "NumpadEnter": 176,
 };
 
 function canvas_on_keydown(event: KeyboardEvent): void {
-    // console.log(event.type, event.key, event.code, event.keyCode);
+    const key_index: number = key_code_to_index[event.code] || event.key.charCodeAt(0);
+    //console.log(event.type, event.key, event.code, key_index);
     const io = ImGui.GetIO();
     io.KeyCtrl = event.ctrlKey;
     io.KeyShift = event.shiftKey;
     io.KeyAlt = event.altKey;
     io.KeySuper = event.metaKey;
-    const key_index: number = key_code_to_index[event.code] || event.keyCode;
     ImGui.ASSERT(key_index >= 0 && key_index < ImGui.ARRAYSIZE(io.KeysDown));
     io.KeysDown[key_index] = true;
     // forward to the keypress event
-    if (/*io.WantCaptureKeyboard ||*/ event.key === "Tab") {
+    if (/*io.WantCaptureKeyboard ||*/ key_index == 9) {
         event.preventDefault();
     }
 }
 
 function canvas_on_keyup(event: KeyboardEvent): void  {
-    // console.log(event.type, event.key, event.code, event.keyCode);
+    const key_index: number = key_code_to_index[event.code] || event.key.charCodeAt(0);
+    //console.log(event.type, event.key, event.code, key_index);
     const io = ImGui.GetIO();
     io.KeyCtrl = event.ctrlKey;
     io.KeyShift = event.shiftKey;
     io.KeyAlt = event.altKey;
     io.KeySuper = event.metaKey;
-    const key_index: number = key_code_to_index[event.code] || event.keyCode;
     ImGui.ASSERT(key_index >= 0 && key_index < ImGui.ARRAYSIZE(io.KeysDown));
     io.KeysDown[key_index] = false;
-    if (io.WantCaptureKeyboard) {
+    if (io.WantCaptureKeyboard || key_index == 9) {
         event.preventDefault();
     }
 }
@@ -739,8 +746,12 @@ function input_text_update(io:ImGui.IO):void {
         inp.on_visible=b=>{
             if(b)   {
                 remove_key_event();
+                io.KeysDown[9]=false;
             }else {
                 add_key_event();
+                if(inp.isTab)   {
+                    io.KeysDown[9]=true;
+                }
             }
         }
         inp.setText(current_input_text, activeId, io.Fonts.CurrentFont);
