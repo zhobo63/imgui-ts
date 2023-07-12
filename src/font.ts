@@ -72,6 +72,9 @@ export class TexturePage
             }
         }        
         let w=m.width<this.FontSize?m.width:m.actualBoundingBoxRight-m.actualBoundingBoxLeft;
+        if(glyph.Char==0)   {
+            w=this.FontSize+1;
+        }
         glyph.X0=0;
         glyph.Y0=this.Descent;
         glyph.X1=w+2;
