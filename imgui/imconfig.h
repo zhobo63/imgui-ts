@@ -111,3 +111,4 @@ namespace ImGui
 #define IMGUI_INCLUDE_IMGUI_USER_H
 #define USE_EXTERNAL_FONT
 
+#define ImDrawIdx unsigned int

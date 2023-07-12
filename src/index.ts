@@ -3,6 +3,7 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
+export const version="0.1.27";
 
 export function ImGuiObject(obj:any, id:number=0):number
 {
@@ -40,7 +41,7 @@ export function ImGuiObject(obj:any, id:number=0):number
     return id;
 }
 
-/*
+
 
 let _main:Main;
 
@@ -166,6 +167,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     await ImGui.default();
     ImGui.CHECKVERSION();
     console.log("ImGui.CreateContext() VERSION=", ImGui.VERSION);
+    console.log("imgui-ts version=", version);
 
     ImGui.CreateContext();
     ImGui.StyleColorsDark();
@@ -190,5 +192,5 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     window.requestAnimationFrame(_loop);
 });        
 
-*/
+
 

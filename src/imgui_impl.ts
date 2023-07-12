@@ -863,7 +863,7 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
 
     // Draw
     const pos = draw_data.DisplayPos;
-    const idx_buffer_type: GLenum = gl && ((ImGui.DrawIdxSize === 4) ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT) || 0;
+    let idx_buffer_type: GLenum;
     draw_data.IterateDrawLists((draw_list: ImGui.DrawList): void => {           
         gl || ctx || console.log(draw_list);
         gl || ctx || console.log("VtxBuffer.length", draw_list.VtxBuffer.length);
@@ -872,15 +872,29 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
         let idx_buffer_offset: number = 0;
         const vx=draw_list.VtxBuffer;
         const ix=draw_list.IdxBuffer;
-        const ixU16=new Uint16Array(ix.buffer.slice(ix.byteOffset, ix.byteOffset+ix.byteLength));
+        let ixU:Uint8Array|Uint16Array|Uint32Array=null;
+        switch(ImGui.DrawIdxSize)   {
+        case 1:
+            ixU=new Uint8Array(ix.buffer.slice(ix.byteOffset, ix.byteOffset+ix.byteLength));
+            idx_buffer_type=gl.UNSIGNED_BYTE;
+            break;
+        case 2:
+            ixU=new Uint16Array(ix.buffer.slice(ix.byteOffset, ix.byteOffset+ix.byteLength));
+            idx_buffer_type=gl.UNSIGNED_SHORT;
+            break;
+        case 4:
+            ixU=new Uint32Array(ix.buffer.slice(ix.byteOffset, ix.byteOffset+ix.byteLength));
+            idx_buffer_type=gl.UNSIGNED_INT;
+            break;
+        }
 
         if(vx) {
             gl && gl.bindBuffer(gl.ARRAY_BUFFER, g_VboHandle);
             gl && gl.bufferData(gl.ARRAY_BUFFER, vx, gl.STREAM_DRAW);
         }
-        if(ixU16) {
+        if(ixU) {
             gl && gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
-            gl && gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, ixU16, gl.STREAM_DRAW);
+            gl && gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, ixU, gl.STREAM_DRAW);
         }
         draw_list.IterateDrawCmds((draw_cmd: ImGui.DrawCmd): void => {
             gl || ctx || console.log(draw_cmd);

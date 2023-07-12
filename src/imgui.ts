@@ -1506,7 +1506,7 @@ export class ImDrawCmd
 // typedef unsigned short ImDrawIdx;
 // #endif
 export { ImDrawIdxSize as DrawIdxSize }
-export const ImDrawIdxSize: number = 2; // bind.ImDrawIdxSize;
+export const ImDrawIdxSize: number = 4; // bind.ImDrawIdxSize;
 export { ImDrawIdx as DrawIdx }
 export type ImDrawIdx = number;
 
