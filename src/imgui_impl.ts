@@ -971,8 +971,21 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
                                 } else {
                                     // no vertex color
                                     const image = draw_cmd.TextureId as CanvasImageSource; // HACK
-                                    const width = image instanceof HTMLVideoElement ? image.videoWidth : image.width as number;
-                                    const height = image instanceof HTMLVideoElement ? image.videoHeight : image.height as number;
+                                    let width:number=0;
+                                    let height:number=0;
+                                    if(image instanceof HTMLVideoElement)   {
+                                        width=image.videoWidth;
+                                        height=image.videoHeight;
+                                    }
+                                    else if(image instanceof VideoFrame)   {
+                                        width=image.displayWidth;
+                                        height=image.displayHeight;
+                                    }
+                                    else {
+                                        width=image.width as number;
+                                        height=image.height as number;
+                                    }
+                                    
                                     image && ctx.drawImage(image,
                                         minmin.uv[0] * width, minmin.uv[1] * height,
                                         (maxmax.uv[0] - minmin.uv[0]) * width, (maxmax.uv[1] - minmin.uv[1]) * height,
@@ -1214,6 +1227,10 @@ export class Texture
                 w=srcVideo.videoWidth;
                 h=srcVideo.videoHeight;
             }
+        }
+        else if(src instanceof VideoFrame) {
+            w=src.displayWidth;
+            h=src.displayHeight;
         }
         else if(src instanceof Uint8Array||src instanceof Uint16Array) 
         {
