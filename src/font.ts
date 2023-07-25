@@ -23,7 +23,10 @@ export class TexturePage
         this.CharsPerRow=Math.floor(tex_size/this.FontImageSize);
         this.MaxCharCount=this.CharsPerRow*this.CharsPerRow;
         this.Current=0;
-
+        if(!ImGui_Impl.gl)  {
+            console.log("ImGui_Impl.gl is not ready")
+            return;
+        }
         let gl=ImGui_Impl.gl;
         this.Texure=new Texture();
         this.Texure._srcType=gl.UNSIGNED_SHORT_4_4_4_4;
@@ -128,7 +131,7 @@ export class Font
         canvas.style.pointerEvents='none';
         
         this.canvas=canvas;
-        this.ctx=canvas.getContext("2d");
+        this.ctx=canvas.getContext("2d") as CanvasRenderingContext2D;
     }
 
     Destroy() {
@@ -140,14 +143,14 @@ export class Font
 
     Create(glyph: ImFontGlyph, font:ImFont):ImFontGlyph
     {
-        let page=null;
+        let page:TexturePage|null=null;
         for(let page2 of this.texturePage)   {
             if(page2.FontSize==font.FontSize&&page2.IsAvailable)  {
                 page=page2;
                 break;
             }
         }
-        if(page==null)  {
+        if(!page)  {
             page=new TexturePage(512, font);
             this.texturePage.push(page);
         }

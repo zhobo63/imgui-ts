@@ -9,7 +9,7 @@ export function ImGuiObject(obj:any, id:number=0):number
 {
     if(obj==null)   {
         ImGui.Text("(null)");
-        return;
+        return id;
     }
     Object.entries(obj).forEach(([key, value])=>{
         ImGui.PushID(id);
@@ -19,7 +19,7 @@ export function ImGuiObject(obj:any, id:number=0):number
         }
         else if(typeof(value)==='object')    {
             if(ImGui.TreeNode(key)) {
-                id=this.ImObject(value, id+1);
+                id=ImGuiObject(value, id+1);
                 ImGui.TreePop();
             }
         }    
