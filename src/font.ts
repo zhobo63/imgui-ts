@@ -136,7 +136,7 @@ export class Font
         canvas.style.pointerEvents='none';
         
         this.canvas=canvas;
-        this.ctx=canvas.getContext("2d") as CanvasRenderingContext2D;
+        this.ctx=canvas.getContext("2d", {willReadFrequently:true}) as CanvasRenderingContext2D;
     }
 
     Destroy() {
