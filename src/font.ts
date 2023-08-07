@@ -4,12 +4,17 @@ import { ImGui_Impl } from './index';
 
 const FONT_SPACE=3;
 
+function GetFontName(font:ImFont):string
+{
+    return font.FontStyle + " " + font.FontSize + "px " + font.FontName;
+}
+
 export class TexturePage
 {
     constructor(tex_size:number, font:ImFont)
     {
         let font_size=font.FontSize;
-        this.FontName= font.FontStyle + " " + font_size + "px " + font.FontName;
+        this.FontName= GetFontName(font);
         this.Scale=ImGui_Impl.font_scale;
         this.TextureSize=tex_size;
         this.FontSize=font_size;
@@ -143,9 +148,10 @@ export class Font
 
     Create(glyph: ImFontGlyph, font:ImFont):ImFontGlyph
     {
+        let fontname=GetFontName(font);
         let page:TexturePage|null=null;
         for(let page2 of this.texturePage)   {
-            if(page2.FontSize==font.FontSize&&page2.IsAvailable)  {
+            if(page2.IsAvailable && page2.FontName==fontname)  {
                 page=page2;
                 break;
             }

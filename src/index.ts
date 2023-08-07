@@ -3,7 +3,7 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
-export const version="0.1.28";
+export const version="0.1.30";
 
 export function ImGuiObject(obj:any, id:number=0):number
 {
@@ -41,7 +41,7 @@ export function ImGuiObject(obj:any, id:number=0):number
     return id;
 }
 
-
+/*
 
 let _main:Main;
 
@@ -196,5 +196,5 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     window.requestAnimationFrame(_loop);
 });        
 
-
+*/
 
