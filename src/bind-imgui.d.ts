@@ -666,6 +666,12 @@ export interface reference_ImFont extends Emscripten.EmscriptenClassReference {
     IterateGlyphToCreate(callback: (glyph: reference_ImFontGlyph) => void): void;
     GlyphCreated(glyph: interface_ImFontGlyph):void;
     ClearGlyphCreated():void;
+
+    AddFontRange(start:number, end:number):void;
+    ClearFontRange():void;
+    MergeFont(font: reference_ImFont):void;
+    ClearSubFont():void;
+    InRange(c:number):boolean;
 }
 
 export interface interface_ImFontConfig {

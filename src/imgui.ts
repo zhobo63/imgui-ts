@@ -2343,6 +2343,21 @@ export class ImFont
     public CreateGlyph(text: string) {
         this.native.CreateGlyph(text);
     }
+    AddFontRange(start:number, end:number) {
+        this.native.AddFontRange(start, end);
+    }
+    ClearFontRange() {
+        this.native.ClearFontRange();
+    }
+    MergeFont(font:ImFont) {
+        this.native.MergeFont(font.native);
+    }
+    ClearSubFont() {
+        this.native.ClearSubFont();
+    }
+    InRange(c:number):boolean {
+        return this.native.InRange(c);
+    }
 }
 
 // a script version of Bind.ImGuiStyle with matching interface

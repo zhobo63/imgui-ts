@@ -1125,6 +1125,22 @@ EMSCRIPTEN_BINDINGS(ImFont) {
         .function("ClearGlyphCreated", FUNCTION(void, (ImFont& that), {
             that.ClearGlyphCreated();
         }))
+        .function("AddFontRange", FUNCTION(void, (ImFont& that, ImWchar start, ImWchar end), {
+            that.AddFontRange(start, end);
+        }))
+        .function("ClearFontRange", FUNCTION(void, (ImFont& that), {
+            that.ClearFontRange();
+        }))
+        .function("MergeFont", FUNCTION(void, (ImFont& that,emscripten::val _font), {
+            ImFont *font=_font.as<ImFont*>(emscripten::allow_raw_pointers());
+            that.MergeFont(font);
+        }))
+        .function("ClearSubFont", FUNCTION(void, (ImFont& that), {
+            that.ClearSubFont();
+        }))
+        .function("InRange", FUNCTION(bool, (const ImFont& that, ImWchar ch), {
+            return that.InRange(ch);
+        }))
     ;
 }
 

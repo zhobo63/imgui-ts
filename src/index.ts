@@ -41,7 +41,7 @@ export function ImGuiObject(obj:any, id:number=0):number
     return id;
 }
 
-/*
+
 
 let _main:Main;
 
@@ -185,6 +185,10 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     //font.FontSize=32;
     //font.Ascent=2.5;
 
+    let font2=ImGui.CreateFont("Microsoft JhengHei", 16, "bold");
+    font2.AddFontRange(0x4E00, 0x9FFF);
+    font.MergeFont(font2);
+
     const canvas:HTMLCanvasElement=document.getElementById("canvas") as HTMLCanvasElement;
     ImGui_Impl.Init(canvas);
 
@@ -192,5 +196,5 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     window.requestAnimationFrame(_loop);
 });        
 
-*/
+
 

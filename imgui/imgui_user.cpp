@@ -250,6 +250,13 @@ void ImFont::Initialize()
 
 const ImFontGlyph* ImFont::FindGlyph(ImWchar c) const
 {
+	for(int i=0;i<SubFonts.size();i++)	{
+		ImFont *font=SubFonts[i];
+		if(font->InRange(c)) {
+			return font->FindGlyph(c);
+		}
+	}
+
 	if(IndexLookup.empty())	{
 		return FallbackGlyph;
 	}
@@ -372,6 +379,12 @@ const char* ImFont::CalcWordWrapPositionA(float scale, const char* text, const c
 
 float ImFont::GetCharAdvance(ImWchar c) const
 {
+	for(int i=0;i<SubFonts.size();i++)	{
+		ImFont *font=SubFonts[i];
+		if(font->InRange(c)) {
+			return font->GetCharAdvance(c);
+		}
+	}
 	if(IndexAdvanceX.empty())
 		return FallbackAdvanceX;
 	return c < 256 ? IndexAdvanceX[c] : IndexAdvanceX[0];
@@ -657,6 +670,15 @@ void ImFont::GlyphCreated(const ImFontGlyph &_glyph)
 			break;
 		}
 	}
+}
+
+bool ImFont::InRange(ImWchar ch) const
+{
+	for(int i=0;i<FontRange.size();i++)	{
+		if(FontRange[i].InRange(ch))
+			return true;
+	}
+	return false;
 }
 
 #endif

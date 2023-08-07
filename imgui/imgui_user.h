@@ -60,6 +60,17 @@ struct ImFont
 
     ImVector<ImFontGlyph>       GlyphsToCreate;
 
+    struct ImFontRange
+    {
+        ImWchar start;
+        ImWchar end;
+
+        inline bool InRange(ImWchar ch) const {return ch>=start && ch<=end;}
+    };
+
+    ImVector<ImFont*> SubFonts;
+    ImVector<ImFontRange> FontRange;
+
     ImFont();
     ~ImFont();
 
@@ -80,6 +91,24 @@ struct ImFont
     void CreateGlyph(const char *text_begin, const char* text_end);
     void GlyphCreated(const ImFontGlyph &glyph);
     void ClearGlyphCreated()    {GlyphsToCreate.clear();}
+
+    void AddFontRange(ImWchar start, ImWchar end) {
+        ImFontRange range;
+        range.start=start;
+        range.end=end;
+        FontRange.push_back(range);
+    }
+    void ClearFontRange() {
+        FontRange.clear();
+    }
+    void MergeFont(ImFont *font)
+    {
+        SubFonts.push_back(font);
+    }
+    void ClearSubFont() {
+        SubFonts.clear();
+    }
+    bool InRange(ImWchar ch) const;
 
     std::string DebugName;
     const char* GetDebugName() {
