@@ -46,6 +46,31 @@ npm install
 webpack
 ```
 
+## Update
+
+* Merge ImFont
+
+```merge font
+let fontface=new FontFace("FontAwesome",
+    "url(res/fa-solid-900.woff2) format(woff2)", {});
+await fontface.load().then(r=>{
+    console.log("FontFace loaded!", r)
+})
+document.fonts.add(fontface);
+let io=ImGui.GetIO();
+let font=io.Fonts.AddFontDefault();
+font.FontName="arial"
+font.FontStyle="bold";
+font.FontSize=16;    
+
+let font2=ImGui.CreateFont("FontAwesome", font.FontSize-2, "");
+font2.AddFontRange(0xf000, 0xffff);
+font.MergeFont(font2);
+
+//code range 0xf000~0xffff use "FontAwesome", others use "arial"
+ImGui.Text("this is a \uf013 gear.");
+```
+
 # Example
 
 ```Notes
