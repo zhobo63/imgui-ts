@@ -2435,6 +2435,11 @@ struct ImDrawList
     inline    void  PathBezierCurveTo(const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, int num_segments = 0) { PathBezierCubicCurveTo(p2, p3, p4, num_segments); }
 #endif
 
+    // Custom functions
+    IMGUI_API void  AddRectFilled(const ImVec2& p_min, const ImVec2& p_max, ImU32 col_lt, ImU32 col_rt, ImU32 col_lb, ImU32 col_rb, float rounding = 0, ImDrawCornerFlags flags = 0);
+    IMGUI_API int   GetVertexSize() const { return VtxBuffer.Size; }
+    IMGUI_API void  Transform(const ImTransform& tm, int vtxStart, int vtxEnd = 0);
+
     // [Internal helpers]
     IMGUI_API void  _ResetForNewFrame();
     IMGUI_API void  _ClearFreeMemory();

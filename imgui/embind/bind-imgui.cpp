@@ -433,6 +433,134 @@ EMSCRIPTEN_BINDINGS(ImVec4) {
     ;
 }
 
+ImMat2& import_ImMat2(const emscripten::val& value, ImMat2& out) {
+    out.m11 = import_value<float>(value["m11"]);
+    out.m12 = import_value<float>(value["m12"]);
+    out.m21 = import_value<float>(value["m21"]);
+    out.m22 = import_value<float>(value["m22"]);
+    return out;
+}
+
+ImMat2 import_ImMat2(const emscripten::val& value) {
+    ImMat2 out; import_ImMat2(value, out); return out;
+}
+
+emscripten::val export_ImMat2(const ImMat2& value, emscripten::val out) {
+    out.set("m11", export_value<float>(value.m11));
+    out.set("m12", export_value<float>(value.m12));
+    out.set("m21", export_value<float>(value.m21));
+    out.set("m22", export_value<float>(value.m22));
+    return out;
+}
+
+emscripten::val export_ImMat2(const ImMat2& value) {
+    return export_ImMat2(value, emscripten::val::object());
+}
+
+template <>
+ImMat2 import_value(const emscripten::val& value) {
+    return import_ImMat2(value);
+}
+
+emscripten::val ImMat2_Set(emscripten::val that, 
+    emscripten::val m11,
+    emscripten::val m12,
+    emscripten::val m21,
+    emscripten::val m22
+    ) {
+    that.set("m11", m11);
+    that.set("m12", m12);
+    that.set("m21", m21);
+    that.set("m22", m22);
+    return that;
+}
+
+emscripten::val ImMat2_Copy(emscripten::val that, emscripten::val other) {
+    that.set("m11", other["m11"]);
+    that.set("m12", other["m12"]);
+    that.set("m21", other["m21"]);
+    that.set("m22", other["m22"]);
+    return that;
+}
+
+bool ImMat2_Equals(const emscripten::val that, emscripten::val other) {
+    if (!that["m11"].strictlyEquals(other["m11"])) { return false; }
+    if (!that["m12"].strictlyEquals(other["m12"])) { return false; }
+    if (!that["m21"].strictlyEquals(other["m21"])) { return false; }
+    if (!that["m22"].strictlyEquals(other["m22"])) { return false; }
+    return true;
+}
+
+EMSCRIPTEN_BINDINGS(ImMat2) {
+    emscripten::class_<ImMat2>("ImMat2")
+        // no constructors for EmscriptenClassReference
+        .constructor()
+        // .constructor<float, float>()
+        CLASS_MEMBER(ImMat2, m11)
+        CLASS_MEMBER(ImMat2, m12)
+        CLASS_MEMBER(ImMat2, m21)
+        CLASS_MEMBER(ImMat2, m22)
+
+        .function("Set", &ImMat2_Set)
+        .function("Copy", &ImMat2_Copy)
+        .function("Equals", &ImMat2_Equals)
+        .function("Identity", FUNCTION(void, (ImMat2& that), { that.Identity(); }))
+        .function("SetRotate", FUNCTION(void, (ImMat2& that, float radius), { that.SetRotate(radius); }))
+        .function("Multiply", FUNCTION(emscripten::val, (ImMat2& that, emscripten::val other), {
+            return emscripten::val(that * import_ImMat2(other));
+        }))
+        .function("Transform", FUNCTION(emscripten::val, (ImMat2& that, emscripten::val p), {
+            return emscripten::val(that * import_ImVec2(p));
+        }))
+    ;
+
+}
+
+ImTransform& import_ImTransform(const emscripten::val& value, ImTransform& out) {
+    out.rotate = import_ImMat2(value["rotate"]);
+    out.translate = import_ImVec2(value["translate"]);
+    out.scale = import_value<float>(value["scale"]);
+    return out;
+}
+
+ImTransform import_ImTransform(const emscripten::val& value) {
+    ImTransform out; import_ImTransform(value, out); return out;
+}
+
+emscripten::val export_ImTransform(const ImTransform& value, emscripten::val out) {
+    out.set("rotate", export_ImMat2(value.rotate));
+    out.set("translate", export_ImVec2(value.translate));
+    out.set("scale", export_value<float>(value.scale));
+    return out;
+}
+
+emscripten::val export_ImTransform(const ImTransform& value) {
+    return export_ImTransform(value, emscripten::val::object());
+}
+
+template <>
+ImTransform import_value(const emscripten::val& value) {
+    return import_ImTransform(value);
+}
+
+EMSCRIPTEN_BINDINGS(ImTransform) {
+    emscripten::class_<ImTransform>("ImTransform")
+    .constructor()
+
+    CLASS_MEMBER(ImTransform, rotate)
+    CLASS_MEMBER(ImTransform, translate)
+    CLASS_MEMBER(ImTransform, scale)
+    .function("Identity", FUNCTION(void, (ImTransform& that), { that.Identity(); }))
+    .function("Multiply", FUNCTION(emscripten::val, (ImTransform& that, emscripten::val other), {
+        return emscripten::val(that * import_ImTransform(other));
+    }))
+    .function("Transform", FUNCTION(emscripten::val, (ImTransform& that, emscripten::val p), {
+        return emscripten::val(that * import_ImVec2(p));
+    }))
+    ;
+}
+
+
 // Shared state of InputText(), passed to callback when a ImGuiInputTextFlags_Callback* flag is used and the corresponding callback is triggered.
 // struct ImGuiInputTextCallbackData
 EMSCRIPTEN_BINDINGS(ImGuiInputTextCallbackData) {
@@ -804,6 +932,15 @@ EMSCRIPTEN_BINDINGS(ImDrawList) {
         // inline    void  PrimVtx(const ImVec2& pos, const ImVec2& uv, ImU32 col)     { PrimWriteIdx((ImDrawIdx)_VtxCurrentIdx); PrimWriteVtx(pos, uv, col); }
         .function("PrimVtx", FUNCTION(void, (ImDrawList& that, emscripten::val pos, emscripten::val uv, ImU32 col), {
             that.PrimVtx(import_ImVec2(pos), import_ImVec2(uv), col);
+        }))
+        .function("AddRectFilledMultiColorRound", FUNCTION(void, (ImDrawList& that, emscripten::val a, emscripten::val b, ImU32 col_lt, ImU32 col_rt, ImU32 col_lb, ImU32 col_rb, float rounding, int rounding_corners_flags), {
+            that.AddRectFilled(import_ImVec2(a), import_ImVec2(b), col_lt, col_rt, col_lb, col_rb, rounding, rounding_corners_flags);
+        }))
+        .function("GetVertexSize", FUNCTION(int, (ImDrawList& that), {
+            return that.GetVertexSize();
+        }))
+        .function("Transform", FUNCTION(void, (ImDrawList& that, emscripten::val tm, int vtxStart, int vtxEnd), {
+            that.Transform(import_ImTransform(tm), vtxStart, vtxEnd);
         }))
     ;
 }
@@ -3236,3 +3373,4 @@ EMSCRIPTEN_BINDINGS(ImGuiWindow) {
     emscripten::function("GetInputTextState", FUNCTION(emscripten::val, (ImGuiID id), { ImGuiInputTextState *state=ImGui::GetInputTextState(id); return emscripten::val(state); }), emscripten::allow_raw_pointers());
     emscripten::function("GetInputTextId", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->InputTextState.ID); }));
 }
+

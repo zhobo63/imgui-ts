@@ -6,7 +6,6 @@ export interface RGB { r: number; g: number; b: number; }
 export interface RGBA extends RGB { a: number; }
 
 import * as Bind from "./bind-imgui";
-import { Input, EType } from "./input";
 export { Bind };
 
 let bind: Bind.Module;
@@ -902,6 +901,102 @@ export class ImVec4 implements Bind.interface_ImVec4 {
     }
 }
 
+export {interface_ImMat2} from "./bind-imgui"
+export {reference_ImMat2} from "./bind-imgui"
+
+export class ImMat2 implements Bind.interface_ImMat2 {
+    public static readonly IDENTITY: Readonly<ImMat2> = new ImMat2(1.0, 0.0, 0.0, 1.0);
+
+    constructor(public m11: number = 1.0, public m12: number =0.0, public m21: number =0.0, public m22: number =1.0) {}
+
+    //constructor(public readonly native: Bind.reference_ImMat2) {}
+
+    Set(m11:number, m12:number, m21:number, m22:number): this
+    {
+        this.m11 = m11;
+        this.m12 = m12;
+        this.m21 = m21;
+        this.m22 = m22;
+        return this;
+    }
+    Copy(other: Readonly<Bind.interface_ImMat2>): this {
+        this.m11 = other.m11;
+        this.m12 = other.m12;
+        this.m21 = other.m21;
+        this.m22 = other.m22;
+        return this;
+    }
+    Equals(other: Readonly<Bind.interface_ImMat2>): boolean {
+        if(this.m11!== other.m11) { return false; }
+        if(this.m12!== other.m12) { return false; }
+        if(this.m21!== other.m21) { return false; }
+        if(this.m22!== other.m22) { return false; }
+        return true;
+    }
+    Identity(): void {
+        this.m11=1;
+        this.m12=0;
+        this.m21=0;
+        this.m22=1;
+    }
+
+    SetRotate(radius: number): this {
+        const c=Math.cos(radius), s=Math.sin(radius);
+        this.m11 = c;
+        this.m12 = -s;
+        this.m21 = s;
+        this.m22 = c;
+        return this;
+    }
+    Multiply(other: Readonly<Bind.interface_ImMat2>): Bind.interface_ImMat2
+    {
+        const m11 = this.m11 * other.m11 + this.m12 * other.m21;
+        const m12 = this.m11 * other.m12 + this.m12 * other.m22;
+        const m21 = this.m21 * other.m11 + this.m22 * other.m21;
+        const m22 = this.m21 * other.m12 + this.m22 * other.m22;
+        return new ImMat2(m11, m12, m21, m22);
+    }
+    Transform(p: Readonly<Bind.interface_ImVec2>): Bind.interface_ImVec2
+    {
+        return new ImVec2(
+            this.m11 * p.x + this.m21 * p.y,
+            this.m12 * p.x + this.m22 * p.y
+            );
+    }    
+}
+
+
+export {ImTransform as Transform} 
+
+export class ImTransform implements Bind.interface_ImTransform 
+{
+    constructor(
+        public rotate:Bind.interface_ImMat2=new ImMat2,
+        public translate:Bind.interface_ImVec2=new ImVec2(0,0),
+        public scale:number=1) {}
+
+    Identity(): void {
+        this.rotate.Identity();
+        this.translate.Set(0,0);
+        this.scale=1;
+    }
+    Multiply(m: Readonly<Bind.interface_ImTransform>): Bind.interface_ImTransform {
+        let tm=new ImTransform;
+        tm.scale = this.scale * m.scale;
+        tm.rotate = this.rotate.Multiply(m.rotate);
+        let t=this.rotate.Transform(m.translate);
+        tm.translate.x = this.translate.x + t.x * this.scale;
+        tm.translate.y = this.translate.y + t.y * this.scale;
+        return tm;
+    }
+    Transform(point: Readonly<Bind.interface_ImVec2>): Bind.interface_ImVec2 {
+        let p=this.rotate.Transform(point);
+        p.x=p.x*this.scale+this.translate.x;
+        p.y=p.y*this.scale+this.translate.y;
+        return p;
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Helpers
 //-----------------------------------------------------------------------------
@@ -1793,6 +1888,17 @@ export class ImDrawList
     public PrimWriteIdx(idx: ImDrawIdx): void { this.native.PrimWriteIdx(idx); }
     // inline    void  PrimVtx(const ImVec2& pos, const ImVec2& uv, ImU32 col)     { PrimWriteIdx((ImDrawIdx)_VtxCurrentIdx); PrimWriteVtx(pos, uv, col); }
     public PrimVtx(pos: Readonly<Bind.interface_ImVec2>, uv: Readonly<Bind.interface_ImVec2>, col: Bind.ImU32): void { this.native.PrimVtx(pos, uv, col); }
+
+    AddRectFilledMultiColorRound(a: Readonly<Bind.interface_ImVec2>, b: Readonly<Bind.interface_ImVec2>, col_lt: ImU32, col_rt: ImU32, col_lb: ImU32, col_rb: ImU32, rounding: number, rounding_corners_flags: ImDrawCornerFlags): void
+    {
+        this.native.AddRectFilledMultiColorRound(a, b, col_lt, col_rt, col_lb, col_rb, rounding, rounding_corners_flags);
+    }
+    GetVertexSize(): number { return this.native.GetVertexSize(); }
+    Transform(tm:Readonly<Bind.interface_ImTransform>, start:number, end?:number): void
+    {
+        if(!end) end=0;
+        this.native.Transform(tm, start, end);
+    }
 }
 
 // All draw data to render an ImGui frame

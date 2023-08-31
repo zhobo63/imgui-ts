@@ -134,6 +134,35 @@ export interface interface_ImVec4 {
 
 export interface reference_ImVec4 extends Emscripten.EmscriptenClassReference, interface_ImVec4 {}
 
+export interface interface_ImMat2 {
+    m11: number;
+    m12: number;
+    m21: number;
+    m22: number;
+    Set(m11: number, m12: number, m21: number, m22:number): this;
+    Copy(other: Readonly<interface_ImMat2>): this;
+    Equals(other: Readonly<interface_ImMat2>): boolean;
+
+    Identity(): void;
+    SetRotate(radius:number):void;
+    Multiply(other: Readonly<interface_ImMat2>): interface_ImMat2;
+    Transform(p: Readonly<interface_ImVec2>): interface_ImVec2;
+}
+
+export interface reference_ImMat2 extends Emscripten.EmscriptenClassReference, interface_ImMat2 {}
+
+export interface interface_ImTransform {
+    rotate: interface_ImMat2;
+    translate: interface_ImVec2;
+    scale: number;
+
+    Identity(): void;
+    Multiply(transform: Readonly<interface_ImTransform>): interface_ImTransform;
+    Transform(point: Readonly<interface_ImVec2>): interface_ImVec2;
+}
+
+export interface reference_ImTransform extends Emscripten.EmscriptenClassReference, interface_ImTransform {}
+
 // Shared state of InputText(), passed to callback when a ImGuiInputTextFlags_Callback* flag is used and the corresponding callback is triggered.
 export interface reference_ImGuiInputTextCallbackData extends Emscripten.EmscriptenClassReference {
     // ImGuiInputTextFlags EventFlag;      // One of ImGuiInputTextFlags_Callback* // Read-only
@@ -550,6 +579,10 @@ export interface reference_ImDrawList extends Emscripten.EmscriptenClassReferenc
     UpdateClipRect(): void;
     // IMGUI_API void  UpdateTextureID();
     UpdateTextureID(): void;
+
+    AddRectFilledMultiColorRound(a: Readonly<interface_ImVec2>, b: Readonly<interface_ImVec2>, col_lt: ImU32, col_rt:ImU32, col_lb:ImU32, col_rb:ImU32, rounding: number, rounding_corners_flags: ImDrawCornerFlags): void;
+    GetVertexSize(): number;
+    Transform(tm: Readonly<interface_ImTransform>, start:number, end:number): void;
 }
 
 export interface reference_ImDrawData extends Emscripten.EmscriptenClassReference {
@@ -2088,4 +2121,6 @@ export interface Module extends Emscripten.EmscriptenModule {
 
     GetInputTextState(id:ImGuiID):reference_ImGuiInputTextState;
     GetInputTextId():ImGuiID;
+
+    ImTransform():reference_ImTransform;
 }

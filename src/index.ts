@@ -41,7 +41,7 @@ export function ImGuiObject(obj:any, id:number=0):number
     return id;
 }
 
-/*
+
 
 let _main:Main;
 
@@ -67,6 +67,9 @@ class Main
     image_src:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,'');
     textureCache:ImGui_Impl.TextureCache=new ImGui_Impl.TextureCache;
     image:ImGui_Impl.Texture;
+    tm:ImGui.ImTransform=new ImGui.ImTransform();
+    v1:ImGui.Vec2=new ImGui.Vec2(-100,-50);
+    v2:ImGui.Vec2=new ImGui.Vec2(100,100);
 
     ImGuiWindow(win:ImGui.Window)   {
         ImGui.Text("ID:" + win.ID);
@@ -149,10 +152,19 @@ class Main
             var drawList:ImGui.ImDrawList = ImGui.GetForegroundDrawList();
             drawList.AddImage(this.image._texture, new ImGui.Vec2(0,0), new ImGui.Vec2(100,100));
         }
+        let drawlist=ImGui.GetBackgroundDrawList();
+        let vstart=drawlist.GetVertexSize();
+        drawlist.AddRectFilledMultiColorRound(this.v1,this.v2,0xff00ff00, 0xffffff00, 0xff00ffff, 0xff0000ff,4,ImGui.ImDrawCornerFlags.All);
+        drawlist.AddRect(this.v1,this.v2,0xff0000ff, 4, ImGui.ImDrawCornerFlags.All);
+        this.tm.rotate.SetRotate(time*0.001);
+        this.tm.translate.Set(200,200);
+        this.tm.scale=0.5+Math.sin(time*0.001)*0.25;
+        drawlist.Transform(this.tm, vstart);
 
         ImGui.End();
         ImGui.ShowDemoWindow();
         ImGui.ShowMetricsWindow();
+
 
         ImGui.EndFrame();
         ImGui.Render();
@@ -164,7 +176,7 @@ class Main
 }
 
 window.addEventListener('DOMContentLoaded', async ()=>{
-    await ImGui.default();
+    await ImGui.default();    
     ImGui.CHECKVERSION();
     console.log("ImGui.CreateContext() VERSION=", ImGui.VERSION);
     console.log("imgui-ts version=", version);
@@ -192,9 +204,23 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     const canvas:HTMLCanvasElement=document.getElementById("canvas") as HTMLCanvasElement;
     ImGui_Impl.Init(canvas);
 
+    /*
+    let tm=new ImGui.ImTransform();
+    console.log(tm);
+    tm.rotate.SetRotate(45/Math.PI);
+    console.log(tm);
+
+    //let m2=new ImGui.ImMat2;
+    //m2.SetRotate(Math.PI/4);
+    let v=new ImGui.ImVec2(100,100);
+    console.log(v);
+    v=tm.Transform(v);
+    console.log(v);
+    */
+
     _main=new Main;
     window.requestAnimationFrame(_loop);
 });        
 
-*/
+
 

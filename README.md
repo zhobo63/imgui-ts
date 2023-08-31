@@ -32,7 +32,7 @@ When window is no_move, we can slide content then HoveredID=0. Usefull for mobil
 
 * compile cpp to js
 
-```compile cpp to js
+```
 download and install [Emscripten](http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 cd imgui-ts/imgui/embind
 make
@@ -50,7 +50,7 @@ webpack
 
 * Merge ImFont
 
-```merge font
+```cpp
 let fontface=new FontFace("FontAwesome",
     "url(res/fa-solid-900.woff2) format(woff2)", {});
 await fontface.load().then(r=>{
@@ -71,9 +71,25 @@ font.MergeFont(font2);
 ImGui.Text("this is a \uf013 gear.");
 ```
 
+* ImTransform
+
+```typescript
+    let tm=new ImTransform();
+    tm.rotate.SetRotate(radians);   //rotate
+    tm.scale=1+Math.sin(time)*0.5;  //scale
+    tm.translate.Set(100,100);      //translate
+    let vstart=drawlist.GetVertexSize();
+    //draw some thing
+    drawlist.AddRectFilledMultiColorRound(this.v1,this.v2,0xff00ff00, 0xffffff00, 0xff00ffff, 0xff0000ff,4,ImGui.ImDrawCornerFlags.All);
+    drawlist.AddRect(this.v1,this.v2,0xff0000ff, 4, ImGui.ImDrawCornerFlags.All);
+    drawlist.Transform(tm, vstart);
+```
+
+* ImDrawList: AddRectFilledMultiColorRound
+
 # Example
 
-```Notes
+```typescript
 import {ImGui, ImGui_Impl} from '@zhobo63/imgui-ts'
 
 let text:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,'input text');
