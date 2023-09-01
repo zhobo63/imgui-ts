@@ -144,6 +144,7 @@ export interface interface_ImMat2 {
     Equals(other: Readonly<interface_ImMat2>): boolean;
 
     Identity(): void;
+    Transpose():interface_ImMat2;
     SetRotate(radius:number):void;
     Multiply(other: Readonly<interface_ImMat2>): interface_ImMat2;
     Transform(p: Readonly<interface_ImVec2>): interface_ImVec2;
@@ -159,6 +160,7 @@ export interface interface_ImTransform {
     Identity(): void;
     Multiply(transform: Readonly<interface_ImTransform>): interface_ImTransform;
     Transform(point: Readonly<interface_ImVec2>): interface_ImVec2;
+    Invert():interface_ImTransform;
 }
 
 export interface reference_ImTransform extends Emscripten.EmscriptenClassReference, interface_ImTransform {}

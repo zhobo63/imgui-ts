@@ -3,7 +3,7 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
-export const version="0.1.30";
+export const version="0.1.33";
 
 export function ImGuiObject(obj:any, id:number=0):number
 {
@@ -41,7 +41,7 @@ export function ImGuiObject(obj:any, id:number=0):number
     return id;
 }
 
-
+/*
 
 let _main:Main;
 
@@ -158,7 +158,7 @@ class Main
         drawlist.AddRect(this.v1,this.v2,0xff0000ff, 4, ImGui.ImDrawCornerFlags.All);
         this.tm.rotate.SetRotate(time*0.001);
         this.tm.translate.Set(200,200);
-        this.tm.scale=0.5+Math.sin(time*0.001)*0.25;
+        this.tm.scale=1+Math.sin(time*0.001)*0.25;
         drawlist.Transform(this.tm, vstart);
 
         ImGui.End();
@@ -204,23 +204,9 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     const canvas:HTMLCanvasElement=document.getElementById("canvas") as HTMLCanvasElement;
     ImGui_Impl.Init(canvas);
 
-    /*
-    let tm=new ImGui.ImTransform();
-    console.log(tm);
-    tm.rotate.SetRotate(45/Math.PI);
-    console.log(tm);
-
-    //let m2=new ImGui.ImMat2;
-    //m2.SetRotate(Math.PI/4);
-    let v=new ImGui.ImVec2(100,100);
-    console.log(v);
-    v=tm.Transform(v);
-    console.log(v);
-    */
-
     _main=new Main;
     window.requestAnimationFrame(_loop);
 });        
 
-
+*/
 

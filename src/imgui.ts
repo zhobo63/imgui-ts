@@ -939,6 +939,10 @@ export class ImMat2 implements Bind.interface_ImMat2 {
         this.m21=0;
         this.m22=1;
     }
+    Transpose():ImMat2
+    {
+        return new ImMat2(this.m11, this.m21, this.m12, this.m22);
+    }
 
     SetRotate(radius: number): this {
         const c=Math.cos(radius), s=Math.sin(radius);
@@ -994,6 +998,17 @@ export class ImTransform implements Bind.interface_ImTransform
         p.x=p.x*this.scale+this.translate.x;
         p.y=p.y*this.scale+this.translate.y;
         return p;
+    }
+    Invert():Bind.interface_ImTransform
+    {
+        let tm:ImTransform=new ImTransform;
+        tm.rotate=this.rotate.Transpose();
+        tm.scale = 1.0 / this.scale;
+        let t=new ImVec2(-this.translate.x, -this.translate.y);
+        t=tm.rotate.Transform(t);
+		tm.translate.x = t.x*tm.scale;
+        tm.translate.y = t.y*tm.scale;
+        return tm;
     }
 }
 

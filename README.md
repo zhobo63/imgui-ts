@@ -50,7 +50,7 @@ webpack
 
 * Merge ImFont
 
-```cpp
+```typescript
 let fontface=new FontFace("FontAwesome",
     "url(res/fa-solid-900.woff2) format(woff2)", {});
 await fontface.load().then(r=>{
@@ -74,15 +74,15 @@ ImGui.Text("this is a \uf013 gear.");
 * ImTransform
 
 ```typescript
-    let tm=new ImTransform();
-    tm.rotate.SetRotate(radians);   //rotate
-    tm.scale=1+Math.sin(time)*0.5;  //scale
-    tm.translate.Set(100,100);      //translate
-    let vstart=drawlist.GetVertexSize();
-    //draw some thing
-    drawlist.AddRectFilledMultiColorRound(this.v1,this.v2,0xff00ff00, 0xffffff00, 0xff00ffff, 0xff0000ff,4,ImGui.ImDrawCornerFlags.All);
-    drawlist.AddRect(this.v1,this.v2,0xff0000ff, 4, ImGui.ImDrawCornerFlags.All);
-    drawlist.Transform(tm, vstart);
+let tm=new ImTransform();
+tm.rotate.SetRotate(radians);   //rotate
+tm.scale=1+Math.sin(time)*0.5;  //scale
+tm.translate.Set(100,100);      //translate
+let vstart=drawlist.GetVertexSize();
+//draw some thing
+drawlist.AddRectFilledMultiColorRound(this.v1,this.v2,0xff00ff00, 0xffffff00, 0xff00ffff, 0xff0000ff,4,ImGui.ImDrawCornerFlags.All);
+drawlist.AddRect(this.v1,this.v2,0xff0000ff, 4, ImGui.ImDrawCornerFlags.All);
+drawlist.Transform(tm, vstart);
 ```
 
 * ImDrawList: AddRectFilledMultiColorRound
