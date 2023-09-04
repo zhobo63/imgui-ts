@@ -963,8 +963,8 @@ export class ImMat2 implements Bind.interface_ImMat2 {
     Transform(p: Readonly<Bind.interface_ImVec2>): Bind.interface_ImVec2
     {
         return new ImVec2(
-            this.m11 * p.x + this.m21 * p.y,
-            this.m12 * p.x + this.m22 * p.y
+            this.m11 * p.x + this.m12 * p.y,
+            this.m21 * p.x + this.m22 * p.y
             );
     }    
 }
