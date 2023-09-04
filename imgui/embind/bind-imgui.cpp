@@ -1240,6 +1240,10 @@ EMSCRIPTEN_BINDINGS(ImFont) {
         .function("RenderChar", FUNCTION(void, (const ImFont& that, emscripten::val draw_list, float size, emscripten::val pos, ImU32 col, unsigned short c), {
             that.RenderChar(draw_list.as<ImDrawList*>(emscripten::allow_raw_pointers()), size, import_ImVec2(pos), col, c);
         }))
+        .function("RenderText", FUNCTION(void, (const ImFont& that, emscripten::val draw_list, float size, emscripten::val pos, ImU32 col, emscripten::val clip_rect, std::string text, int wrap, bool cpu_fine_clip), {
+            const char* _text = text.c_str();
+            that.RenderText(draw_list.as<ImDrawList*>(emscripten::allow_raw_pointers()), size, import_ImVec2(pos), col, import_ImVec4(clip_rect), _text, 0, wrap, cpu_fine_clip);
+        }))
         .function("CreateGlyph", FUNCTION(void, (ImFont& that, std::string text), {
             const char* _text = text.c_str();
             that.CreateGlyph(_text, NULL);

@@ -3,7 +3,7 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
-export const version="0.1.34";
+export const version="0.1.35";
 
 export function ImGuiObject(obj:any, id:number=0):number
 {

@@ -687,6 +687,7 @@ export interface reference_ImFont extends Emscripten.EmscriptenClassReference {
     // IMGUI_API void              RenderChar(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col, unsigned short c) const;
     RenderChar(draw_list: reference_ImDrawList, size: number, pos: Readonly<interface_ImVec2>, col: ImU32, c: ImWchar): void;
     // IMGUI_API void              RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col, const ImVec4& clip_rect, const char* text_begin, const char* text_end, float wrap_width = 0.0f, bool cpu_fine_clip = false) const;
+    RenderText(draw_list:reference_ImDrawList, size: number, pos: Readonly<interface_ImVec2>, col: ImU32, clip_rect: Readonly<interface_ImVec4>,text:string, wrap_width: number, cpu_fine_clip: boolean): void;
 
     // [Internal]
     // IMGUI_API void              GrowIndex(int new_size);
