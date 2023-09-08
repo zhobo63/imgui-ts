@@ -967,6 +967,29 @@ export class ImMat2 implements Bind.interface_ImMat2 {
             this.m21 * p.x + this.m22 * p.y
             );
     }    
+
+    TransposeTo(target:ImMat2):void
+    {
+        target.m11 = this.m11;
+        target.m12 = this.m21;
+        target.m21 = this.m12;
+        target.m22 = this.m22;
+    }
+
+    MultiplyTo(other: Readonly<Bind.interface_ImMat2>, target:ImMat2): void
+    {
+        target.m11 = this.m11 * other.m11 + this.m12 * other.m21;
+        target.m12 = this.m11 * other.m12 + this.m12 * other.m22;
+        target.m21 = this.m21 * other.m11 + this.m22 * other.m21;
+        target.m22 = this.m21 * other.m12 + this.m22 * other.m22;
+    }
+    TransformTo(p: Readonly<Bind.interface_ImVec2>, target: ImVec2): void
+    {
+        let px=p.x;
+        let py=p.y;
+        target.x=this.m11 * px + this.m12 * py;
+        target.y=this.m21 * px + this.m22 * py;
+    }
 }
 
 
@@ -1009,6 +1032,29 @@ export class ImTransform implements Bind.interface_ImTransform
 		tm.translate.x = t.x*tm.scale;
         tm.translate.y = t.y*tm.scale;
         return tm;
+    }
+
+    MultiplyTo(other: ImTransform, target:ImTransform): void
+    {
+        target.scale = this.scale * other.scale;
+        this.rotate.MultiplyTo(other.rotate, target.rotate);
+        this.rotate.TransformTo(other.translate, target.translate);
+        target.translate.x = this.translate.x + target.translate.x * this.scale;
+        target.translate.y = this.translate.y + target.translate.y * this.scale;
+    }
+    TransformTo(point: Readonly<Bind.interface_ImVec2>, target: Bind.interface_ImVec2): void
+    {
+        this.rotate.TransformTo(point, target);
+        target.x=target.x*this.scale+this.translate.x;
+        target.y=target.y*this.scale+this.translate.y;
+    }
+    InvertTo(target: Bind.interface_ImTransform): void {
+        this.rotate.TransposeTo(target.rotate);
+        target.scale = 1.0 / this.scale;
+        target.translate.Set(-this.translate.x, -this.translate.y);
+        this.rotate.TransformTo(target.translate, target.translate);
+        target.translate.x = target.translate.x * this.scale;
+        target.translate.y = target.translate.y * this.scale;
     }
 }
 
@@ -2429,7 +2475,7 @@ export class ImFont
     }
     // IMGUI_API void              RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col, const ImVec4& clip_rect, const char* text_begin, const char* text_end, float wrap_width = 0.0f, bool cpu_fine_clip = false) const;
     public RenderText(draw_list: ImDrawList, size: number, pos: Readonly<Bind.interface_ImVec2>, col: Bind.ImU32, clip_rect: Readonly<Bind.interface_ImVec4>, text_begin: string, text_end: number | null = null, wrap_width: number = 0.0, cpu_fine_clip: boolean = false): void {
-        this.native.RenderText
+        this.native.RenderText(draw_list.native, size, pos, col, clip_rect, text_begin, wrap_width, cpu_fine_clip);
     }
 
     // [Internal]

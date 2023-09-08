@@ -148,6 +148,10 @@ export interface interface_ImMat2 {
     SetRotate(radius:number):void;
     Multiply(other: Readonly<interface_ImMat2>): interface_ImMat2;
     Transform(p: Readonly<interface_ImVec2>): interface_ImVec2;
+
+    TransposeTo(target: interface_ImMat2):void;
+    MultiplyTo(other: Readonly<interface_ImMat2>, target: interface_ImMat2): void;
+    TransformTo(p: Readonly<interface_ImVec2>, target: interface_ImVec2): void;
 }
 
 export interface reference_ImMat2 extends Emscripten.EmscriptenClassReference, interface_ImMat2 {}
@@ -161,6 +165,10 @@ export interface interface_ImTransform {
     Multiply(transform: Readonly<interface_ImTransform>): interface_ImTransform;
     Transform(point: Readonly<interface_ImVec2>): interface_ImVec2;
     Invert():interface_ImTransform;
+
+    MultiplyTo(transform: Readonly<interface_ImTransform>, target: interface_ImTransform): void;
+    TransformTo(point: Readonly<interface_ImVec2>, target: interface_ImVec2): void;
+    InvertTo(target:interface_ImTransform):void;
 }
 
 export interface reference_ImTransform extends Emscripten.EmscriptenClassReference, interface_ImTransform {}

@@ -86,13 +86,13 @@ export class TexturePage
         glyph.X0=0;
         glyph.Y0=this.Descent;
         glyph.X1=w+2;
-        glyph.Y1=this.FontSize;
+        glyph.Y1=this.FontSize+2;
         glyph.AdvanceX=(w)+(glyph.Char<256?this.SpaceX[0]:this.SpaceX[1]);
         let uv_scale=1.0/(this.TextureSize);
         glyph.U0=(px)*uv_scale;
         glyph.V0=(py+this.Ascent*this.Scale)*uv_scale;
-        glyph.U1=(px+(w+2)*this.Scale)*uv_scale;
-        glyph.V1=glyph.V0+(this.FontSize*this.Scale)*uv_scale;
+        glyph.U1=(px+glyph.X1*this.Scale)*uv_scale;
+        glyph.V1=glyph.V0+(glyph.Y1*this.Scale)*uv_scale;
 
         this.Dirty=true;
         return glyph;

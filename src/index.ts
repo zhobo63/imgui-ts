@@ -3,7 +3,7 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
-export const version="0.1.35";
+export const version="0.1.38";
 
 export function ImGuiObject(obj:any, id:number=0):number
 {
@@ -156,6 +156,8 @@ class Main
         let vstart=drawlist.GetVertexSize();
         drawlist.AddRectFilledMultiColorRound(this.v1,this.v2,0xff00ff00, 0xffffff00, 0xff00ffff, 0xff0000ff,4,ImGui.ImDrawCornerFlags.All);
         drawlist.AddRect(this.v1,this.v2,0xff0000ff, 4, ImGui.ImDrawCornerFlags.All);
+        let font=ImGui.GetFont();
+        font.RenderText(drawlist, 16, this.v1, 0xffffffff, new ImGui.ImVec4(-100,-50,100,100), "Hello, World!");
         this.tm.rotate.SetRotate(time*0.001);
         this.tm.translate.Set(200,200);
         this.tm.scale=1+Math.sin(time*0.001)*0.25;
