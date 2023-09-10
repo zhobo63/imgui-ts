@@ -3,7 +3,7 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
-export const version="0.1.38";
+export const version="0.1.39";
 
 export function ImGuiObject(obj:any, id:number=0):number
 {
@@ -193,10 +193,10 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     const io:ImGui.IO=ImGui.GetIO();
     let font =io.Fonts.AddFontDefault();
     //font.FontName="Microsoft JhengHei";
-    //font.FontName="Arial";
-    font.FontName="sans-serif"
+    font.FontName="Arial";
+    //font.FontName="sans-serif"
     font.FontStyle="bold";
-    //font.FontSize=32;
+    font.FontSize=16;
     //font.Ascent=2.5;
 
     let font2=ImGui.CreateFont("Microsoft JhengHei", 16, "bold");

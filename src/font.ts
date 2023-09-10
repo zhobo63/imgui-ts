@@ -79,12 +79,12 @@ export class TexturePage
                 (((img_data_u32[y*image_size+x]>>24)&0xFF)>>4);
             }
         }        
-        let w=m.width<this.FontSize?m.width:m.actualBoundingBoxRight-m.actualBoundingBoxLeft;
+        let w=m.width<=this.FontSize?m.width:m.actualBoundingBoxRight-m.actualBoundingBoxLeft;
         if(glyph.Char==0)   {
             w=this.FontSize+1;
         }
         glyph.X0=0;
-        glyph.Y0=this.Descent;
+        glyph.Y0=this.Descent+m.actualBoundingBoxAscent;
         glyph.X1=w+2;
         glyph.Y1=this.FontSize+2;
         glyph.AdvanceX=(w)+(glyph.Char<256?this.SpaceX[0]:this.SpaceX[1]);

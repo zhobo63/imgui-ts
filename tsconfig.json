@@ -7,7 +7,6 @@
     "allowJs": true,
     "sourceMap": true,
     "moduleResolution": "node",
-    "types": ["Node"],
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
