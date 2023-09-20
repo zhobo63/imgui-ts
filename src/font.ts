@@ -2,7 +2,8 @@ import { ImFont, ImFontGlyph } from './imgui'
 import { Texture } from './imgui_impl';
 import { ImGui_Impl } from './index';
 
-const FONT_SPACE=3;
+const FONT_SPACE=5;
+const FONT_SIZE_EXTEND=2;
 
 function GetFontName(font:ImFont):string
 {
@@ -67,7 +68,7 @@ export class TexturePage
         ctx.clearRect(0,0,image_size,image_size);
         ctx.scale(this.Scale, this.Scale);
         let m=ctx.measureText(text);
-        ctx.fillText(text, 0, 0);
+        ctx.fillText(text, 1, 1);
         //ctx.strokeRect(0,0,image_size-FONT_SPACE, image_size-FONT_SPACE);
         ctx.restore();
         const img_data=ctx.getImageData(0,0,image_size, image_size);
@@ -85,8 +86,8 @@ export class TexturePage
         }
         glyph.X0=0;
         glyph.Y0=this.Descent;
-        glyph.X1=w;
-        glyph.Y1=this.FontSize;
+        glyph.X1=w+FONT_SIZE_EXTEND;
+        glyph.Y1=this.FontSize+FONT_SIZE_EXTEND;
         glyph.AdvanceX=(w)+(glyph.Char<256?this.SpaceX[0]:this.SpaceX[1]);
         let uv_scale=1.0/(this.TextureSize);
         glyph.U0=(px)*uv_scale;
