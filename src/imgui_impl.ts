@@ -30,6 +30,7 @@ let g_ElementsHandle: WebGLBuffer | null = null;
 let g_FontTexture: WebGLTexture | null = null;
 const enable_vao:boolean=true;
 let g_vao:WebGLVertexArrayObject;
+let has_videoframe:boolean=typeof VideoFrame !== "undefined";
 
 export let ctx: CanvasRenderingContext2D | null = null;
 
@@ -977,13 +978,14 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
                                         width=image.videoWidth;
                                         height=image.videoHeight;
                                     }
-                                    else if(image instanceof VideoFrame)   {
+                                    else if(has_videoframe && image instanceof VideoFrame)   {
                                         width=image.displayWidth;
                                         height=image.displayHeight;
                                     }
                                     else {
-                                        width=image.width as number;
-                                        height=image.height as number;
+                                        let src=image as HTMLCanvasElement | OffscreenCanvas|ImageBitmap|HTMLOrSVGImageElement;
+                                        width=src.width as number;
+                                        height=src.height as number;
                                     }
                                     
                                     image && ctx.drawImage(image,
@@ -1228,7 +1230,7 @@ export class Texture
                 h=srcVideo.videoHeight;
             }
         }
-        else if(src instanceof VideoFrame) {
+        else if(has_videoframe && src instanceof VideoFrame) {
             w=src.displayWidth;
             h=src.displayHeight;
         }
@@ -1242,8 +1244,9 @@ export class Texture
                 h=this._height;
             }
         }else {
-            w=src.width;
-            h=src.height;    
+            let s=src as HTMLCanvasElement|OffscreenCanvas|ImageBitmap|ImageData|HTMLImageElement;
+            w=s.width;
+            h=s.height;    
         }
         if(!this._texture)  {
             this._texture=gl.createTexture();
