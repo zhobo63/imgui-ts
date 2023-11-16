@@ -2048,7 +2048,7 @@ EMSCRIPTEN_BINDINGS(ImGui) {
     emscripten::function("GetStyle", FUNCTION(emscripten::val, (), { ImGuiStyle* p = &ImGui::GetStyle(); return emscripten::val(p); }), emscripten::allow_raw_pointers());
     //emscripten::function("NewFrame", &ImGui::NewFrame);
     emscripten::function("NewFrame", FUNCTION(void, (), { 
-        callbackParams.clear();
+        callbackParams.resize(0);
         callbackParams.push_back(CallbackParam());
         ImGui::NewFrame();}));
     emscripten::function("EndFrame", &ImGui::EndFrame);
