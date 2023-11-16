@@ -48,6 +48,9 @@ webpack
 
 ## Update
 
+* 0.1.43
+  * Implement ImDrawList::AddCallback
+
 * Merge ImFont
 
 ```typescript

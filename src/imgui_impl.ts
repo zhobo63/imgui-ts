@@ -770,6 +770,58 @@ function input_text_update(io:ImGui.IO):void {
     }
 }
 
+function BindState()
+{
+    gl && gl.enable(gl.BLEND);
+    gl && gl.blendEquation(gl.FUNC_ADD);
+    gl && gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl && gl.disable(gl.CULL_FACE);
+    gl && gl.disable(gl.DEPTH_TEST);
+    gl && gl.enable(gl.SCISSOR_TEST);
+}
+
+function BindShader(ortho_projection:Float32Array)
+{
+    gl && gl.useProgram(g_ShaderHandle);
+    gl && gl.uniform1i(g_AttribLocationTex, 0);
+    gl && g_AttribLocationProjMtx && gl.uniformMatrix4fv(g_AttribLocationProjMtx, false, ortho_projection);
+}
+function BindMesh()
+{
+    const gl2: WebGL2RenderingContext | null = typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext && gl || null;
+    const gl_vao: OES_vertex_array_object | null = gl && gl.getExtension("OES_vertex_array_object") || null;
+
+    if(enable_vao) {
+        if(!g_vao)  {
+            g_vao = gl2 && gl2.createVertexArray();   // || gl_vao && gl_vao.createVertexArrayOES();
+        }
+        gl2 && gl2.bindVertexArray(g_vao);
+        //gl_vao && gl_vao.bindVertexArrayOES(vertex_array_object);
+    }
+
+    gl && gl.bindBuffer(gl.ARRAY_BUFFER, g_VboHandle);
+    gl && gl.enableVertexAttribArray(g_AttribLocationPosition);
+    gl && gl.enableVertexAttribArray(g_AttribLocationUV);
+    gl && gl.enableVertexAttribArray(g_AttribLocationColor);
+
+    gl && gl.vertexAttribPointer(g_AttribLocationPosition, 2, gl.FLOAT, false, ImGui.DrawVertSize, ImGui.DrawVertPosOffset);
+    gl && gl.vertexAttribPointer(g_AttribLocationUV, 2, gl.FLOAT, false, ImGui.DrawVertSize, ImGui.DrawVertUVOffset);
+    gl && gl.vertexAttribPointer(g_AttribLocationColor, 4, gl.UNSIGNED_BYTE, true, ImGui.DrawVertSize, ImGui.DrawVertColOffset);
+}
+
+function UnbindMesh()
+{
+    const gl2: WebGL2RenderingContext | null = typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext && gl || null;
+    if(enable_vao) {
+        gl2 && gl2.bindVertexArray(null);
+        //gl2 && gl2.deleteVertexArray(vertex_array_object);
+        //gl_vao && gl_vao.deleteVertexArrayOES(vertex_array_object);
+    }else {
+        gl && gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl && gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+    }
+}
+
 export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawData()): void {
     const io = ImGui.GetIO();
 
@@ -820,12 +872,7 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
     // The renderer would actually work without any VAO bound, but then our VertexAttrib calls would overwrite the default one currently bound.
 
     // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
-    gl && gl.enable(gl.BLEND);
-    gl && gl.blendEquation(gl.FUNC_ADD);
-    gl && gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    gl && gl.disable(gl.CULL_FACE);
-    gl && gl.disable(gl.DEPTH_TEST);
-    gl && gl.enable(gl.SCISSOR_TEST);
+    BindState();
     // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Setup viewport, orthographic projection matrix
@@ -841,27 +888,8 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
         0.0,               0.0,               -1.0, 0.0,
         (R + L) / (L - R), (T + B) / (B - T),  0.0, 1.0,
     ]);
-    gl && gl.useProgram(g_ShaderHandle);
-    gl && gl.uniform1i(g_AttribLocationTex, 0);
-    gl && g_AttribLocationProjMtx && gl.uniformMatrix4fv(g_AttribLocationProjMtx, false, ortho_projection);
-
-    if(enable_vao) {
-        if(!g_vao)  {
-            g_vao = gl2 && gl2.createVertexArray();   // || gl_vao && gl_vao.createVertexArrayOES();
-        }
-        gl2 && gl2.bindVertexArray(g_vao);
-        //gl_vao && gl_vao.bindVertexArrayOES(vertex_array_object);
-    }
-    // Render command lists
-    gl && gl.bindBuffer(gl.ARRAY_BUFFER, g_VboHandle);
-    gl && gl.enableVertexAttribArray(g_AttribLocationPosition);
-    gl && gl.enableVertexAttribArray(g_AttribLocationUV);
-    gl && gl.enableVertexAttribArray(g_AttribLocationColor);
-
-    gl && gl.vertexAttribPointer(g_AttribLocationPosition, 2, gl.FLOAT, false, ImGui.DrawVertSize, ImGui.DrawVertPosOffset);
-    gl && gl.vertexAttribPointer(g_AttribLocationUV, 2, gl.FLOAT, false, ImGui.DrawVertSize, ImGui.DrawVertUVOffset);
-    gl && gl.vertexAttribPointer(g_AttribLocationColor, 4, gl.UNSIGNED_BYTE, true, ImGui.DrawVertSize, ImGui.DrawVertColOffset);
-
+    BindShader(ortho_projection);
+    BindMesh();
     // Draw
     const pos = draw_data.DisplayPos;
     let idx_buffer_type: GLenum;
@@ -912,7 +940,11 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
             
             if (draw_cmd.UserCallback !== null) {
                 // User callback (registered via ImDrawList::AddCallback)
+                UnbindMesh();
                 draw_cmd.UserCallback(draw_list, draw_cmd);
+                BindState();
+                BindShader(ortho_projection);
+                BindMesh();
             } else {
                 const clip_rect = new ImGui.Vec4(draw_cmd.ClipRect.x - pos.x, draw_cmd.ClipRect.y - pos.y, draw_cmd.ClipRect.z - pos.x, draw_cmd.ClipRect.w - pos.y);
                 if (clip_rect.x < fb_width && clip_rect.y < fb_height && clip_rect.z >= 0.0 && clip_rect.w >= 0.0) {
@@ -1020,14 +1052,7 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
     });
 
     // Destroy the temporary VAO
-    if(enable_vao) {
-        gl2 && gl2.bindVertexArray(null);
-        //gl2 && gl2.deleteVertexArray(vertex_array_object);
-        //gl_vao && gl_vao.deleteVertexArrayOES(vertex_array_object);
-    }else {
-        gl && gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        gl && gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-    }
+    UnbindMesh();
     // Restore modified GL state
     
         //gl && (last_program !== null) && gl.useProgram(last_program);

@@ -41,7 +41,7 @@ export function ImGuiObject(obj:any, id:number=0):number
     return id;
 }
 
-/*
+
 
 let _main:Main;
 
@@ -153,6 +153,11 @@ class Main
             drawList.AddImage(this.image._texture, new ImGui.Vec2(0,0), new ImGui.Vec2(100,100));
         }
         let drawlist=ImGui.GetBackgroundDrawList();
+
+        drawlist.AddCallback((drawlist, cmd)=>{
+            console.log("this is a drawlist callback " + cmd.UserCallbackData);
+        }, 1);
+
         let vstart=drawlist.GetVertexSize();
         drawlist.AddRectFilledMultiColorRound(this.v1,this.v2,0xff00ff00, 0xffffff00, 0xff00ffff, 0xff0000ff,4,ImGui.ImDrawCornerFlags.All);
         drawlist.AddRect(this.v1,this.v2,0xff0000ff, 4, ImGui.ImDrawCornerFlags.All);
@@ -162,6 +167,10 @@ class Main
         this.tm.translate.Set(200,200);
         this.tm.scale=1+Math.sin(time*0.001)*0.25;
         drawlist.Transform(this.tm, vstart);
+
+        drawlist.AddCallback((drawlist, cmd)=>{
+            console.log("this is a drawlist callback " + cmd.UserCallbackData);
+        }, 2);
 
         ImGui.End();
         ImGui.ShowDemoWindow();
@@ -210,5 +219,5 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     window.requestAnimationFrame(_loop);
 });        
 
-*/
+
 

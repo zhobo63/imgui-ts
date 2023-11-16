@@ -675,6 +675,23 @@ EMSCRIPTEN_BINDINGS(ImGuiTableSortSpecs) {
     ;
 }
 
+struct CallbackParam
+{
+    emscripten::val callback;
+    emscripten::val callback_data;
+
+    CallbackParam(const emscripten::val &_callback=emscripten::val::null(),
+        const emscripten::val &_data=emscripten::val::null()):
+        callback(_callback), callback_data(_data) {}
+};
+
+std::vector<CallbackParam> callbackParams;
+
+void ImCallbackFunc(const ImDrawList* parent_list, const ImDrawCmd* cmd)
+{
+    void* index=cmd->UserCallbackData;
+    printf("ImCallbackFunc: %p\n", index);
+}
 
 EMSCRIPTEN_BINDINGS(ImDrawCmd) {
     emscripten::class_<ImDrawCmd>("ImDrawCmd")
@@ -683,6 +700,14 @@ EMSCRIPTEN_BINDINGS(ImDrawCmd) {
         CLASS_MEMBER_GET(ImDrawCmd, TextureId, { return emscripten::val((int) that.TextureId); })
         CLASS_MEMBER(ImDrawCmd, VtxOffset)
         CLASS_MEMBER(ImDrawCmd, IdxOffset)
+        CLASS_MEMBER_GET(ImDrawCmd, UserCallback, {
+            size_t index=(size_t)that.UserCallbackData;
+            return index>0?callbackParams[index].callback:emscripten::val::null();
+            })
+        CLASS_MEMBER_GET(ImDrawCmd, UserCallbackData, {
+            size_t index=(size_t)that.UserCallbackData;
+            return index>0?callbackParams[index].callback_data:emscripten::val::null();
+            })
     ;
 }
 
@@ -897,8 +922,10 @@ EMSCRIPTEN_BINDINGS(ImDrawList) {
         // Advanced
         // IMGUI_API void  AddCallback(ImDrawCallback callback, void* callback_data);  // Your rendering function must check for 'UserCallback' in ImDrawCmd and call the function instead of rendering triangles.
         .function("AddCallback", FUNCTION(void, (ImDrawList& that, emscripten::val callback, emscripten::val callback_data), {
-            // TODO
-        }))
+            void* n=(void*)callbackParams.size();
+            callbackParams.push_back(CallbackParam(callback, callback_data));
+            that.AddCallback(ImCallbackFunc, n);            
+        }), emscripten::allow_raw_pointers())
         // IMGUI_API void  AddDrawCmd();                                               // This is useful if you need to forcefully create a new draw call (to allow for dependent rendering / blending). Otherwise primitives are merged into the same draw-call as much as possible
         CLASS_METHOD(ImDrawList, AddDrawCmd)
         // IMGUI_API ImDrawList* CloneOutput() const;                                  // Create a clone of the CmdBuffer/IdxBuffer/VtxBuffer.
@@ -2019,7 +2046,11 @@ EMSCRIPTEN_BINDINGS(ImGui) {
     // IMGUI_API ImDrawData*   GetDrawData();                              // valid after Render() and until the next call to NewFrame(). this is what you have to render.
     emscripten::function("GetIO", FUNCTION(emscripten::val, (), { ImGuiIO* p = &ImGui::GetIO(); return emscripten::val(p); }), emscripten::allow_raw_pointers());
     emscripten::function("GetStyle", FUNCTION(emscripten::val, (), { ImGuiStyle* p = &ImGui::GetStyle(); return emscripten::val(p); }), emscripten::allow_raw_pointers());
-    emscripten::function("NewFrame", &ImGui::NewFrame);
+    //emscripten::function("NewFrame", &ImGui::NewFrame);
+    emscripten::function("NewFrame", FUNCTION(void, (), { 
+        callbackParams.clear();
+        callbackParams.push_back(CallbackParam());
+        ImGui::NewFrame();}));
     emscripten::function("EndFrame", &ImGui::EndFrame);
     emscripten::function("Render", &ImGui::Render);
     emscripten::function("GetDrawData", FUNCTION(emscripten::val, (), { ImDrawData* p = ImGui::GetDrawData(); return emscripten::val(p); }), emscripten::allow_raw_pointers());

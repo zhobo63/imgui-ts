@@ -1648,9 +1648,17 @@ export class ImDrawCmd
     // unsigned int    IdxOffset;              // Start offset in index buffer. Always equal to sum of ElemCount drawn so far.
     get IdxOffset(): number { return this.native.IdxOffset; }
     // ImDrawCallback  UserCallback;           // If != NULL, call the function instead of rendering the vertices. clip_rect and texture_id will be set normally.
-    public readonly UserCallback: ImDrawCallback | null = null; // TODO
+    get UserCallback(): ImDrawCallback | null {
+        if(this.native.UserCallback) {
+            const _callback:ImDrawCallback=(parent_list, cmd)=>{
+                this.native.UserCallback(parent_list.native, cmd.native);
+            };
+            return _callback;
+        }
+        return null;
+    } 
     // void*           UserCallbackData;       // The draw callback code can access this.
-    public readonly UserCallbackData: any = null; // TODO
+    get UserCallbackData(): any { return this.native.UserCallbackData }
 
     // ImDrawCmd() { ElemCount = 0; ClipRect.x = ClipRect.y = ClipRect.z = ClipRect.w = 0.0f; TextureId = NULL; UserCallback = NULL; UserCallbackData = NULL; }
 }

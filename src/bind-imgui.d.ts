@@ -433,7 +433,9 @@ export interface reference_ImDrawCmd extends Emscripten.EmscriptenClassReference
     // unsigned int    IdxOffset;              // Start offset in index buffer. Always equal to sum of ElemCount drawn so far.
     readonly IdxOffset: number;
     // ImDrawCallback  UserCallback;           // If != NULL, call the function instead of rendering the vertices. clip_rect and texture_id will be set normally.
+    readonly UserCallback:ImDrawCallback|null; 
     // void*           UserCallbackData;       // The draw callback code can access this.
+    readonly UserCallbackData:any;
 
     // ImDrawCmd() { ElemCount = 0; ClipRect.x = ClipRect.y = ClipRect.z = ClipRect.w = 0.0f; TextureId = NULL; UserCallback = NULL; UserCallbackData = NULL; }
     // readonly ClipRect: Readonly<ImVec4>;

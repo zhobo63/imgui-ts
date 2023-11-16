@@ -471,6 +471,7 @@ void ImDrawList::AddCallback(ImDrawCallback callback, void* callback_data)
     curr_cmd->UserCallbackData = callback_data;
 
     AddDrawCmd(); // Force a new command after us (see comment below)
+    //printf("AddCallback %p %zu\n", callback, (size_t)callback_data);
 }
 
 // Compare ClipRect, TextureId and VtxOffset with a single memcmp()
