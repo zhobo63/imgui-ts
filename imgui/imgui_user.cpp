@@ -633,10 +633,12 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col
 		//x=ceilf(x);
 		//y=ceilf(y);
 		ImVec2 px((x+glyph->X0), (y+glyph->Y0));
-		ImVec2 ps(px.x + glyph->X1, px.y + glyph->Y1);
-		if(cpu_fine_clip && !InRect(px, ps, clip_rect))	{
+		ImVec2 py((x+glyph->AdvanceX), (y+FontSize));
+		
+		if(cpu_fine_clip && !InRect(px, py, clip_rect))	{
 
 		}else {
+			ImVec2 ps(px.x + glyph->X1, px.y + glyph->Y1);	
 			ImVec2 uv0(glyph->U0, glyph->V0);
 			ImVec2 uv1(glyph->U1, glyph->V1);
 			draw_list->AddImage(glyph->TexID, px, ps, uv0, uv1, col);
