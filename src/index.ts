@@ -162,7 +162,8 @@ class Main
         drawlist.AddRectFilledMultiColorRound(this.v1,this.v2,0xff00ff00, 0xffffff00, 0xff00ffff, 0xff0000ff,4,ImGui.ImDrawCornerFlags.All);
         drawlist.AddRect(this.v1,this.v2,0xff0000ff, 4, ImGui.ImDrawCornerFlags.All);
         let font=ImGui.GetFont();
-        font.RenderText(drawlist, 16, this.v1, 0xffffffff, new ImGui.ImVec4(-100,-50,100,100), "Hello, World!");
+        font.RenderText(drawlist, 16, this.v1, 0xffffffff, new ImGui.ImVec4(-100,-50,100,100),
+            "Hello, World! This is a good way to show", null, 0, true);
         this.tm.rotate.SetRotate(time*0.001);
         this.tm.translate.Set(200,200);
         this.tm.scale=1+Math.sin(time*0.001)*0.25;

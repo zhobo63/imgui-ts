@@ -507,6 +507,12 @@ void ImFont::RenderChar(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col
 	ImVec2 uv1(glyph->U1, glyph->V1);
 	draw_list->AddImage(glyph->TexID, px, ps, uv0, uv1, col);
 }
+
+inline bool InRect(const ImVec2 &p1, const ImVec2 &p2, const ImVec4 &r)
+{
+	return p1.x>=r.x && p2.x <=r.z && p1.y>=r.y && p2.y<=r.w;
+}
+
 void ImFont::RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col, const ImVec4& clip_rect, const char* text_begin, const char* text_end, float wrap_width, bool cpu_fine_clip) const
 {
 	if (!text_end)
@@ -622,11 +628,19 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col
 
         const ImFontGlyph *glyph=FindGlyph(c);
 
-		ImVec2 px(x+glyph->X0, y+glyph->Y0);
+		//ImVec2 px(ceilf(x)+glyph->X0, ceilf(y)+glyph->Y0);
+		//ImVec2 px(floorf(x+glyph->X0), floorf(y+glyph->Y0));
+		//x=ceilf(x);
+		//y=ceilf(y);
+		ImVec2 px((x+glyph->X0), (y+glyph->Y0));
 		ImVec2 ps(px.x + glyph->X1, px.y + glyph->Y1);
-		ImVec2 uv0(glyph->U0, glyph->V0);
-		ImVec2 uv1(glyph->U1, glyph->V1);
-		draw_list->AddImage(glyph->TexID, px, ps, uv0, uv1, col);
+		if(cpu_fine_clip && !InRect(px, ps, clip_rect))	{
+
+		}else {
+			ImVec2 uv0(glyph->U0, glyph->V0);
+			ImVec2 uv1(glyph->U1, glyph->V1);
+			draw_list->AddImage(glyph->TexID, px, ps, uv0, uv1, col);
+		}
 		x += glyph->AdvanceX;
 	}
 }
