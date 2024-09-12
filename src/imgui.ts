@@ -2406,7 +2406,25 @@ export class ImFont
         return glyphs;
     }
     // ImVector<float>             IndexAdvanceX;      //              // Sparse. Glyphs->AdvanceX in a directly indexable way (more cache-friendly, for CalcTextSize functions which are often bottleneck in large UI).
-    // get IndexAdvanceX(): any { return this.native.IndexAdvanceX; }
+    get IndexAdvanceX(): number[] { 
+        let a=[...Array(this.native.IndexAdvanceXSize)];
+        for(let i=0;i<this.native.IndexAdvanceXSize;i++) {
+            a[i]=this.GetAdvanceX(i);
+        }
+        return a;
+        //return new Float32Array(this.native.IndexAdvanceX.buffer,0,this.native.IndexAdvanceX.length/Float32Array.BYTES_PER_ELEMENT); 
+    }
+    //get IndexAdvanceX():Uint8Array {return this.native.IndexAdvanceX;}
+    get IndexAdvanceXSize():number {return this.native.IndexAdvanceXSize;}
+
+    get NotReadyChar():number[] {
+        let a=[...Array(this.native.NotReadyCharSize)];
+        for(let i=0;i<this.native.NotReadyCharSize;i++) {
+            a[i]=this.GetNotReadyChar(i);
+        }
+        return a;
+    }
+    get NotReadyCharSize():number {return this.native.NotReadyCharSize;}
     // ImVector<unsigned short>    IndexLookup;        //              // Sparse. Index glyphs by Unicode code-point.
     // get IndexLookup(): any { return this.native.IndexLookup; }
     // const ImFontGlyph*          FallbackGlyph;      // == FindGlyph(FontFallbackChar)
@@ -2534,6 +2552,12 @@ export class ImFont
     }
     InRange(c:number):boolean {
         return this.native.InRange(c);
+    }
+    GetAdvanceX(c:number):number {
+        return this.native.GetAdvanceX(c);
+    }
+    GetNotReadyChar(i:number):number {
+        return this.native.GetNotReadyChar(i);
     }
 }
 

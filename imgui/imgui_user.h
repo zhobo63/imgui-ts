@@ -59,6 +59,7 @@ struct ImFont
     int                         MetricsTotalSurface;// 4     // out //            // Total surface in pixels to get an idea of the font rasterization/texture cost (not exact, we approximate the cost of padding between glyphs)
 
     ImVector<ImFontGlyph>       GlyphsToCreate;
+    ImVector<ImWchar>           NotReadyChar;
 
     struct ImFontRange
     {

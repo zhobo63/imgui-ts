@@ -3,7 +3,7 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
-export const version="0.1.45";
+export const version="0.1.46";
 
 export function ImGuiObject(obj:any, id:number=0):number
 {
@@ -153,13 +153,22 @@ export function ImGuiObject(obj:any, id:number=0):number
 //         let drawlist=ImGui.GetBackgroundDrawList();
 
 //         drawlist.AddCallback((drawlist, cmd)=>{
-//             console.log("this is a drawlist callback " + cmd.UserCallbackData);
+//             //console.log("this is a drawlist callback " + cmd.UserCallbackData);
 //         }, 1);
 
 //         let vstart=drawlist.GetVertexSize();
 //         drawlist.AddRectFilledMultiColorRound(this.v1,this.v2,0xff00ff00, 0xffffff00, 0xff00ffff, 0xff0000ff,4,ImGui.ImDrawCornerFlags.All);
 //         drawlist.AddRect(this.v1,this.v2,0xff0000ff, 4, ImGui.ImDrawCornerFlags.All);
 //         let font=ImGui.GetFont();
+//         if(ImGui.Button("AdvanceX")) {
+//             console.log(font.IndexAdvanceX);
+//             console.log(font.NotReadyChar);
+//             //console.log("IndexAdvanceXSize", font.IndexAdvanceXSize);
+//             console.log("SpaceX", font.SpaceX);
+//             // for(let i=0;i<font.IndexAdvanceXSize;i++) {
+//             //     console.log("AdvanceX " + i, font.GetAdvanceX(i));
+//             // }
+//         }
 //         font.RenderText(drawlist, 16, this.v1, 0xffffffff, new ImGui.ImVec4(-100,-50,100,100),
 //             "Hello, World! This is a good way to show", null, 0, true);
 //         this.tm.rotate.SetRotate(time*0.001);
@@ -168,8 +177,9 @@ export function ImGuiObject(obj:any, id:number=0):number
 //         drawlist.Transform(this.tm, vstart);
 
 //         drawlist.AddCallback((drawlist, cmd)=>{
-//             console.log("this is a drawlist callback " + cmd.UserCallbackData);
+//             //console.log("this is a drawlist callback " + cmd.UserCallbackData);
 //         }, 2);
+
 
 //         ImGui.End();
 //         ImGui.ShowDemoWindow();

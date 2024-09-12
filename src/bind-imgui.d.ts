@@ -641,6 +641,9 @@ export interface reference_ImFont extends Emscripten.EmscriptenClassReference {
     // ImVector<ImFontGlyph>       Glyphs;             //              // All glyphs.
     IterateGlyphs(callback: (cfg: reference_ImFontGlyph) => void): void;
     // ImVector<float>             IndexAdvanceX;      //              // Sparse. Glyphs->AdvanceX in a directly indexable way (more cache-friendly, for CalcTextSize functions which are often bottleneck in large UI).
+    //readonly IndexAdvanceX: Uint8Array;
+    readonly IndexAdvanceXSize: number;
+    readonly NotReadyCharSize: number;
     // IndexAdvanceX: any;
     // ImVector<unsigned short>    IndexLookup;        //              // Sparse. Index glyphs by Unicode code-point.
     // IndexLookup: any;
@@ -718,6 +721,8 @@ export interface reference_ImFont extends Emscripten.EmscriptenClassReference {
     MergeFont(font: reference_ImFont):void;
     ClearSubFont():void;
     InRange(c:number):boolean;
+    GetAdvanceX(ch:number):number;
+    GetNotReadyChar(i:number):number;
 }
 
 export interface interface_ImFontConfig {

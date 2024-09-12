@@ -1213,6 +1213,18 @@ EMSCRIPTEN_BINDINGS(ImFont) {
         CLASS_MEMBER(ImFont, Ascent)
         CLASS_MEMBER(ImFont, Descent)
         CLASS_MEMBER(ImFont, MetricsTotalSurface)
+        // CLASS_MEMBER_GET(ImFont, IndexAdvanceX, {
+        //     return that.IndexAdvanceX.size()?
+        //         emscripten::val(emscripten::typed_memory_view((size_t)(that.IndexAdvanceX.size() * sizeof(float)), (unsigned char *) &that.IndexAdvanceX.front())):
+        //         emscripten::val::null();
+        // })
+
+        CLASS_MEMBER_GET(ImFont, IndexAdvanceXSize, {
+            return emscripten::val((int)that.IndexAdvanceX.size());
+        })
+        CLASS_MEMBER_GET(ImFont, NotReadyCharSize, {
+            return emscripten::val((int)that.NotReadyChar.size());
+        })
 
         CLASS_MEMBER_GET_SET(ImFont, SpaceX0, 
             { return emscripten::val(that.SpaceX[0]); }, 
@@ -1308,6 +1320,12 @@ EMSCRIPTEN_BINDINGS(ImFont) {
         }))
         .function("InRange", FUNCTION(bool, (const ImFont& that, ImWchar ch), {
             return that.InRange(ch);
+        }))
+        .function("GetAdvanceX", FUNCTION(float, (const ImFont& that, ImWchar ch), {
+            return ch<that.IndexAdvanceX.size()?that.IndexAdvanceX[ch]:0;
+        }))
+        .function("GetNotReadyChar", FUNCTION(ImWchar, (const ImFont& that, ImWchar ch), {
+            return ch<that.NotReadyChar.size()?that.NotReadyChar[ch]:0;
         }))
     ;
 }

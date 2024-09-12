@@ -112,6 +112,7 @@ namespace ImGui
 #define USE_EXTERNAL_FONT
 
 #define ImDrawIdx unsigned int
+#define IMGUI_USE_WCHAR32
 
 struct ImMat2;
 struct ImTransform;

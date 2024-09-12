@@ -244,7 +244,7 @@ void ImFont::Initialize()
     IndexLookup.resize(65536);
     memset(IndexLookup.Data, 0, sizeof(ImWchar)*IndexLookup.size());
 	for(int i=0;i<IndexAdvanceX.size();i++)	{
-		IndexAdvanceX[i]=-1;
+		IndexAdvanceX[i]=-FLT_MAX;
 	}
 }
 
@@ -399,6 +399,7 @@ ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, cons
 	if(isReady) {
 		*isReady=true;
 	}
+	((ImFont*)this)->NotReadyChar.Size=0;
 
 	const float line_height = size;
 	const float scale = size / FontSize;
@@ -470,8 +471,11 @@ ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, cons
 		}
 
 		float char_width = GetCharAdvance(c);
-		if(char_width<0)	{
+		if(char_width==-FLT_MAX)	{
 			char_width=0;
+			FindGlyph(c);
+			ImFont &This=*((ImFont*)this);
+			This.NotReadyChar.push_back(c);
 			if(isReady) {
 				*isReady=false;
 			}
