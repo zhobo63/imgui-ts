@@ -31,6 +31,7 @@ let g_FontTexture: WebGLTexture | null = null;
 const enable_vao:boolean=true;
 let g_vao:WebGLVertexArrayObject;
 let has_videoframe:boolean=typeof VideoFrame !== "undefined";
+let g_compressed_ext:any;
 
 export let ctx: CanvasRenderingContext2D | null = null;
 
@@ -1158,6 +1159,18 @@ export function CreateDeviceObjects(): void {
         "}",
     ];
 
+    if(gl) {
+        g_compressed_ext=
+        {
+            dxt: gl.getExtension("WEBGL_compressed_texture_s3tc"),
+            pvrtc: (gl.getExtension("WEBGL_compressed_texture_pvrtc") || gl.getExtension("WEBKIT_WEBGL_compressed_texture_pvrtc")),
+            astc: gl.getExtension("WEBGL_compressed_texture_astc"),
+            atc: gl.getExtension("WEBGL_compressed_texture_atc"),
+            etc1: gl.getExtension("WEBGL_compressed_texture_etc1")
+        };
+        console.log("WEBGL_compressed_texture", g_compressed_ext);
+    }
+
     g_ShaderHandle = gl && gl.createProgram();
     g_VertHandle = gl && gl.createShader(gl.VERTEX_SHADER);
     g_FragHandle = gl && gl.createShader(gl.FRAGMENT_SHADER);
@@ -1210,20 +1223,223 @@ export interface ITextureParam
     width?:number;
     height?:number;
     level?:number;
+    //data?:Uint8Array;
+    blocksize?:number[];
+    datasize?:number[];
+    dataoffset?:number;
+    compressed?:boolean;
+}
+
+//ASTC
+const COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0;
+const COMPRESSED_RGBA_ASTC_5x4_KHR = 0x93B1;
+const COMPRESSED_RGBA_ASTC_5x5_KHR = 0x93B2;
+const COMPRESSED_RGBA_ASTC_6x5_KHR = 0x93B3;
+const COMPRESSED_RGBA_ASTC_6x6_KHR = 0x93B4;
+const COMPRESSED_RGBA_ASTC_8x5_KHR = 0x93B5;
+const COMPRESSED_RGBA_ASTC_8x6_KHR = 0x93B6;
+const COMPRESSED_RGBA_ASTC_8x8_KHR = 0x93B7;
+const COMPRESSED_RGBA_ASTC_10x5_KHR = 0x93B8;
+const COMPRESSED_RGBA_ASTC_10x6_KHR = 0x93B9;
+const COMPRESSED_RGBA_ASTC_10x8_KHR = 0x93BA;
+const COMPRESSED_RGBA_ASTC_10x10_KHR = 0x93BB;
+const COMPRESSED_RGBA_ASTC_12x10_KHR = 0x93BC;
+const COMPRESSED_RGBA_ASTC_12x12_KHR = 0x93BD;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = 0x93D0;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR = 0x93D1;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR = 0x93D2;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR = 0x93D3;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR = 0x93D4;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR = 0x93D5;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR = 0x93D6;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR = 0x93D7;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR = 0x93D8;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR = 0x93D9;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR = 0x93DA;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR = 0x93DB;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = 0x93DC;
+const COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = 0x93DD;
+//DXT
+const COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0;
+const COMPRESSED_RGBA_S3TC_DXT1_EXT = 0x83F1;
+const COMPRESSED_RGBA_S3TC_DXT3_EXT = 0x83F2;
+const COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
+const COMPRESSED_RGB_ATC_WEBGL = 0x8C92;
+const COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL = 0x8C93;
+const COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL = 0x87EE;
+//PVRTC
+const COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8C00;
+const COMPRESSED_RGB_PVRTC_2BPPV1_IMG = 0x8C01;
+const COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8C02;
+const COMPRESSED_RGBA_PVRTC_2BPPV1_IMG = 0x8C03;
+const COMPRESSED_RGB_ETC1_WEBGL = 0x8D64;
+
+const DDS_MAGIC:number = 0x20534444;
+const ASTC_MAGIC:number = 0x5CA1AB13;
+
+function FourCC(s:string):number
+{
+    return s.charCodeAt(0)+
+        (s.charCodeAt(1) << 8)+
+        (s.charCodeAt(2) << 16)+
+        (s.charCodeAt(3) << 24);
+}
+
+function FourCCFormat(fourcc:number):number
+{
+    switch(fourcc) {
+    case FourCC("DXT1"):
+        return COMPRESSED_RGB_S3TC_DXT1_EXT;
+    case FourCC("DXT3"):
+        return COMPRESSED_RGBA_S3TC_DXT3_EXT;
+    case FourCC("DXT5"):
+        return COMPRESSED_RGBA_S3TC_DXT5_EXT;
+    case FourCC("ATC "):
+        return COMPRESSED_RGB_ATC_WEBGL;
+    case FourCC("ATCA"):
+        return COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL;
+    case FourCC("ATCI"):
+        return COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL;
+    }
+    return 0;
+}
+
+function DDSDataSize(fmt:number, w:number, h:number):number
+{
+    switch(fmt) {
+    case COMPRESSED_RGB_S3TC_DXT1_EXT:
+    case COMPRESSED_RGB_ATC_WEBGL:
+        return ((w + 3) >> 2) * ((h + 3) >> 2) * 8;
+    case COMPRESSED_RGBA_S3TC_DXT3_EXT:
+    case COMPRESSED_RGBA_S3TC_DXT5_EXT:
+    case COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL:
+    case COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL:
+        return ((w + 3) >> 2) * ((h + 3) >> 2) * 16;
+    default:
+        return 0;
+    }
+}
+
+function LoadDDS(src:ArrayBuffer):ITextureParam
+{
+    let header = new Int32Array(src, 0, 31);
+    let size=header[1];
+    let flags=header[2];
+    let height=header[3];
+    let width=header[4];
+
+    //mipmap
+    let level=1;
+    if(flags & 0x20000) { 
+        level=Math.max(1, header[7]);
+    }
+    let data_offset=size+4;
+    let pflags=header[20];
+    let internalFormat;
+    let compressed=false;
+    if(pflags & 0x4) {
+        let pfourcc=header[21];
+        internalFormat=FourCCFormat(pfourcc);
+        if(internalFormat) {
+            compressed=true;
+        }
+    }
+    let datasize=[DDSDataSize(internalFormat, width, height)];
+
+    return {
+        width:width,
+        height:height,
+        internalFormat:internalFormat,
+        level:level,
+        dataoffset:data_offset,
+        compressed:compressed,
+        datasize:datasize,
+    };
+}
+
+function ASTCFormat(dim:number):number
+{
+    switch(dim) {
+    case 16:
+        return COMPRESSED_RGBA_ASTC_4x4_KHR;
+    case 20:
+        return COMPRESSED_RGBA_ASTC_5x4_KHR;
+    case 25:
+        return COMPRESSED_RGBA_ASTC_5x5_KHR;
+    case 30:
+        return COMPRESSED_RGBA_ASTC_6x5_KHR;
+    case 36:
+        return COMPRESSED_RGBA_ASTC_6x6_KHR;
+    case 40:
+        return COMPRESSED_RGBA_ASTC_8x5_KHR;
+    case 48:
+        return COMPRESSED_RGBA_ASTC_8x6_KHR;
+    case 64:
+        return COMPRESSED_RGBA_ASTC_8x8_KHR;
+    case 50:
+        return COMPRESSED_RGBA_ASTC_10x5_KHR;
+    case 60:
+        return COMPRESSED_RGBA_ASTC_10x6_KHR;
+    case 80:
+        return COMPRESSED_RGBA_ASTC_10x8_KHR;
+    case 100:
+        return COMPRESSED_RGBA_ASTC_10x10_KHR;
+    case 120:
+        return COMPRESSED_RGBA_ASTC_12x10_KHR;
+    case 144:
+        return COMPRESSED_RGBA_ASTC_12x12_KHR;
+    }
+}
+
+function ASTCSize(block:number[],
+    w:number, h:number, z:number):number
+{
+	let xblocks = Math.floor((w + block[0] - 1) / block[0]);
+	let yblocks = Math.floor((h + block[1] - 1) / block[1]);
+	let zblocks = Math.floor((z + block[2] - 1) / block[2]);
+	return (xblocks * yblocks * zblocks) << 4;
+}
+
+function LoadASTC(src:ArrayBuffer):ITextureParam
+{
+    let header=new Uint8Array(src, 0, 16);
+    let dim_x=header[4];
+    let dim_y=header[5];
+    let dim_z=header[6];
+    let width=header[7]+(header[8]<<8)+(header[9]<<16);
+    let height=header[10]+(header[11]<<8)+(header[12]<<16);
+    let depth=header[13]+(header[14]<<8)+(header[15]<<16);
+    let internalFormat = ASTCFormat(dim_x * dim_y);
+    let block=[dim_x, dim_y, dim_z];
+    let datasize=ASTCSize(block, width, height, depth);
+
+    return {
+        width:width,
+        height:height,
+        internalFormat:internalFormat,
+        dataoffset:16,
+        blocksize:block,
+        compressed:true,
+        level:1,
+        datasize:[datasize],
+    };
 }
 
 export class Texture
 {
-    public _texture:WebGLTexture;
-    public _internalFormat:number=gl.RGBA;
-    public _srcFormat:number=gl.RGBA;
-    public _srcType:number=gl.UNSIGNED_BYTE;
-    public _wrapS:number=gl.CLAMP_TO_EDGE;
-    public _wrapT:number=gl.CLAMP_TO_EDGE;
-    public _minFilter:number=gl.LINEAR;
-    public _magFilter:number=gl.LINEAR;
-    public _width:number=1;
-    public _height:number=1;
+    _texture:WebGLTexture;
+    _internalFormat:number=gl.RGBA;
+    _srcFormat:number=gl.RGBA;
+    _srcType:number=gl.UNSIGNED_BYTE;
+    _wrapS:number=gl.CLAMP_TO_EDGE;
+    _wrapT:number=gl.CLAMP_TO_EDGE;
+    _minFilter:number=gl.LINEAR;
+    _magFilter:number=gl.LINEAR;
+    _width:number=1;
+    _height:number=1;
+    _level:number=1;
+    _compressed:boolean=false;
+    _blockSize:number[];
 
     constructor(param?: ITextureParam)
     {
@@ -1240,7 +1456,7 @@ export class Texture
         gl.bindTexture(gl.TEXTURE_2D, this._texture);
     }
 
-    public Update(src:TexImageSource|Uint8Array|Uint16Array|null, param?:any):void {
+    public Update(src:TexImageSource|Uint8Array|Uint16Array|ArrayBuffer|null, param?:any):void {
         let w, h;
         if(src==null)   {
             if(param) {
@@ -1258,6 +1474,26 @@ export class Texture
         else if(has_videoframe && src instanceof VideoFrame) {
             w=src.displayWidth;
             h=src.displayHeight;
+        }
+        else if(src instanceof ArrayBuffer) 
+        {
+            let head=new Uint32Array(src, 0, 1);
+            let magic=head[0];
+            switch(magic) {
+            case DDS_MAGIC:
+                 param=LoadDDS(src);
+                break;
+            case ASTC_MAGIC:
+                param=LoadASTC(src);
+                break;
+            }
+            
+            w=param.width;
+            h=param.height;
+            this._internalFormat=param.internalFormat;
+            this._compressed=param.compressed;
+            this._blockSize=param.blocksize;
+            this._level=param.level;
         }
         else if(src instanceof Uint8Array||src instanceof Uint16Array) 
         {
@@ -1280,7 +1516,7 @@ export class Texture
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this._wrapT);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);                        
         }
-        const level = param? param.level ? param.level : 0 : 0;
+        const level = (param && param.level) ? param.level : 0;
         gl.bindTexture(gl.TEXTURE_2D, this._texture);
         gl && gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._minFilter);
         gl && gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this._magFilter);    
@@ -1293,6 +1529,26 @@ export class Texture
             else if(src instanceof Uint8Array||src instanceof Uint16Array) {
                 gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat, 
                     w,h,0,this._srcFormat, this._srcType, src);
+            }else if(src instanceof ArrayBuffer) {
+                let offset=param.dataoffset;
+                if(this._compressed) {
+                    let dw=w;
+                    let dh=h;
+                    for(let lv =0;lv<this._level;lv++) {
+                        let data_size=param.datasize[lv];
+                        let data_src:Uint8Array=new Uint8Array(src, offset, data_size);
+                        gl.compressedTexImage2D(gl.TEXTURE_2D, lv, 
+                            this._internalFormat, dw, dh, 0, data_src);
+                        dw=dw>>1;
+                        if(dw<1) dw=1;
+                        dh=dh>>1;
+                        if(dh<1) dh=1;
+                        offset+=data_size;
+                    }
+                }else {
+                    gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat, 
+                        w,h,0,this._srcFormat, this._srcType, new Uint8Array(src, offset));
+                }
             }else {
                 gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat,
                     this._srcFormat, this._srcType, src);    
@@ -1302,6 +1558,26 @@ export class Texture
         }else {
             if(src instanceof Uint8Array||src instanceof Uint16Array) {
                 gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, w, h, this._srcFormat, this._srcType, src);
+            }else if(src instanceof ArrayBuffer) {
+                let offset=param.dataoffset;
+                if(this._compressed) {
+                    let dw=w;
+                    let dh=h;
+                    for(let lv =0;lv<this._level;lv++) {
+                        let data_size=param.datasize[lv];
+                        let data_src:Uint8Array=new Uint8Array(src, offset, data_size);
+                        gl.compressedTexSubImage2D(gl.TEXTURE_2D, lv, 
+                            0, 0, dw, dh, 0, data_src);
+                        dw=dw>>1;
+                        if(dw<1) dw=1;
+                        dh=dh>>1;
+                        if(dh<1) dh=1;
+                        offset+=data_size;
+                    }
+                }else {
+                    gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, 
+                        w,h,this._srcFormat, this._srcType, new Uint8Array(src, offset));
+                }
             }else {
                 gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, this._srcFormat, this._srcType, src);
             }
@@ -1325,8 +1601,8 @@ export class TextureCache
 
     public async Load(name:string, src:string) :Promise<Texture>
     {
-        var tex: Texture =new Texture();
-        var image=new Image();
+        let tex: Texture =new Texture();
+        let image=new Image();
         image.crossOrigin="anonymous";
         image.src=src;
         image.onload=()=>{

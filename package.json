@@ -1,6 +1,6 @@
 {
   "name": "@zhobo63/imgui-ts",
-  "version": "0.1.46",
+  "version": "0.1.47",
   "description": "JavaScript bindings for Dear ImGui using Emscripten and TypeScript, modulized with webpack from imgui-js",
   "main": "./src/index",
   "scripts": {
@@ -8,7 +8,8 @@
     "webpack:dev": "webpack --mode=development",
     "webpack:dev-watch": "webpack --mode=development --watch",
     "webpack:prod": "webpack --mode=production --node-env=production",
-    "webpack:prod-watch": "webpack --mode=production --node-env=production --watch"
+    "webpack:prod-watch": "webpack --mode=production --node-env=production --watch",
+    "publish":"npm publish --access public"
   },
   "repository": {
     "type": "git",
