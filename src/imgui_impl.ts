@@ -32,6 +32,7 @@ const enable_vao:boolean=true;
 let g_vao:WebGLVertexArrayObject;
 let has_videoframe:boolean=typeof VideoFrame !== "undefined";
 let g_compressed_ext:any;
+let g_ctx_alpha=false;
 
 export let ctx: CanvasRenderingContext2D | null = null;
 
@@ -377,7 +378,7 @@ export function Init(value: HTMLCanvasElement | WebGL2RenderingContext | WebGLRe
     if (typeof(window) !== "undefined") {
         if (value instanceof(HTMLCanvasElement)) {
             canvas = value;
-            value = canvas.getContext("webgl2", { alpha: false }) || canvas.getContext("webgl", { alpha: false }) || canvas.getContext("2d");
+            value = canvas.getContext("webgl2", { alpha: g_ctx_alpha }) || canvas.getContext("webgl", { alpha: g_ctx_alpha }) || canvas.getContext("2d");
         }
         if (typeof WebGL2RenderingContext !== "undefined" && value instanceof(WebGL2RenderingContext)) {
             io.BackendRendererName = "imgui_impl_webgl2";
