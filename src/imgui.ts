@@ -4884,6 +4884,7 @@ export class ImGuiInputTextState
 export function GetCurrentWindow(): ImGuiWindow { return new ImGuiWindow(bind.GetCurrentWindow()); }
 export function GetHoveredWindow(): ImGuiWindow { return bind.GetHoveredWindow()?new ImGuiWindow(bind.GetHoveredWindow()):null; }
 export function GetHoveredRootWindow(): ImGuiWindow { return bind.GetHoveredRootWindow()?new ImGuiWindow(bind.GetHoveredRootWindow()):null; }
+export function GetMovingWindow(): ImGuiWindow { return bind.GetMovingWindow()?new ImGuiWindow(bind.GetHoveredWindow()):null; }
 export function GetActiveWindow(): ImGuiWindow { return bind.GetActiveWindow()?new ImGuiWindow(bind.GetActiveWindow()):null; }
 
 export function GetHoveredId():ImGuiID {return bind.GetHoveredId();}

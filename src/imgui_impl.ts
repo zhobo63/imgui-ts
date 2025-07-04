@@ -668,14 +668,17 @@ function scroll_update(io:ImGui.IO) {
     const hoveredWin= ImGui.GetHoveredWindow();
     const hoveredId= ImGui.GetHoveredId();
     if(hoveredWin && hoveredId==0)  {
+        const movingWin=ImGui.GetMovingWindow();
         if(current_window_id!=hoveredWin.ID)    {
             current_window_id=hoveredWin.ID;
             scroll_acc.Set(0,0);
             mouse_first_down=true;
         }
-
-        if(hoveredWin.Flags & ImGui.ImGuiWindowFlags.NoMove)    {
-
+        let is_scroll=hoveredWin.Flags & ImGui.ImGuiWindowFlags.NoMove;
+        if(io.ConfigWindowsMoveFromTitleBarOnly && !movingWin) {
+            is_scroll=1;
+        }
+        if(is_scroll)    {
             let first_down=false;
             if(io.MouseDown[0]) {
                 first_down=mouse_first_down;

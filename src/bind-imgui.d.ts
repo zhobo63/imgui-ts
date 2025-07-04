@@ -2130,6 +2130,7 @@ export interface Module extends Emscripten.EmscriptenModule {
     GetCurrentWindow():reference_ImGuiWindow;
     GetHoveredWindow():reference_ImGuiWindow;
     GetHoveredRootWindow():reference_ImGuiWindow;
+    GetMovingWindow():reference_ImGuiWindow;
     GetActiveWindow():reference_ImGuiWindow;
     GetHoveredId():ImGuiID;
     GetHoveredIdPreviousFrame():ImGuiID;

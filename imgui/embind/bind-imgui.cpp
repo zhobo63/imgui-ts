@@ -3416,6 +3416,7 @@ EMSCRIPTEN_BINDINGS(ImGuiWindow) {
     emscripten::function("GetCurrentWindow", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->CurrentWindow); }), emscripten::allow_raw_pointers());
     emscripten::function("GetHoveredWindow", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredWindow); }), emscripten::allow_raw_pointers());
     emscripten::function("GetHoveredRootWindow", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredRootWindow); }), emscripten::allow_raw_pointers());
+    emscripten::function("GetMovingWindow", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->MovingWindow); }), emscripten::allow_raw_pointers());
     emscripten::function("GetActiveWindow", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->ActiveIdWindow); }), emscripten::allow_raw_pointers());
     emscripten::function("GetHoveredId", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredId); }));
     emscripten::function("GetHoveredIdPreviousFrame", FUNCTION(emscripten::val, (), { return emscripten::val(ImGui::GetCurrentContext()->HoveredIdPreviousFrame); }));

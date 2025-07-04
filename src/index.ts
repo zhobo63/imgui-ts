@@ -3,41 +3,71 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl}
 
-export const version="0.1.47";
+export const version="0.1.48";
 
 export function ImGuiObject(obj:any, id:number=0):number
 {
-    if(obj==null)   {
+    if(obj===undefined)   {
+        ImGui.Text("(undefined)");
+        return id;
+    }
+    else if(obj==null)   {
         ImGui.Text("(null)");
         return id;
     }
-    Object.entries(obj).forEach(([key, value])=>{
-        ImGui.PushID(id);
-        id++;
+
+    let is_array=Array.isArray(obj);
+    
+    ImGui.PushID(id);
+    for(let key in obj) {
+        let value=obj[key];
+        let key_str=(is_array)?`[${key}]`:key;
         if(value==null) {
-            ImGui.Text(key + ": (null)");
+            ImGui.Text(key_str + ": (null)");
+        }
+        else if(Array.isArray(value))    {
+            if(value.length>0) {
+                if(ImGui.TreeNode(`${key_str}: [...]`)) {
+                    id=ImGuiObject(value, id+1);
+                    ImGui.TreePop();
+                }
+            }else {
+                ImGui.Text(`${key_str}: []`);
+            }
         }
         else if(typeof(value)==='object')    {
-            if(ImGui.TreeNode(key)) {
-                id=ImGuiObject(value, id+1);
-                ImGui.TreePop();
+            if(Object.keys(value).length>0) {
+                if(ImGui.TreeNode(`${key_str}: {...}`)) {
+                    id=ImGuiObject(value, id+1);
+                    ImGui.TreePop();
+                }
+            }else {
+                ImGui.Text(`${key_str}: {}`)
             }
+        }    
+        else if(typeof(value)==='string')    {
+            let v=(_:string=value as string):string=>obj[key]=_;
+            //ImGui.SetNextItemWidth(100);
+            ImGui.InputText(key_str, v);
         }    
         else if(typeof(value)==='number')    {
             let v=(_:number=value as number):number=>obj[key]=_;
             ImGui.SetNextItemWidth(100);
-            ImGui.InputFloat(key, v);
+            ImGui.InputFloat(key_str, v);
         }
         else if(typeof(value)==='boolean')    {
             let v=(_:boolean=value as boolean):boolean=>obj[key]=_;
             ImGui.SetNextItemWidth(100);
-            ImGui.Checkbox(key, v);
+            ImGui.Checkbox(key_str, v);
         }
-        else {
-            ImGui.Text(key + ": " + value);
+        else if(typeof(value)==='function')    {
+            //ImGui.Text(key_str + ": " + value);
         }
-        ImGui.PopID();
-    })
+        else {            
+            ImGui.Text(key_str + ": " + value);
+        }
+    }
+    ImGui.PopID();
     return id;
 }
 
@@ -111,6 +141,20 @@ class Main
     v2:ImGui.Vec2=new ImGui.Vec2(100,100);
 
     compressed_tex:ImGui_Impl.Texture;
+    test_obj:{}={
+        A:null,
+        B:undefined,
+        C:[1,2,3],
+        D:{},
+        E:{
+            F:[{G:true},{},{}],
+            G:true,
+            H:()=>{},
+            C: [1,2,3],
+            S: "abcdef"
+        },
+    };
+    test_undef:{}=undefined
 
     ImGuiWindow(win:ImGui.Window)   {
         ImGui.Text("ID:" + win.ID);
@@ -228,9 +272,13 @@ class Main
         drawlist.AddCallback((drawlist, cmd)=>{
             //console.log("this is a drawlist callback " + cmd.UserCallbackData);
         }, 2);
-
-
         ImGui.End();
+
+        ImGui.Begin("ImGuiObject");
+        let id=ImGuiObject(this.test_obj, 0);
+        id=ImGuiObject(this.test_undef, id+1);
+        ImGui.End();
+
         ImGui.ShowDemoWindow();
         ImGui.ShowMetricsWindow();
 
@@ -258,6 +306,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     }
 
     const io:ImGui.IO=ImGui.GetIO();
+    io.ConfigWindowsMoveFromTitleBarOnly=true;
     let font =io.Fonts.AddFontDefault();
     //font.FontName="Microsoft JhengHei";
     font.FontName="Arial";
