@@ -938,7 +938,7 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
             if (!gl && !ctx) {
                 console.log("i: pos.x pos.y uv.x uv.y col");
                 for (let i = 0; i < Math.min(3, draw_cmd.ElemCount); ++i) {
-                    const view: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer, draw_list.VtxBuffer.byteOffset + i * ImGui.DrawVertSize);
+                    const view: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer as ArrayBuffer, draw_list.VtxBuffer.byteOffset + i * ImGui.DrawVertSize);
                     console.log(`${i}: ${view.pos[0].toFixed(2)} ${view.pos[1].toFixed(2)} ${view.uv[0].toFixed(5)} ${view.uv[1].toFixed(5)} ${("00000000" + view.col[0].toString(16)).substr(-8)}`);
                 }
             }
@@ -973,15 +973,15 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
                             const i0: number = idx[i + 0];
                             const i1: number = idx[i + 1];
                             const i2: number = idx[i + 2];
-                            const v0: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer, draw_list.VtxBuffer.byteOffset + i0 * ImGui.DrawVertSize);
-                            const v1: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer, draw_list.VtxBuffer.byteOffset + i1 * ImGui.DrawVertSize);
-                            const v2: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer, draw_list.VtxBuffer.byteOffset + i2 * ImGui.DrawVertSize);
+                            const v0: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer as ArrayBuffer, draw_list.VtxBuffer.byteOffset + i0 * ImGui.DrawVertSize);
+                            const v1: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer as ArrayBuffer, draw_list.VtxBuffer.byteOffset + i1 * ImGui.DrawVertSize);
+                            const v2: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer as ArrayBuffer, draw_list.VtxBuffer.byteOffset + i2 * ImGui.DrawVertSize);
                             const i3: number = idx[i + 3];
                             const i4: number = idx[i + 4];
                             const i5: number = idx[i + 5];
-                            const v3: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer, draw_list.VtxBuffer.byteOffset + i3 * ImGui.DrawVertSize);
-                            const v4: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer, draw_list.VtxBuffer.byteOffset + i4 * ImGui.DrawVertSize);
-                            const v5: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer, draw_list.VtxBuffer.byteOffset + i5 * ImGui.DrawVertSize);
+                            const v3: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer as ArrayBuffer, draw_list.VtxBuffer.byteOffset + i3 * ImGui.DrawVertSize);
+                            const v4: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer as ArrayBuffer, draw_list.VtxBuffer.byteOffset + i4 * ImGui.DrawVertSize);
+                            const v5: ImGui.DrawVert = new ImGui.DrawVert(draw_list.VtxBuffer.buffer as ArrayBuffer, draw_list.VtxBuffer.byteOffset + i5 * ImGui.DrawVertSize);
                             let quad = true;
                             let minmin: ImGui.DrawVert = v0;
                             let minmax: ImGui.DrawVert = v0;
@@ -1476,8 +1476,8 @@ export class Texture
             }
         }
         else if(has_videoframe && src instanceof VideoFrame) {
-            w=src.displayWidth;
-            h=src.displayHeight;
+            w=(<VideoFrame>src).displayWidth;
+            h=(<VideoFrame>src).displayHeight;
         }
         else if(src instanceof ArrayBuffer) 
         {

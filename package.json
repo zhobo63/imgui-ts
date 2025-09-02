@@ -9,7 +9,7 @@
     "webpack:dev-watch": "webpack --mode=development --watch",
     "webpack:prod": "webpack --mode=production --node-env=production",
     "webpack:prod-watch": "webpack --mode=production --node-env=production --watch",
-    "publish":"npm publish --access public"
+    "publish": "npm publish --access public"
   },
   "repository": {
     "type": "git",
@@ -19,13 +19,13 @@
   "license": "MIT",
   "devDependencies": {
     "@webpack-cli/generators": "^3.0.7",
-    "ts-loader": "^9.4.4",
-    "typescript": "^5.1.6",
-    "webpack": "^5.88.1",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.2",
+    "webpack": "^5.101.3",
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@types/emscripten": "^1.39.6"
+    "@types/emscripten": "^1.40.1"
   },
   "bugs": {
     "url": "https://github.com/zhobo63/imgui-ts/issues"
