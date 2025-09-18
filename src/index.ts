@@ -2,9 +2,9 @@ import * as ImGui from "./imgui"
 import { ImVec4 } from "./imgui";
 import * as ImGui_Impl from "./imgui_impl"
 
-export {ImGui, ImGui_Impl}
+export {ImGui, ImGui_Impl, ImVec4}
 
-export const version="0.1.48";
+export const version="0.1.49";
 
 export const ImGuiTableFlagsDefault= 
     ImGui.ImGuiTableFlags.RowBg|
