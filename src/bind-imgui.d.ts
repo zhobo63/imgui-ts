@@ -173,6 +173,14 @@ export interface interface_ImTransform {
 
 export interface reference_ImTransform extends Emscripten.EmscriptenClassReference, interface_ImTransform {}
 
+export interface interface_ImBlend {
+    src: number;
+    dst: number;
+}
+
+export interface reference_ImBlend extends Emscripten.EmscriptenClassReference, interface_ImBlend {}
+
+
 // Shared state of InputText(), passed to callback when a ImGuiInputTextFlags_Callback* flag is used and the corresponding callback is triggered.
 export interface reference_ImGuiInputTextCallbackData extends Emscripten.EmscriptenClassReference {
     // ImGuiInputTextFlags EventFlag;      // One of ImGuiInputTextFlags_Callback* // Read-only
@@ -428,6 +436,7 @@ export interface reference_ImDrawCmd extends Emscripten.EmscriptenClassReference
     readonly ClipRect: Readonly<reference_ImVec4>;
     // ImTextureID     TextureId;              // User-provided texture ID. Set by user in ImfontAtlas::SetTexID() for fonts or passed to Image*() functions. Ignore if never using images or multiple fonts atlas.
     readonly TextureId: ImTextureID;
+    readonly Blend: Readonly<reference_ImBlend>;
     // unsigned int    VtxOffset;              // Start offset in vertex buffer. Pre-1.71 or without ImGuiBackendFlags_RendererHasVtxOffset: always 0. With ImGuiBackendFlags_RendererHasVtxOffset: may be >0 to support meshes larger than 64K vertices with 16-bits indices.
     readonly VtxOffset: number;
     // unsigned int    IdxOffset;              // Start offset in index buffer. Always equal to sum of ElemCount drawn so far.
@@ -485,6 +494,8 @@ export interface reference_ImDrawList extends Emscripten.EmscriptenClassReferenc
     GetClipRectMin(out: interface_ImVec2): typeof out;
     // inline ImVec2   GetClipRectMax() const { const ImVec4& cr = _ClipRectStack.back(); return ImVec2(cr.z, cr.w); }
     GetClipRectMax(out: interface_ImVec2): typeof out;
+
+    SetBlend(blend: interface_ImBlend): void;
 
     // Primitives
     // IMGUI_API void  AddLine(const ImVec2& a, const ImVec2& b, ImU32 col, float thickness = 1.0f);

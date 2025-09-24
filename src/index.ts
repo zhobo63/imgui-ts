@@ -4,7 +4,7 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl, ImVec4}
 
-export const version="0.1.49";
+export const version="0.1.50";
 
 export const ImGuiTableFlagsDefault= 
     ImGui.ImGuiTableFlags.RowBg|
@@ -212,7 +212,7 @@ export async function FetchImage(url:string, onload: (buf:ArrayBuffer)=>any)
 //             this.first=false
 //         }
 
-//         ImGui.Begin("Hello");
+//         ImGui.Begin("Hello");        
 //         ImGui.Text("Version " + ImGui.VERSION);
 //         ImGui.InputText("Input", this.text);
 //         ImGui.SetNextItemWidth(-ImGui.FLT_MIN);
@@ -260,11 +260,10 @@ export async function FetchImage(url:string, onload: (buf:ArrayBuffer)=>any)
 //                 this.image=img;
 //             });
 //         }
+//         let drawlist=ImGui.GetForegroundDrawList();
 //         if(this.image)  {
 //             ImGui.Image(this.image._texture, new ImGui.ImVec2(256,256));
-
-//             var drawList:ImGui.ImDrawList = ImGui.GetForegroundDrawList();
-//             drawList.AddImage(this.image._texture, new ImGui.Vec2(0,0), new ImGui.Vec2(100,100));
+//             drawlist.AddImage(this.image._texture, new ImGui.Vec2(0,0), new ImGui.Vec2(100,100));
 //         }
 
 //         if(this.compressed_tex) {
@@ -272,15 +271,15 @@ export async function FetchImage(url:string, onload: (buf:ArrayBuffer)=>any)
 //                 new ImGui.ImVec2(this.compressed_tex._width,this.compressed_tex._height));
 //         }
 
-//         let drawlist=ImGui.GetBackgroundDrawList();
-
 //         drawlist.AddCallback((drawlist, cmd)=>{
 //             //console.log("this is a drawlist callback " + cmd.UserCallbackData);
 //         }, 1);
 
+//         drawlist.SetBlend(ImGui.ImBlend.ADD);
 //         let vstart=drawlist.GetVertexSize();
 //         drawlist.AddRectFilledMultiColorRound(this.v1,this.v2,0xff00ff00, 0xffffff00, 0xff00ffff, 0xff0000ff,4,ImGui.ImDrawCornerFlags.All);
 //         drawlist.AddRect(this.v1,this.v2,0xff0000ff, 4, ImGui.ImDrawCornerFlags.All);
+//         drawlist.SetBlend(ImGui.ImBlend.ALPHA);
 //         let font=ImGui.GetFont();
 //         if(ImGui.Button("AdvanceX")) {
 //             console.log(font.IndexAdvanceX);

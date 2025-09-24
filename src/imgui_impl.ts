@@ -31,8 +31,8 @@ let g_FontTexture: WebGLTexture | null = null;
 const enable_vao:boolean=true;
 let g_vao:WebGLVertexArrayObject;
 let has_videoframe:boolean=typeof VideoFrame !== "undefined";
-let g_compressed_ext:any;
-let g_ctx_alpha=false;
+export let g_compressed_ext:any;
+export let g_ctx_alpha=false;
 
 export let ctx: CanvasRenderingContext2D | null = null;
 
@@ -827,6 +827,43 @@ function UnbindMesh()
     }
 }
 
+function BlendFactor(v:number, src:boolean):GLenum
+{
+    switch(v) {
+    case 0:
+        return src?gl.SRC_ALPHA:gl.ONE_MINUS_SRC_ALPHA;
+    case ImGui.ImBlend_.ZERO:
+        return gl.ZERO;
+    case ImGui.ImBlend_.ONE:
+        return gl.ONE;
+    case ImGui.ImBlend_.SRC_COLOR:
+        return gl.SRC_COLOR;
+	case ImGui.ImBlend_.INV_SRC_COLOR:
+        return gl.ONE_MINUS_SRC_COLOR;
+	case ImGui.ImBlend_.SRC_ALPHA:
+        return gl.SRC_ALPHA;
+	case ImGui.ImBlend_.INV_SRC_ALPHA:
+        return gl.ONE_MINUS_SRC_ALPHA;
+	case ImGui.ImBlend_.DST_ALPHA:
+        return gl.DST_ALPHA;
+	case ImGui.ImBlend_.INV_DST_ALPHA:
+        return gl.ONE_MINUS_DST_ALPHA;
+	case ImGui.ImBlend_.DST_COLOR:
+        return gl.DST_COLOR;
+	case ImGui.ImBlend_.INV_DST_COLOR:
+        return gl.ONE_MINUS_DST_COLOR;
+	case ImGui.ImBlend_.SRC_ALPHA_SATURATE:
+        return gl.SRC_ALPHA_SATURATE;
+    case ImGui.ImBlend_.BOTH_SRC_ALPHA:
+    case ImGui.ImBlend_.BOTH_INV_SRC_ALPHA:
+    case ImGui.ImBlend_.BLEND_FACTOR:
+    case ImGui.ImBlend_.INV_BLEND_FACTOR:
+    default:
+        console.log("BlendFactor", v);
+        return gl.ONE;
+    }
+}
+
 export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawData()): void {
     const io = ImGui.GetIO();
 
@@ -955,7 +992,9 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
                 if (clip_rect.x < fb_width && clip_rect.y < fb_height && clip_rect.z >= 0.0 && clip_rect.w >= 0.0) {
                     // Apply scissor/clipping rectangle
                     gl && gl.scissor(clip_rect.x, fb_height - clip_rect.w, clip_rect.z - clip_rect.x, clip_rect.w - clip_rect.y);
+                    gl && gl.blendFunc(BlendFactor(draw_cmd.Blend.src, true), BlendFactor(draw_cmd.Blend.dst, false));
 
+                    gl.ONE
                     // Bind texture, Draw
                     gl && gl.activeTexture(gl.TEXTURE0);
                     gl && gl.bindTexture(gl.TEXTURE_2D, draw_cmd.TextureId);

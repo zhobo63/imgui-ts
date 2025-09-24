@@ -560,6 +560,37 @@ EMSCRIPTEN_BINDINGS(ImTransform) {
     ;
 }
 
+ImBlend& import_ImBlend(const emscripten::val& value, ImBlend& out) {
+    out.src = import_value<float>(value["src"]);
+    out.dst = import_value<float>(value["dst"]);
+    return out;
+}
+ImBlend import_ImBlend(const emscripten::val& value) {
+    ImBlend out; 
+    import_ImBlend(value, out); 
+    return out;
+}
+emscripten::val export_ImBlend(const ImBlend& value, emscripten::val out) {
+    out.set("src", export_value<float>(value.src));
+    out.set("dst", export_value<float>(value.dst));
+    return out;
+}
+emscripten::val export_ImBlend(const ImBlend& value) {
+    return export_ImBlend(value, emscripten::val::object());
+}
+template <>
+ImBlend import_value(const emscripten::val& value) {
+    return import_ImBlend(value);
+}
+
+EMSCRIPTEN_BINDINGS(ImBlend) {
+    emscripten::class_<ImBlend>("ImBlend")
+    .constructor()
+
+    CLASS_MEMBER(ImBlend, src)
+    CLASS_MEMBER(ImBlend, dst)
+    ;
+}
 
 // Shared state of InputText(), passed to callback when a ImGuiInputTextFlags_Callback* flag is used and the corresponding callback is triggered.
 // struct ImGuiInputTextCallbackData
@@ -698,6 +729,7 @@ EMSCRIPTEN_BINDINGS(ImDrawCmd) {
         CLASS_MEMBER(ImDrawCmd, ElemCount)
         CLASS_MEMBER_GET_RAW_REFERENCE(ImDrawCmd, ClipRect)
         CLASS_MEMBER_GET(ImDrawCmd, TextureId, { return emscripten::val((int) that.TextureId); })
+        CLASS_MEMBER_GET_RAW_REFERENCE(ImDrawCmd, Blend)
         CLASS_MEMBER(ImDrawCmd, VtxOffset)
         CLASS_MEMBER(ImDrawCmd, IdxOffset)
         CLASS_MEMBER_GET(ImDrawCmd, UserCallback, {
@@ -766,6 +798,11 @@ EMSCRIPTEN_BINDINGS(ImDrawList) {
         }))
         // IMGUI_API void  PopTextureID();
         CLASS_METHOD(ImDrawList, PopTextureID)
+        //IMGUI_API void  SetBlend(const ImBlend &blend);
+        .function("SetBlend", FUNCTION(void, (ImDrawList& that, emscripten::val blend), {
+            that.SetBlend(import_ImBlend(blend));
+        }))
+
         // inline ImVec2   GetClipRectMin() const { const ImVec4& cr = _ClipRectStack.back(); return ImVec2(cr.x, cr.y); }
         .function("GetClipRectMin", FUNCTION(emscripten::val, (ImDrawList& that, emscripten::val out), {
             return export_ImVec2(that.GetClipRectMin(), out);

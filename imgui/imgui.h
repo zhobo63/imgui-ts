@@ -2220,6 +2220,39 @@ typedef void (*ImDrawCallback)(const ImDrawList* parent_list, const ImDrawCmd* c
 // It is not done by default because they are many perfectly useful way of altering render state for imgui contents (e.g. changing shader/blending settings before an Image call).
 #define ImDrawCallback_ResetRenderState     (ImDrawCallback)(-1)
 
+enum ImBlend_
+{
+	ImBlend_ZERO					=1,
+	ImBlend_ONE                     ,
+	ImBlend_SRC_COLOR               ,
+	ImBlend_INV_SRC_COLOR		    ,
+	ImBlend_SRC_ALPHA               ,
+	ImBlend_INV_SRC_ALPHA		    ,
+	ImBlend_DST_ALPHA               ,
+	ImBlend_INV_DST_ALPHA		    ,
+	ImBlend_DST_COLOR               ,
+	ImBlend_INV_DST_COLOR		    ,
+	ImBlend_SRC_ALPHA_SATURATE      ,
+    ImBlend_BOTH_SRC_ALPHA		    ,
+    ImBlend_BOTH_INV_SRC_ALPHA	    ,
+    ImBlend_BLEND_FACTOR			,
+    ImBlend_INV_BLEND_FACTOR		,
+};
+
+struct ImBlend
+{
+    int src;
+    int dst;
+
+    ImBlend(int _src = ImBlend_SRC_ALPHA, int _dst = ImBlend_INV_SRC_ALPHA): src(_src), dst(_dst) {}
+
+    inline bool operator == (const ImBlend &blend) const {return src==blend.src && dst==blend.dst;}
+    inline bool operator != (const ImBlend &blend) const {return !(src==blend.src && dst==blend.dst);}
+
+    static ImBlend ADD;
+    static ImBlend ALPHA;
+};
+
 // Typically, 1 command = 1 GPU draw call (unless command is a callback)
 // - VtxOffset/IdxOffset: When 'io.BackendFlags & ImGuiBackendFlags_RendererHasVtxOffset' is enabled,
 //   those fields allow us to render meshes larger than 64K vertices while keeping 16-bit indices.
@@ -2229,6 +2262,7 @@ struct ImDrawCmd
 {
     ImVec4          ClipRect;           // 4*4  // Clipping rectangle (x1, y1, x2, y2). Subtract ImDrawData->DisplayPos to get clipping rectangle in "viewport" coordinates
     ImTextureID     TextureId;          // 4-8  // User-provided texture ID. Set by user in ImfontAtlas::SetTexID() for fonts or passed to Image*() functions. Ignore if never using images or multiple fonts atlas.
+    ImBlend         Blend;
     unsigned int    VtxOffset;          // 4    // Start offset in vertex buffer. ImGuiBackendFlags_RendererHasVtxOffset: always 0, otherwise may be >0 to support meshes larger than 64K vertices with 16-bit indices.
     unsigned int    IdxOffset;          // 4    // Start offset in index buffer. Always equal to sum of ElemCount drawn so far.
     unsigned int    ElemCount;          // 4    // Number of indices (multiple of 3) to be rendered as triangles. Vertices are stored in the callee ImDrawList's vtx_buffer[] array, indices in idx_buffer[].
@@ -2265,6 +2299,7 @@ struct ImDrawCmdHeader
 {
     ImVec4          ClipRect;
     ImTextureID     TextureId;
+    ImBlend         Blend;
     unsigned int    VtxOffset;
 };
 
@@ -2347,7 +2382,11 @@ struct ImDrawList
     ImDrawListSplitter      _Splitter;          // [Internal] for channels api (note: prefer using your own persistent instance of ImDrawListSplitter!)
     float                   _FringeScale;       // [Internal] anti-alias fringe is scaled by this value, this helps to keep things sharp while zooming at vertex buffer content
     // If you want to create ImDrawList instances, pass them ImGui::GetDrawListSharedData() or create and use your own ImDrawListSharedData (so you can use ImDrawList without ImGui)
-    ImDrawList(const ImDrawListSharedData* shared_data) { memset(this, 0, sizeof(*this)); _Data = shared_data; }
+    ImDrawList(const ImDrawListSharedData* shared_data) { 
+        memset(this, 0, sizeof(*this)); 
+        _CmdHeader.Blend = ImBlend::ALPHA;
+        _Data = shared_data; 
+    }
 
     ~ImDrawList() { _ClearFreeMemory(); }
     IMGUI_API void  PushClipRect(ImVec2 clip_rect_min, ImVec2 clip_rect_max, bool intersect_with_current_clip_rect = false);  // Render-level scissoring. This is passed down to your render function but not used for CPU-side coarse clipping. Prefer using higher-level ImGui::PushClipRect() to affect logic (hit-testing and widget culling)
@@ -2355,6 +2394,7 @@ struct ImDrawList
     IMGUI_API void  PopClipRect();
     IMGUI_API void  PushTextureID(ImTextureID texture_id);
     IMGUI_API void  PopTextureID();
+    IMGUI_API void  SetBlend(const ImBlend &blend);
     inline ImVec2   GetClipRectMin() const { const ImVec4& cr = _ClipRectStack.back(); return ImVec2(cr.x, cr.y); }
     inline ImVec2   GetClipRectMax() const { const ImVec4& cr = _ClipRectStack.back(); return ImVec2(cr.z, cr.w); }
 
@@ -2446,6 +2486,7 @@ struct ImDrawList
     IMGUI_API void  _PopUnusedDrawCmd();
     IMGUI_API void  _OnChangedClipRect();
     IMGUI_API void  _OnChangedTextureID();
+    IMGUI_API void  _OnChangedBlend();
     IMGUI_API void  _OnChangedVtxOffset();
 };
 

@@ -1058,6 +1058,37 @@ export class ImTransform implements Bind.interface_ImTransform
     }
 }
 
+export { interface_ImBlend } from "./bind-imgui";
+export { reference_ImBlend } from "./bind-imgui";
+
+export enum ImBlend_
+{
+    ZERO					=1,
+	ONE                     ,
+	SRC_COLOR               ,
+	INV_SRC_COLOR		    ,
+	SRC_ALPHA               ,
+	INV_SRC_ALPHA		    ,
+	DST_ALPHA               ,
+	INV_DST_ALPHA		    ,
+	DST_COLOR               ,
+	INV_DST_COLOR		    ,
+	SRC_ALPHA_SATURATE      ,
+    BOTH_SRC_ALPHA		    ,
+    BOTH_INV_SRC_ALPHA	    ,
+    BLEND_FACTOR			,
+    INV_BLEND_FACTOR		,
+}
+
+export { ImBlend as Blend }
+
+export class ImBlend implements Bind.interface_ImBlend {
+    constructor(public src: number = ImBlend_.SRC_ALPHA, public dst: number = ImBlend_.INV_SRC_ALPHA) {}
+
+    public static readonly ADD: Readonly<ImBlend> = new ImBlend(ImBlend_.ONE, ImBlend_.ONE);
+    public static readonly ALPHA: Readonly<ImBlend> = new ImBlend(ImBlend_.SRC_ALPHA, ImBlend_.INV_SRC_ALPHA);
+}
+
 //-----------------------------------------------------------------------------
 // Helpers
 //-----------------------------------------------------------------------------
@@ -1643,6 +1674,9 @@ export class ImDrawCmd
     get TextureId(): ImTextureID | null {
         return ImGuiContext.getTexture(this.native.TextureId);
     }
+    get Blend(): Readonly<Bind.reference_ImBlend> {
+        return this.native.Blend;
+    }
     // unsigned int    VtxOffset;              // Start offset in vertex buffer. Pre-1.71 or without ImGuiBackendFlags_RendererHasVtxOffset: always 0. With ImGuiBackendFlags_RendererHasVtxOffset: may be >0 to support meshes larger than 64K vertices with 16-bits indices.
     get VtxOffset(): number { return this.native.VtxOffset; }
     // unsigned int    IdxOffset;              // Start offset in index buffer. Always equal to sum of ElemCount drawn so far.
@@ -1792,6 +1826,10 @@ export class ImDrawList
     // inline ImVec2   GetClipRectMax() const { const ImVec4& cr = _ClipRectStack.back(); return ImVec2(cr.z, cr.w); }
     public GetClipRectMax(out: Bind.interface_ImVec2 = new ImVec2()): Bind.interface_ImVec2 {
         return this.native.GetClipRectMax(out);
+    }
+
+    public SetBlend(blend: Readonly<Bind.interface_ImBlend>):void {
+        this.native.SetBlend(blend);
     }
 
     // Primitives

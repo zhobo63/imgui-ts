@@ -48,6 +48,13 @@ webpack
 
 ## Update
 
+* 0.1.50
+  * [New] ImBlend
+  * [New] ImDrawList::SetBlend
+
+* 0.1.49
+  * [New] Compressed Texture
+
 * 0.1.43
   * Implement ImDrawList::AddCallback
 

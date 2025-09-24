@@ -2866,6 +2866,7 @@ ImGuiWindow::ImGuiWindow(ImGuiContext* context, const char* name) : DrawListInst
     DrawList = &DrawListInst;
     DrawList->_Data = &context->DrawListSharedData;
     DrawList->_OwnerName = Name;
+    DrawList->_CmdHeader.Blend=ImBlend::ALPHA;
 }
 
 ImGuiWindow::~ImGuiWindow()
