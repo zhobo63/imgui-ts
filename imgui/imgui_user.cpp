@@ -712,6 +712,16 @@ ImMat2 ImMat2::SetRotate(float rad)
 	return *this;
 }
 
+ImMat2 ImMat2::Scale(const ImVec2 &s) const
+{
+	ImMat2 m;
+	m.m11=m11*s.x;
+	m.m12=m21*s.y;
+	m.m21=m12*s.x;
+	m.m22=m22*s.y;
+	return m;
+}
+
 ImVec2 ImMat2::operator*(const ImVec2& p) const
 {
 	return ImVec2(
@@ -732,8 +742,9 @@ ImMat2 ImMat2::operator*(const ImMat2& m) const
 
 ImVec2 ImTransform::operator*(const ImVec2& p) const
 {
-	return ((rotate * p) * scale) + translate;
+	return (rotate.Scale(scale) * p) + translate;
 }
+
 ImTransform ImTransform::operator*(const ImTransform& _tm) const
 {
 	ImTransform tm;
@@ -745,7 +756,8 @@ ImTransform ImTransform::operator*(const ImTransform& _tm) const
 void ImTransform::Identity()
 {
 	rotate.Identity();
-	scale = 1;
+	scale.x = 1;
+	scale.y = 1;
 	translate.x = 0;
 	translate.y = 0;
 }

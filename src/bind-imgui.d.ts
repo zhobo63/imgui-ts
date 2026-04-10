@@ -159,7 +159,7 @@ export interface reference_ImMat2 extends Emscripten.EmscriptenClassReference, i
 export interface interface_ImTransform {
     rotate: interface_ImMat2;
     translate: interface_ImVec2;
-    scale: number;
+    scale: interface_ImVec2;
 
     Identity(): void;
     Multiply(transform: Readonly<interface_ImTransform>): interface_ImTransform;

@@ -4,7 +4,7 @@ import * as ImGui_Impl from "./imgui_impl"
 
 export {ImGui, ImGui_Impl, ImVec4}
 
-export const version="0.1.51";
+export const version="0.1.53";
 
 export const ImGuiTableFlagsDefault= 
     ImGui.ImGuiTableFlags.RowBg|
@@ -83,8 +83,12 @@ export function ImGuiObject(obj:any, id:number=0):number
             let v=(_:number=value as number):number=>obj[key]=_;
             ImGui.SetNextItemWidth(100);
             if(Number.isInteger(value)) {
-                ImGui.InputInt(key_str, v);
+                let u=new Uint32Array([value]);
+                if(ImGui.InputScalar(key_str, u, 1, 10)) {
+                    obj[key]=u[0];
+                }
             }else {
+
                 ImGui.InputDouble(key_str, v);
             }
         }
@@ -158,7 +162,7 @@ export async function FetchImage(url:string, onload: (buf:ArrayBuffer)=>any)
 //         // });
 //     }
 
-//     prev_time:number;
+//     prev_time:number=0;
 //     text:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,'whats up');
 //     text2:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,'もじ/もんじ');
 //     text_area:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,'whats up multiline');
@@ -168,12 +172,12 @@ export async function FetchImage(url:string, onload: (buf:ArrayBuffer)=>any)
 //     v4:ImGui.Vec4=new ImGui.Vec4;
 //     image_src:ImGui.ImStringBuffer=new ImGui.ImStringBuffer(128,'');
 //     textureCache:ImGui_Impl.TextureCache=new ImGui_Impl.TextureCache;
-//     image:ImGui_Impl.Texture;
+//     image?:ImGui_Impl.Texture;
 //     tm:ImGui.ImTransform=new ImGui.ImTransform();
 //     v1:ImGui.Vec2=new ImGui.Vec2(-100,-50);
 //     v2:ImGui.Vec2=new ImGui.Vec2(100,100);
 
-//     compressed_tex:ImGui_Impl.Texture;
+//     compressed_tex?:ImGui_Impl.Texture;
 //     test_obj:{}={
 //         A:null,
 //         B:undefined,
@@ -187,7 +191,7 @@ export async function FetchImage(url:string, onload: (buf:ArrayBuffer)=>any)
 //             S: "abcdef"
 //         },
 //     };
-//     test_undef:{}=undefined
+//     test_undef?:{}
 
 //     ImGuiWindow(win:ImGui.Window)   {
 //         ImGui.Text("ID:" + win.ID);
@@ -212,7 +216,7 @@ export async function FetchImage(url:string, onload: (buf:ArrayBuffer)=>any)
 //         if(this.first)  {
 //             ImGui.SetNextWindowPos(new ImGui.ImVec2(0,0));
 //             if(ImGui.isMobile.any())
-//                 ImGui.SetNextWindowSize(new ImGui.ImVec2(ImGui_Impl.canvas.scrollWidth,ImGui_Impl.canvas.scrollHeight));
+//                 ImGui.SetNextWindowSize(new ImGui.ImVec2(ImGui_Impl.canvas?.scrollWidth,ImGui_Impl.canvas?.scrollHeight));
 //             this.first=false
 //         }
 
@@ -255,9 +259,10 @@ export async function FetchImage(url:string, onload: (buf:ArrayBuffer)=>any)
 //         ImGui.InputFloat2("scroll_acc",  ImGui_Impl.scroll_acc);
 //         ImGui.TextColored(new ImGui.ImVec4(0,1,0,1), "FontTexturePool");
 //         if(ImGui_Impl.dom_font&&ImGui_Impl.dom_font.texturePage) {
-//             ImGui_Impl.dom_font.texturePage.forEach(page=>{
-//                 ImGui.Image(page.Texure._texture, new ImGui.ImVec2(512,512));
-//             })
+//             for(let page of ImGui_Impl.dom_font.texturePage) {
+//                 if(page.Texure._texture)
+//                     ImGui.Image(page.Texure._texture, new ImGui.ImVec2(512,512));
+//             }
 //         }
 //         if(ImGui.InputText("image_src", this.image_src))    {
 //             this.textureCache.Load("img", this.image_src.buffer).then(img=>{
@@ -265,12 +270,12 @@ export async function FetchImage(url:string, onload: (buf:ArrayBuffer)=>any)
 //             });
 //         }
 //         let drawlist=ImGui.GetForegroundDrawList();
-//         if(this.image)  {
+//         if(this.image && this.image._texture)  {
 //             ImGui.Image(this.image._texture, new ImGui.ImVec2(256,256));
 //             drawlist.AddImage(this.image._texture, new ImGui.Vec2(0,0), new ImGui.Vec2(100,100));
 //         }
 
-//         if(this.compressed_tex) {
+//         if(this.compressed_tex && this.compressed_tex._texture) {
 //             ImGui.Image(this.compressed_tex._texture, 
 //                 new ImGui.ImVec2(this.compressed_tex._width,this.compressed_tex._height));
 //         }
@@ -298,7 +303,9 @@ export async function FetchImage(url:string, onload: (buf:ArrayBuffer)=>any)
 //             "Hello, World! This is a good way to show", null, 0, true);
 //         this.tm.rotate.SetRotate(time*0.001);
 //         this.tm.translate.Set(200,200);
-//         this.tm.scale=1+Math.sin(time*0.001)*0.25;
+//         let scale_x=1+Math.sin(time*0.001)*0.25;
+//         let scale_y=1+Math.sin(time*0.0015)*0.25;
+//         this.tm.scale.Set(scale_x, scale_y);
 //         drawlist.Transform(this.tm, vstart);
 
 //         drawlist.AddCallback((drawlist, cmd)=>{

@@ -29,7 +29,7 @@ let g_VboHandle: WebGLBuffer | null = null;
 let g_ElementsHandle: WebGLBuffer | null = null;
 let g_FontTexture: WebGLTexture | null = null;
 const enable_vao:boolean=true;
-let g_vao:WebGLVertexArrayObject;
+let g_vao:WebGLVertexArrayObject|null=null;
 let has_videoframe:boolean=typeof VideoFrame !== "undefined";
 export let g_compressed_ext:any;
 export let g_ctx_alpha=false;
@@ -223,8 +223,8 @@ let touch_count:number=0;
 let touch_id:number;
 export class ITouch
 {
-    x:number;
-    y:number;
+    x:number=0;
+    y:number=0;
 }
 export let multi_touch:{[key:number]:ITouch}={};
 
@@ -466,10 +466,10 @@ export function Shutdown(): void {
     }
 }
 
-export function ClearBuffer(color:ImGui.ImVec4, bufferBit:number = gl.COLOR_BUFFER_BIT)
+export function ClearBuffer(color:ImGui.ImVec4, bufferBit:number = WebGLRenderingContext.COLOR_BUFFER_BIT)
 {
-    gl.clearColor(color.x, color.y, color.z, color.w);
-    gl.clear(bufferBit);
+    gl && gl.clearColor(color.x, color.y, color.z, color.w);
+    gl && gl.clear(bufferBit);
 }
 
 export function NewFrame(time: number): void {
@@ -644,20 +644,20 @@ function toRgba(col:number):string
     return 'rgba('+r+','+g+','+b+','+a+')';    
 }
 
-export let dom_font:Font=null;
+export let dom_font:Font|undefined;
 
 async function font_update(io:ImGui.IO) {
     if(!dom_font)   {
         dom_font=new Font;
     }
-    io.Fonts.Fonts.forEach(font=>{
+    for(let font of io.Fonts.Fonts) {
         let glyph=font.GlyphToCreate;
         while(glyph)   {
             glyph=dom_font.Create(glyph, font);
             font.GlyphCreated(glyph);
             glyph=font.GlyphToCreate;
         }
-    });
+    }
     dom_font.UpdateTexture();    
 }
 
@@ -718,9 +718,9 @@ function scroll_update(io:ImGui.IO) {
     }
 }
 
-let dom_input:Input.Input;
+let dom_input:Input.Input|undefined;
 let current_input_id:ImGui.ImGuiID=0;
-let current_input_text:string;
+let current_input_text:string|undefined;
 
 function input_text_update(io:ImGui.IO):void {
     const activeId=ImGui.GetActiveId();
@@ -730,12 +730,12 @@ function input_text_update(io:ImGui.IO):void {
         return;
     }
     if(current_input_id !=activeId) {
-        dom_input=null;
+        dom_input=undefined;
     }
 
     current_input_id=activeId;
     let inpState=ImGui.GetInputTextState(activeId);
-    let inp:Input.Input=dom_input;
+    let inp:Input.Input|undefined=dom_input;
     if(!inp)  {
         let textCol=ImGui.Vec4_toRGBA(ImGui.GetStyleColorVec4(ImGui.ImGuiCol.Text));
         let textBg=ImGui.Vec4_toRGBA(ImGui.GetStyleColorVec4(ImGui.ImGuiCol.WindowBg));
@@ -755,7 +755,7 @@ function input_text_update(io:ImGui.IO):void {
                 io.KeysDown[9]=false;
             }else {
                 add_key_event();
-                if(inp.isTab)   {
+                if(inp && inp.isTab)   {
                     io.KeysDown[9]=true;
                 }
             }
@@ -767,7 +767,8 @@ function input_text_update(io:ImGui.IO):void {
     inp.setRect(framebb.Min.x, framebb.Min.y, framebb.Max.x-framebb.Min.x, framebb.Max.y-framebb.Min.y);
     if(current_input_text!==inp.Text) {
         current_input_text=inp.Text;
-        inpState.Text=inp.Text;
+        if(inp.Text)
+            inpState.Text=inp.Text;
         //console.log(inp.Text);
     }
     if(!inp.isVisible)  {
@@ -831,36 +832,36 @@ function BlendFactor(v:number, src:boolean):GLenum
 {
     switch(v) {
     case 0:
-        return src?gl.SRC_ALPHA:gl.ONE_MINUS_SRC_ALPHA;
+        return src?WebGLRenderingContext.SRC_ALPHA:WebGLRenderingContext.ONE_MINUS_SRC_ALPHA;
     case ImGui.ImBlend_.ZERO:
-        return gl.ZERO;
+        return WebGLRenderingContext.ZERO;
     case ImGui.ImBlend_.ONE:
-        return gl.ONE;
+        return WebGLRenderingContext.ONE;
     case ImGui.ImBlend_.SRC_COLOR:
-        return gl.SRC_COLOR;
+        return WebGLRenderingContext.SRC_COLOR;
 	case ImGui.ImBlend_.INV_SRC_COLOR:
-        return gl.ONE_MINUS_SRC_COLOR;
+        return WebGLRenderingContext.ONE_MINUS_SRC_COLOR;
 	case ImGui.ImBlend_.SRC_ALPHA:
-        return gl.SRC_ALPHA;
+        return WebGLRenderingContext.SRC_ALPHA;
 	case ImGui.ImBlend_.INV_SRC_ALPHA:
-        return gl.ONE_MINUS_SRC_ALPHA;
+        return WebGLRenderingContext.ONE_MINUS_SRC_ALPHA;
 	case ImGui.ImBlend_.DST_ALPHA:
-        return gl.DST_ALPHA;
+        return WebGLRenderingContext.DST_ALPHA;
 	case ImGui.ImBlend_.INV_DST_ALPHA:
-        return gl.ONE_MINUS_DST_ALPHA;
+        return WebGLRenderingContext.ONE_MINUS_DST_ALPHA;
 	case ImGui.ImBlend_.DST_COLOR:
-        return gl.DST_COLOR;
+        return WebGLRenderingContext.DST_COLOR;
 	case ImGui.ImBlend_.INV_DST_COLOR:
-        return gl.ONE_MINUS_DST_COLOR;
+        return WebGLRenderingContext.ONE_MINUS_DST_COLOR;
 	case ImGui.ImBlend_.SRC_ALPHA_SATURATE:
-        return gl.SRC_ALPHA_SATURATE;
+        return WebGLRenderingContext.SRC_ALPHA_SATURATE;
     case ImGui.ImBlend_.BOTH_SRC_ALPHA:
     case ImGui.ImBlend_.BOTH_INV_SRC_ALPHA:
     case ImGui.ImBlend_.BLEND_FACTOR:
     case ImGui.ImBlend_.INV_BLEND_FACTOR:
     default:
         console.log("BlendFactor", v);
-        return gl.ONE;
+        return WebGLRenderingContext.ONE;
     }
 }
 
@@ -943,19 +944,19 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
         let idx_buffer_offset: number = 0;
         const vx=draw_list.VtxBuffer;
         const ix=draw_list.IdxBuffer;
-        let ixU:Uint8Array|Uint16Array|Uint32Array=null;
+        let ixU:Uint8Array|Uint16Array|Uint32Array|null=null;
         switch(ImGui.DrawIdxSize)   {
         case 1:
             ixU=new Uint8Array(ix.buffer.slice(ix.byteOffset, ix.byteOffset+ix.byteLength));
-            idx_buffer_type=gl.UNSIGNED_BYTE;
+            idx_buffer_type=WebGLRenderingContext.UNSIGNED_BYTE;
             break;
         case 2:
             ixU=new Uint16Array(ix.buffer.slice(ix.byteOffset, ix.byteOffset+ix.byteLength));
-            idx_buffer_type=gl.UNSIGNED_SHORT;
+            idx_buffer_type=WebGLRenderingContext.UNSIGNED_SHORT;
             break;
         case 4:
             ixU=new Uint32Array(ix.buffer.slice(ix.byteOffset, ix.byteOffset+ix.byteLength));
-            idx_buffer_type=gl.UNSIGNED_INT;
+            idx_buffer_type=WebGLRenderingContext.UNSIGNED_INT;
             break;
         }
 
@@ -994,7 +995,7 @@ export function RenderDrawData(draw_data: ImGui.DrawData | null = ImGui.GetDrawD
                     gl && gl.scissor(clip_rect.x, fb_height - clip_rect.w, clip_rect.z - clip_rect.x, clip_rect.w - clip_rect.y);
                     gl && gl.blendFunc(BlendFactor(draw_cmd.Blend.src, true), BlendFactor(draw_cmd.Blend.dst, false));
 
-                    gl.ONE
+                    // gl.ONE
                     // Bind texture, Draw
                     gl && gl.activeTexture(gl.TEXTURE0);
                     gl && gl.bindTexture(gl.TEXTURE_2D, draw_cmd.TextureId);
@@ -1173,7 +1174,7 @@ export function DestroyFontsTexture(): void {
     gl && gl.deleteTexture(g_FontTexture); g_FontTexture = null;
     if(dom_font)    {
         dom_font.Destroy();
-        dom_font=null;
+        dom_font=undefined;
     }
 }
 
@@ -1378,7 +1379,7 @@ function LoadDDS(src:ArrayBuffer):ITextureParam
     }
     let data_offset=size+4;
     let pflags=header[20];
-    let internalFormat;
+    let internalFormat=0;
     let compressed=false;
     if(pflags & 0x4) {
         let pfourcc=header[21];
@@ -1431,6 +1432,8 @@ function ASTCFormat(dim:number):number
         return COMPRESSED_RGBA_ASTC_12x10_KHR;
     case 144:
         return COMPRESSED_RGBA_ASTC_12x12_KHR;
+    default:
+        return 0;
     }
 }
 
@@ -1470,19 +1473,19 @@ function LoadASTC(src:ArrayBuffer):ITextureParam
 
 export class Texture
 {
-    _texture:WebGLTexture;
-    _internalFormat:number=gl.RGBA;
-    _srcFormat:number=gl.RGBA;
-    _srcType:number=gl.UNSIGNED_BYTE;
-    _wrapS:number=gl.CLAMP_TO_EDGE;
-    _wrapT:number=gl.CLAMP_TO_EDGE;
-    _minFilter:number=gl.LINEAR;
-    _magFilter:number=gl.LINEAR;
+    _texture?:WebGLTexture;
+    _internalFormat:number=WebGLRenderingContext.RGBA;
+    _srcFormat:number=WebGLRenderingContext.RGBA;
+    _srcType:number=WebGLRenderingContext.UNSIGNED_BYTE;
+    _wrapS:number=WebGLRenderingContext.CLAMP_TO_EDGE;
+    _wrapT:number=WebGLRenderingContext.CLAMP_TO_EDGE;
+    _minFilter:number=WebGLRenderingContext.LINEAR;
+    _magFilter:number=WebGLRenderingContext.LINEAR;
     _width:number=1;
     _height:number=1;
     _level:number=1;
     _compressed:boolean=false;
-    _blockSize:number[];
+    _blockSize?:number[];
 
     constructor(param?: ITextureParam)
     {
@@ -1491,16 +1494,20 @@ export class Texture
     public Destroy():void {
         if(this._texture)   {
             gl && gl.deleteTexture(this._texture); 
-            this._texture = null;
+            this._texture = undefined;
         }
     }
-    public Bind(index:number=gl.TEXTURE0):void {
-        gl.activeTexture(index);
-        gl.bindTexture(gl.TEXTURE_2D, this._texture);
+    public Bind(index:number=WebGLRenderingContext.TEXTURE0):void {
+        if(gl && this._texture) {
+            gl.activeTexture(index);
+            gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, this._texture);
+        }
     }
 
     public Update(src:TexImageSource|Uint8Array|Uint16Array|ArrayBuffer|null, param?:any):void {
         let w, h;
+        if(!gl)
+            return;
         if(src==null)   {
             if(param) {
                 w=param.width;
@@ -1565,7 +1572,7 @@ export class Texture
         gl && gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this._magFilter);    
         if(w!=this._width||h!=this._height) {
             if(src==null) {
-                const data:ArrayBufferView=null;
+                const data:ArrayBufferView|null=null;
                 gl.texImage2D(gl.TEXTURE_2D, level, this._internalFormat, 
                     w,h,0,this._srcFormat, this._srcType, data);
             }
@@ -1621,7 +1628,7 @@ export class Texture
                     gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, 
                         w,h,this._srcFormat, this._srcType, new Uint8Array(src, offset));
                 }
-            }else {
+            }else if(src !== null) {
                 gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, this._srcFormat, this._srcType, src);
             }
         }
@@ -1636,9 +1643,9 @@ export class TextureCache
     }
 
     public Destroy():void {
-        Object.entries(this.cache).forEach(([key, value])=>{
-            value.Destroy();            
-        });
+        for(let key in this.cache) {
+            this.cache[key].Destroy();
+        }
         this.cache={};
     }
 
@@ -1668,19 +1675,19 @@ export class FrameBufferObject
     {
         if(this._target)    {
             this._target.Destroy();
-            this._target=null;
+            this._target=undefined;
         }
         if(this._depth) {
-            gl.deleteRenderbuffer(this._depth);
-            this._depth=null;
+            gl && gl.deleteRenderbuffer(this._depth);
+            this._depth=undefined;
         }
         if(this._fbo)   {
-            gl.deleteFramebuffer(this._fbo);
-            this._fbo=null;
+            gl && gl.deleteFramebuffer(this._fbo);
+            this._fbo=undefined;
         }
     }
 
-    public Create(width:number, height:number, format:number=gl.RGB, depth:number=gl.DEPTH_COMPONENT16):void {
+    public Create(width:number, height:number, format:number=WebGLRenderingContext.RGB, depth:number=WebGLRenderingContext.DEPTH_COMPONENT16):void {
         this.width=width;
         this.height=height;
         this.format=format;
@@ -1688,7 +1695,8 @@ export class FrameBufferObject
     }
 
     public Bind(use:boolean=true):void {
-        if(use) {
+        if(!gl) return;
+        if(use && this._target?._texture) {
             if(!this._target)   {
                 let target=new Texture();
                 target._srcFormat=target._internalFormat=this.format;
@@ -1705,7 +1713,7 @@ export class FrameBufferObject
                 let fbo=gl.createFramebuffer();
                 gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-                    gl.TEXTURE_2D, this._target._texture, 0);
+                    gl.TEXTURE_2D, this._target._texture as WebGLTexture, 0);
                 if(this._depth) {
                     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
                         gl.RENDERBUFFER, this._depth);
@@ -1718,17 +1726,17 @@ export class FrameBufferObject
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         }
     }
-    public get_texture():WebGLTexture {
-        return this._target?this._target._texture:null;
+    public get_texture():WebGLTexture|undefined {
+        return this._target?._texture;
     }
 
-    private _fbo: WebGLFramebuffer;
-    private _target:Texture;
-    private _depth:WebGLRenderbuffer;
-    public width:number;
-    public height:number;
-    public format:number;
-    public depth_format:number;
+    _fbo?: WebGLFramebuffer;
+    _target?:Texture;
+    _depth?:WebGLRenderbuffer;
+    width:number=0;
+    height:number=0;
+    format:number = WebGLRenderingContext.RGB;
+    depth_format:number = WebGLRenderingContext.DEPTH_COMPONENT16;
 }
 
 export class Shader
@@ -1752,11 +1760,11 @@ export class Shader
         }
     }
     public Create(vsCode:string[], psCode:string[]):void {
-        let vs;
-        if(vsCode)  {
-            vs=gl && gl.createShader(gl.VERTEX_SHADER);
-            gl && gl.shaderSource(vs as WebGLShader, vsCode.join("\n"));
-            gl && gl.compileShader(vs as WebGLShader);
+        let vs:WebGLShader|null;
+        if(gl && vsCode)  {
+            vs=gl && gl.createShader(gl.VERTEX_SHADER) as WebGLShader;
+            gl && gl.shaderSource(vs, vsCode.join("\n"));
+            gl && gl.compileShader(vs);
             if(!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
                 console.log('VertexShader compile failed: ' + gl.getShaderInfoLog(vs));
             }
@@ -1765,11 +1773,11 @@ export class Shader
             vs=g_VertHandle;
         }
     
-        let ps;
-        if(psCode)  {
-            ps = gl && gl.createShader(gl.FRAGMENT_SHADER);
-            gl && gl.shaderSource(ps as WebGLShader, psCode.join("\n"));
-            gl && gl.compileShader(ps as WebGLShader);
+        let ps:WebGLShader|null;
+        if(gl && psCode)  {
+            ps = gl && gl.createShader(gl.FRAGMENT_SHADER) as WebGLShader;
+            gl && gl.shaderSource(ps, psCode.join("\n"));
+            gl && gl.compileShader(ps);
             if(!gl.getShaderParameter(ps, gl.COMPILE_STATUS)) {
                 console.log('FragmentShader compile failed: ' + gl.getShaderInfoLog(ps));
             }
@@ -1779,17 +1787,19 @@ export class Shader
         }
 
         let program = gl && gl.createProgram();
-        gl && gl.attachShader(program, vs as WebGLShader);
-        gl && gl.attachShader(program, ps as WebGLShader);
-        gl && gl.linkProgram(program);
-    
-        if(!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            console.log('linkProgram failed: ' + gl.getProgramInfoLog(program));
+        if(gl && program) {
+            gl.attachShader(program, vs as WebGLShader);
+            gl.attachShader(program, ps as WebGLShader);
+            gl.linkProgram(program);
+        
+            if(!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.log('linkProgram failed: ' + gl.getProgramInfoLog(program));
+            }
         }
         this._program=program;
     }
 
-    private _program:WebGLProgram;
-    private _vs:WebGLShader;
-    private _ps:WebGLShader;
+    _program:WebGLProgram|null=null;
+    _vs:WebGLShader|null=null;
+    _ps:WebGLShader|null=null;
 }

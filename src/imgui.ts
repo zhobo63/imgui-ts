@@ -1000,61 +1000,65 @@ export class ImTransform implements Bind.interface_ImTransform
     constructor(
         public rotate:Bind.interface_ImMat2=new ImMat2,
         public translate:Bind.interface_ImVec2=new ImVec2(0,0),
-        public scale:number=1) {}
+        public scale:Bind.interface_ImVec2=new ImVec2(1,1)) {}
 
     Identity(): void {
         this.rotate.Identity();
         this.translate.Set(0,0);
-        this.scale=1;
+        this.scale.Set(1,1);
     }
     Multiply(m: Readonly<Bind.interface_ImTransform>): Bind.interface_ImTransform {
         let tm=new ImTransform;
-        tm.scale = this.scale * m.scale;
+        tm.scale.x = this.scale.x * m.scale.x;
+        tm.scale.y = this.scale.y * m.scale.y;
         tm.rotate = this.rotate.Multiply(m.rotate);
         let t=this.rotate.Transform(m.translate);
-        tm.translate.x = this.translate.x + t.x * this.scale;
-        tm.translate.y = this.translate.y + t.y * this.scale;
+        tm.translate.x = this.translate.x + t.x * this.scale.x;
+        tm.translate.y = this.translate.y + t.y * this.scale.y;
         return tm;
     }
     Transform(point: Readonly<Bind.interface_ImVec2>): Bind.interface_ImVec2 {
         let p=this.rotate.Transform(point);
-        p.x=p.x*this.scale+this.translate.x;
-        p.y=p.y*this.scale+this.translate.y;
+        p.x=p.x*this.scale.x+this.translate.x;
+        p.y=p.y*this.scale.y+this.translate.y;
         return p;
     }
     Invert():Bind.interface_ImTransform
     {
         let tm:ImTransform=new ImTransform;
         tm.rotate=this.rotate.Transpose();
-        tm.scale = 1.0 / this.scale;
+        tm.scale.x = 1.0 / this.scale.x;
+        tm.scale.y = 1.0 / this.scale.y;
         let t=new ImVec2(-this.translate.x, -this.translate.y);
         t=tm.rotate.Transform(t);
-		tm.translate.x = t.x*tm.scale;
-        tm.translate.y = t.y*tm.scale;
+		tm.translate.x = t.x*tm.scale.x;
+        tm.translate.y = t.y*tm.scale.y;
         return tm;
     }
 
     MultiplyTo(other: ImTransform, target:ImTransform): void
     {
-        target.scale = this.scale * other.scale;
+        target.scale.x = this.scale.x * other.scale.x;
+        target.scale.y = this.scale.y * other.scale.y;
         this.rotate.MultiplyTo(other.rotate, target.rotate);
         this.rotate.TransformTo(other.translate, target.translate);
-        target.translate.x = this.translate.x + target.translate.x * this.scale;
-        target.translate.y = this.translate.y + target.translate.y * this.scale;
+        target.translate.x = this.translate.x + target.translate.x * this.scale.x;
+        target.translate.y = this.translate.y + target.translate.y * this.scale.y;
     }
     TransformTo(point: Readonly<Bind.interface_ImVec2>, target: Bind.interface_ImVec2): void
     {
         this.rotate.TransformTo(point, target);
-        target.x=target.x*this.scale+this.translate.x;
-        target.y=target.y*this.scale+this.translate.y;
+        target.x=target.x*this.scale.x+this.translate.x;
+        target.y=target.y*this.scale.y+this.translate.y;
     }
     InvertTo(target: Bind.interface_ImTransform): void {
         this.rotate.TransposeTo(target.rotate);
-        target.scale = 1.0 / this.scale;
+        target.scale.x = 1.0 / this.scale.x;
+        target.scale.y = 1.0 / this.scale.y;
         target.translate.Set(-this.translate.x, -this.translate.y);
         this.rotate.TransformTo(target.translate, target.translate);
-        target.translate.x = target.translate.x * this.scale;
-        target.translate.y = target.translate.y * this.scale;
+        target.translate.x = target.translate.x * this.scale.x;
+        target.translate.y = target.translate.y * this.scale.y;
     }
 }
 
@@ -1117,8 +1121,8 @@ export class ImVector<T> extends Array<T>
             this.length = new_size;
         }
     }
-    public contains(value: T): boolean {
-        return this.includes(value);
+    public contains(value: T): boolean {        
+        return this.indexOf(value)>=0;
     }
     public find_erase_unsorted(value: T): void {
         const index = this.indexOf(value);
@@ -1685,7 +1689,8 @@ export class ImDrawCmd
     get UserCallback(): ImDrawCallback | null {
         if(this.native.UserCallback) {
             const _callback:ImDrawCallback=(parent_list, cmd)=>{
-                this.native.UserCallback(parent_list.native, cmd.native);
+                if(this.native.UserCallback)
+                    this.native.UserCallback(parent_list.native, cmd.native);
             };
             return _callback;
         }
@@ -2092,7 +2097,8 @@ export class script_ImFontConfig implements Bind.interface_ImFontConfig
 
 export { ImFontConfig as FontConfig }
 export class ImFontConfig {
-    constructor(public readonly internal: Bind.interface_ImFontConfig = new script_ImFontConfig()) {}
+    constructor(public readonly internal: Bind.interface_ImFontConfig = new script_ImFontConfig()) {
+    }
 
     // void*           FontData;                   //          // TTF/OTF data
     // int             FontDataSize;               //          // TTF/OTF data size
@@ -2158,7 +2164,7 @@ export class script_ImFontGlyph implements Bind.interface_ImFontGlyph
     U1: number = 1.0;
     V1: number = 1.0;
 
-    TexID:number=null;
+    TexID:number=0;
 
     Char:number=0;
 }
@@ -2380,12 +2386,12 @@ export class ImFontAtlas
         return fonts;
     }
     get Fonts(): ImVector<ImFont> {
-        if(this._Fonts==null)   {
+        if(!this._Fonts)   {
             this._Fonts=this.Fonts_;
         }
         return this._Fonts;
     }
-    _Fonts:ImVector<ImFont>=null;
+    _Fonts?:ImVector<ImFont>;
 
     // ImVector<CustomRect>        CustomRects;        // Rectangles for packing custom texture data into the atlas.
     // ImVector<ImFontConfig>      ConfigData;         // Internal data
@@ -2485,7 +2491,7 @@ export class ImFont
     get ConfigDataCount(): number { return this.native.ConfigDataCount; }
     // ImFontConfig*               ConfigData;         //              // Pointer within ContainerAtlas->ConfigData
     get ConfigData(): ImFontConfig {
-        return new ImFontConfig(this.native.ConfigData);
+        return new ImFontConfig(this.native.ConfigData as Bind.interface_ImFontConfig);
     }
     // ImFontAtlas*                ContainerAtlas;     //              // What we has been loaded into
     get ContainerAtlas(): ImFontAtlas | null { return null; }
@@ -2554,7 +2560,7 @@ export class ImFont
     // IMGUI_API bool              IsGlyphRangeUnused(unsigned int c_begin, unsigned int c_last);
     public IsGlyphRangeUnused(c_begin: number, c_last: number): boolean { return false; } // TODO
 
-    get GlyphToCreate():ImFontGlyph {
+    get GlyphToCreate():ImFontGlyph|null {
         let glyph=this.native.GlyphToCreate();
         return glyph?new ImFontGlyph(glyph):null;
     }
@@ -4899,10 +4905,10 @@ export class ImGuiWindow
     get ItemWidthDefault():number {return this.native.ItemWidthDefault;}
     set ItemWidthDefault(v:number) {this.native.ItemWidthDefault=v;}
 
-    get ParentWindow():ImGuiWindow {return this.native.ParentWindow?new ImGuiWindow(this.native.ParentWindow):null;}
-    get RootWindow():ImGuiWindow {return this.native.RootWindow?new ImGuiWindow(this.native.RootWindow):null;}
-    get RootWindowForTitleBarHighlight():ImGuiWindow {return this.native.RootWindowForTitleBarHighlight?new ImGuiWindow(this.native.RootWindowForTitleBarHighlight):null;}
-    get RootWindowForNav():ImGuiWindow {return this.native.RootWindowForNav?new ImGuiWindow(this.native.RootWindowForNav):null;}
+    get ParentWindow():ImGuiWindow|null {return this.native.ParentWindow?new ImGuiWindow(this.native.ParentWindow):null;}
+    get RootWindow():ImGuiWindow|null {return this.native.RootWindow?new ImGuiWindow(this.native.RootWindow):null;}
+    get RootWindowForTitleBarHighlight():ImGuiWindow|null {return this.native.RootWindowForTitleBarHighlight?new ImGuiWindow(this.native.RootWindowForTitleBarHighlight):null;}
+    get RootWindowForNav():ImGuiWindow|null {return this.native.RootWindowForNav?new ImGuiWindow(this.native.RootWindowForNav):null;}
 }
 
 export { ImGuiInputTextState as InputTextState }
@@ -4920,10 +4926,10 @@ export class ImGuiInputTextState
 }
 
 export function GetCurrentWindow(): ImGuiWindow { return new ImGuiWindow(bind.GetCurrentWindow()); }
-export function GetHoveredWindow(): ImGuiWindow { return bind.GetHoveredWindow()?new ImGuiWindow(bind.GetHoveredWindow()):null; }
-export function GetHoveredRootWindow(): ImGuiWindow { return bind.GetHoveredRootWindow()?new ImGuiWindow(bind.GetHoveredRootWindow()):null; }
-export function GetMovingWindow(): ImGuiWindow { return bind.GetMovingWindow()?new ImGuiWindow(bind.GetHoveredWindow()):null; }
-export function GetActiveWindow(): ImGuiWindow { return bind.GetActiveWindow()?new ImGuiWindow(bind.GetActiveWindow()):null; }
+export function GetHoveredWindow(): ImGuiWindow|null { return bind.GetHoveredWindow()?new ImGuiWindow(bind.GetHoveredWindow()):null; }
+export function GetHoveredRootWindow(): ImGuiWindow|null { return bind.GetHoveredRootWindow()?new ImGuiWindow(bind.GetHoveredRootWindow()):null; }
+export function GetMovingWindow(): ImGuiWindow|null { return bind.GetMovingWindow()?new ImGuiWindow(bind.GetHoveredWindow()):null; }
+export function GetActiveWindow(): ImGuiWindow|null { return bind.GetActiveWindow()?new ImGuiWindow(bind.GetActiveWindow()):null; }
 
 export function GetHoveredId():ImGuiID {return bind.GetHoveredId();}
 export function GetHoveredIdPreviousFrame():ImGuiID {return bind.GetHoveredIdPreviousFrame();}
@@ -4946,7 +4952,7 @@ export function CreateFont(name:string, size:number, style?:string):ImFont
 {
     const io=GetIO();
     let font =io.Fonts.AddFontDefault();
-    font.FontStyle=style;
+    font.FontStyle=style?style:"normal";
     font.FontName=name;
     font.FontSize=size;
     return font;

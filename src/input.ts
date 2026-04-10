@@ -27,6 +27,8 @@ export class Input
             input=document.createElement('input');
             input.type='password';
             break;
+        default:
+            return;
         }
         input.style.position='fixed';
         input.style.top=0 + 'px';
@@ -46,12 +48,12 @@ export class Input
         this.setVisible(false);
     }
 
-    public on_input: ((this: Input, text: string) => any) | null; 
-    public on_visible: ((this: Input, visible: boolean) => any) | null; 
+    on_input?: ((this: Input, text: string) => any); 
+    on_visible?: ((this: Input, visible: boolean) => any); 
 
     private onLostFocus(e:Event)
     {
-        if(this.on_input)   {
+        if(this.on_input && this._dom_input)   {
             this.on_input(this._dom_input.value);
         }
         this.setVisible(false);        
@@ -69,34 +71,40 @@ export class Input
         return this.isVisible && this._id==id;
     }
 
-    public get Text():string {
-        return this._dom_input.value;
+    public get Text():string|undefined {
+        return this._dom_input?.value;
     }
     public setRect(x:number, y:number, w:number, h:number)
     {
-        let input=this._dom_input;
-        input.style.left=x + 'px';
-        input.style.top=y + 'px';
-        input.style.width=w -5 + 'px';
-        input.style.height=h -5 + 'px';
+        if(this._dom_input) {
+            let input=this._dom_input;
+            input.style.left=x + 'px';
+            input.style.top=y + 'px';
+            input.style.width=w -5 + 'px';
+            input.style.height=h -5 + 'px';
+        }
     }
     public setText(text:string, id:ImGui.ImGuiID, font:ImFont)
     {
         this._id=id;
-        let input=this._dom_input;
-        input.style.font=ImGui.Font_toString(font);
-        input.value=text;
+        if(this._dom_input) {
+            let input=this._dom_input;
+            input.style.font=ImGui.Font_toString(font);
+            input.value=text;
+        }
         this.setVisible(true);
     }
     public setVisible(b:boolean)
     {
-        let input=this._dom_input;
-        if(b) {
-            this.isTab=false;
-            input.style.display='inline-block';
-            input.focus();
-        }else {
-            input.style.display='none';
+        if(this._dom_input) {
+            let input=this._dom_input;
+            if(b) {
+                this.isTab=false;
+                input.style.display='inline-block';
+                input.focus();
+            }else {
+                input.style.display='none';
+            }
         }
         this.isVisible=b;
         if(this.on_visible) {
@@ -104,10 +112,10 @@ export class Input
         }
     }
 
-    public _dom_input:HTMLInputElement|HTMLTextAreaElement;
-    private _id:ImGui.ImGuiID;
-    public isVisible:boolean=false;
-    public isTab:boolean=false;
+    _dom_input?:HTMLInputElement|HTMLTextAreaElement;
+    _id:ImGui.ImGuiID=0;
+    isVisible:boolean=false;
+    isTab:boolean=false;
 }
 
 export let dom_input:any={}

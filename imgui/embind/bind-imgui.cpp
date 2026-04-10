@@ -519,7 +519,7 @@ EMSCRIPTEN_BINDINGS(ImMat2) {
 ImTransform& import_ImTransform(const emscripten::val& value, ImTransform& out) {
     out.rotate = import_ImMat2(value["rotate"]);
     out.translate = import_ImVec2(value["translate"]);
-    out.scale = import_value<float>(value["scale"]);
+    out.scale = import_ImVec2(value["scale"]);
     return out;
 }
 
@@ -530,7 +530,7 @@ ImTransform import_ImTransform(const emscripten::val& value) {
 emscripten::val export_ImTransform(const ImTransform& value, emscripten::val out) {
     out.set("rotate", export_ImMat2(value.rotate));
     out.set("translate", export_ImVec2(value.translate));
-    out.set("scale", export_value<float>(value.scale));
+    out.set("scale", export_ImVec2(value.scale));
     return out;
 }
 

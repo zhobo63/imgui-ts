@@ -57,7 +57,8 @@ export class TexturePage
         const px=ix*(image_size);
         const py=iy*(image_size);
         const text=String.fromCharCode(glyph.Char);
-        glyph.TextureID=this.Texure._texture;
+        if(this.Texure._texture)
+            glyph.TextureID=this.Texure._texture;
 
         ctx.save();
         ctx.canvas.width=image_size;
@@ -116,7 +117,7 @@ export class TexturePage
     Current:number;
     MaxCharCount:number;
     CharsPerRow:number;
-    Texure:Texture;
+    Texure!:Texture;
     Dirty:boolean=false;
     SpaceX:number[];
     Ascent:number=0;

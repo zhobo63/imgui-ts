@@ -139,6 +139,7 @@ struct ImMat2
         m21 = 0; m22 = 1;
     }
     ImMat2 SetRotate(float rad);
+    ImMat2 Scale(const ImVec2 &s) const;
     ImVec2 operator*(const ImVec2& p) const;
     ImMat2 operator*(const ImMat2& m) const;
 };
@@ -147,7 +148,7 @@ struct ImTransform
 {
     ImMat2 rotate;
     ImVec2 translate = ImVec2(0, 0);
-    float scale = 1;
+    ImVec2 scale = ImVec2(1, 1);
 
     ImVec2 operator*(const ImVec2& p) const;
     ImTransform operator*(const ImTransform& _tm) const;
